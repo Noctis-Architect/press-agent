@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+dist/
+*.js.map
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+debug.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# WordPress
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+
+# Package locks (keep one)
+package-lock.json
+yarn.lock
+
+# Compiled PHP
+*.phar

@@ -1,8 +1,14 @@
 {
-  "name": "pressagent-mcp-server",
+  "name": "pressagent",
   "version": "1.0.0",
   "description": "MCP server for PressAgent - The Autonomous AI Ops Bridge for WordPress",
   "main": "dist/index.js",
+  "bin": {
+    "pressagent": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "scripts": {
     "build": "tsc",
