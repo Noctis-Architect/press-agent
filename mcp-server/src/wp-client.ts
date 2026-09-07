@@ -9,8 +9,21 @@ export class WPClient {
     this.token = token;
   }
 
+  private buildUrl(endpoint: string): string {
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+    if (this.baseUrl.includes('/wp-json') || this.baseUrl.includes('rest_route=')) {
+      return `${this.baseUrl}${cleanEndpoint}`;
+    }
+
+    const [path, query] = cleanEndpoint.split('?');
+    const restParam = `rest_route=${path}`;
+    const fullQuery = query ? `?${restParam}&${query}` : `?${restParam}`;
+    return `${this.baseUrl}/index.php${fullQuery}`;
+  }
+
   private async request<T>(endpoint: string, method: string = "GET", body?: any): Promise<T> {
-    const url = `${this.baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+    const url = this.buildUrl(endpoint);
     const headers = {
       "Authorization": `Bearer ${this.token}`,
       "Content-Type": "application/json"
