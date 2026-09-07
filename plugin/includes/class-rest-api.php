@@ -49,7 +49,8 @@ class PressAgent_REST_API {
             'methods' => WP_REST_Server::CREATABLE,
             'callback' => function( $request ) {
                 $params = $request->get_json_params();
-                return PressAgent_Elementor_Adapter::add_section( $request->get_param( 'page_id' ), $params['section_data'] ?? array() );
+                $section_data = isset( $params['section_data'] ) ? $params['section_data'] : $params;
+                return PressAgent_Elementor_Adapter::add_section( $request->get_param( 'page_id' ), $section_data );
             },
             'permission_callback' => function( $request ) { return PressAgent_Auth::has_scope( $request, 'elementor:write' ); }
         ) );

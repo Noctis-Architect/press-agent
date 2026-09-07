@@ -38,3 +38,4 @@ yarn.lock
 
 # Compiled PHP
 *.phar
+*.zip

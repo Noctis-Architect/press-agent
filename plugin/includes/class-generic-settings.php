@@ -30,13 +30,41 @@ class PressAgent_Generic_Settings {
             if ( function_exists( 'rocket_clean_domain' ) ) {
                 rocket_clean_domain();
             }
+            // Remove WP Rocket cache files if directory exists
+            $rocket_cache = WP_CONTENT_DIR . '/cache/wp-rocket';
+            if ( is_dir( $rocket_cache ) ) {
+                self::_recursive_rmdir( $rocket_cache );
+            }
         }
         if ( $plugin_slug === 'litespeed' || $plugin_slug === 'all' ) {
             if ( class_exists( 'LiteSpeed_Cache_API' ) && method_exists( 'LiteSpeed_Cache_API', 'purge_all' ) ) {
                 \LiteSpeed_Cache_API::purge_all();
             }
+            do_action( 'litespeed_purge_all' );
+        }
+        if ( function_exists( 'wp_cache_flush' ) ) {
+            wp_cache_flush();
+        }
+        if ( class_exists( '\Elementor\Plugin' ) && isset( \Elementor\Plugin::$instance->files_manager ) ) {
+            \Elementor\Plugin::$instance->files_manager->clear_cache();
         }
         return rest_ensure_response( array( 'message' => 'Cache purged.' ) );
+    }
+
+    private static function _recursive_rmdir( $dir ) {
+        if ( is_dir( $dir ) ) {
+            $objects = scandir( $dir );
+            foreach ( $objects as $object ) {
+                if ( $object !== '.' && $object !== '..' ) {
+                    if ( is_dir( $dir . DIRECTORY_SEPARATOR . $object ) && ! is_link( $dir . '/' . $object ) ) {
+                        self::_recursive_rmdir( $dir . DIRECTORY_SEPARATOR . $object );
+                    } else {
+                        @unlink( $dir . DIRECTORY_SEPARATOR . $object );
+                    }
+                }
+            }
+            @rmdir( $dir );
+        }
     }
 
     public static function get_cache_status() {
@@ -46,7 +74,39 @@ class PressAgent_Generic_Settings {
         ) );
     }
 
+    private static $_builtin_allowlist = array(
+        'wordpress' => array(
+            'blogname',
+            'blogdescription',
+            'show_on_front',
+            'page_on_front',
+            'page_for_posts',
+            'posts_per_page',
+            'date_format',
+            'time_format',
+            'start_of_week',
+            'WPLANG',
+            'blog_public',
+            'default_pingback_flag',
+            'default_ping_status',
+            'default_comment_status',
+            'permalink_structure',
+            'category_base',
+            'tag_base',
+            'timezone_string',
+            'gmt_offset',
+        ),
+    );
+
     private static function _is_allowed( $plugin_slug, $key ) {
+        // Check built-in allowlist first
+        if ( isset( self::$_builtin_allowlist[$plugin_slug] ) ) {
+            if ( in_array( $key, self::$_builtin_allowlist[$plugin_slug], true ) ) {
+                return true;
+            }
+        }
+
+        // Then check dynamic allowlist
         $allowlist = get_option( 'pressagent_settings_allowlist', array() );
         if ( ! isset( $allowlist[$plugin_slug] ) ) return false;
         

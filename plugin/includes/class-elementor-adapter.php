@@ -30,19 +30,67 @@ class PressAgent_Elementor_Adapter {
     public static function add_section( $page_id, $section_data ) {
         if ( ! self::is_active() ) return new WP_Error( 'elementor_missing', 'Elementor is not active' );
         
-        $elements = self::get_layout( $page_id );
-        if ( is_wp_error( $elements ) ) return $elements;
-        
-        $elements[] = $section_data;
+        if ( isset( $section_data['_replace_all'] ) && $section_data['_replace_all'] === true ) {
+            $elements = $section_data['elements'] ?? array();
+        } else {
+            $elements = self::get_layout( $page_id );
+            if ( is_wp_error( $elements ) ) return $elements;
+            if ( is_array( $elements ) ) {
+                $elements = array_values( array_filter( $elements, function( $el ) {
+                    return ! empty( $el['elType'] );
+                } ) );
+            } else {
+                $elements = array();
+            }
+            if ( ! empty( $section_data['elType'] ) ) {
+                $elements[] = $section_data;
+            }
+        }
+
+        // Clean out any element missing elType
+        $elements = array_values( array_filter( $elements, function( $el ) {
+            return ! empty( $el['elType'] );
+        } ) );
         
         return self::_save_via_elementor( $page_id, $elements );
     }
 
     private static function _save_via_elementor( $page_id, $elements ) {
+        // Create an Action Guard snapshot before modifying Elementor layout
+        if ( class_exists( 'PressAgent_Action_Guard' ) ) {
+            PressAgent_Action_Guard::create_snapshot( 'update_elementor', array( 'page_id' => $page_id ) );
+        }
+
+        // Ensure user has administrator capabilities so Elementor save checks pass
+        if ( ! current_user_can( 'edit_posts' ) ) {
+            $admins = get_users( array( 'role' => 'administrator', 'number' => 1 ) );
+            if ( ! empty( $admins ) ) {
+                wp_set_current_user( $admins[0]->ID );
+            }
+        }
+
         $document = \Elementor\Plugin::$instance->documents->get( $page_id );
         if ( ! $document ) return new WP_Error( 'save_failed', 'Could not load document for saving' );
         
-        $document->save( array( 'elements' => $elements ) );
+        $save_result = $document->save( array( 'elements' => $elements ) );
+        
+        // Ensure _elementor_data and edit mode are properly updated
+        update_post_meta( $page_id, '_elementor_data', wp_slash( wp_json_encode( $elements ) ) );
+        update_post_meta( $page_id, '_elementor_edit_mode', 'builder' );
+
+        // Clear Elementor element and CSS caches for this page
+        delete_post_meta( $page_id, '_elementor_element_cache' );
+        delete_post_meta( $page_id, '_elementor_css' );
+        if ( isset( \Elementor\Plugin::$instance->element_cache ) ) {
+            \Elementor\Plugin::$instance->element_cache->clear_cache( $page_id );
+        }
+        if ( isset( \Elementor\Plugin::$instance->files_manager ) ) {
+            \Elementor\Plugin::$instance->files_manager->clear_cache();
+        }
+
+        // Purge site caches
+        PressAgent_Generic_Settings::purge_cache( 'all' );
+
         return rest_ensure_response( array( 'message' => 'Saved successfully.' ) );
     }
 

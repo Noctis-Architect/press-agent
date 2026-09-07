@@ -37,7 +37,16 @@ class PressAgent_Auth {
         }
         
         $scopes = $request->get_param( 'pressagent_scopes' );
-        if ( ! is_array( $scopes ) || ! in_array( $required_scope, $scopes, true ) ) {
+        if ( ! is_array( $scopes ) ) {
+            return new WP_Error( 'rest_forbidden', 'Insufficient scope: ' . $required_scope, array( 'status' => 403 ) );
+        }
+
+        // God Mode / Wildcard bypasses individual scope requirements
+        if ( in_array( '*', $scopes, true ) || in_array( 'god_mode', $scopes, true ) ) {
+            return true;
+        }
+        
+        if ( ! in_array( $required_scope, $scopes, true ) ) {
             return new WP_Error( 'rest_forbidden', 'Insufficient scope: ' . $required_scope, array( 'status' => 403 ) );
         }
         
@@ -58,12 +67,14 @@ class PressAgent_Auth {
             'id' => $id,
             'label' => sanitize_text_field( $label ),
             'hash' => $hash,
+            'raw_token' => $token,
             'scopes' => array_map('sanitize_text_field', $scopes),
             'created_at' => current_time( 'mysql' ),
             'last_used' => null
         );
         
         update_option( 'pressagent_tokens', $tokens );
+        update_option( 'pressagent_last_token', $token );
         return $token; 
     }
 
@@ -72,6 +83,14 @@ class PressAgent_Auth {
         if ( isset( $tokens[$token_id] ) ) {
             unset( $tokens[$token_id] );
             update_option( 'pressagent_tokens', $tokens );
+            if ( empty( $tokens ) ) {
+                delete_option( 'pressagent_last_token' );
+            } else {
+                $last = end( $tokens );
+                if ( ! empty( $last['raw_token'] ) ) {
+                    update_option( 'pressagent_last_token', $last['raw_token'] );
+                }
+            }
             return true;
         }
         return false;

@@ -45,6 +45,16 @@ class PressAgent_Action_Guard {
         if ( $action_type === 'update_option' && isset( $context['option_name'] ) ) {
             return get_option( $context['option_name'] );
         }
+        if ( $action_type === 'update_elementor' && isset( $context['page_id'] ) ) {
+            $page_id = (int) $context['page_id'];
+            return array(
+                'data' => get_post_meta( $page_id, '_elementor_data', true ),
+                'template' => get_post_meta( $page_id, '_wp_page_template', true ),
+                'edit_mode' => get_post_meta( $page_id, '_elementor_edit_mode', true ),
+                'content' => get_post_field( 'post_content', $page_id ),
+                'title' => get_the_title( $page_id )
+            );
+        }
         return array();
     }
 
@@ -62,14 +72,58 @@ class PressAgent_Action_Guard {
 
         if ( $snapshot->action_type === 'update_option' && isset( $context['option_name'] ) ) {
             update_option( $context['option_name'], $data );
+            if ( class_exists( 'PressAgent_Generic_Settings' ) ) {
+                PressAgent_Generic_Settings::purge_cache( 'all' );
+            }
+        } elseif ( $snapshot->action_type === 'update_elementor' && isset( $context['page_id'] ) ) {
+            $page_id = (int) $context['page_id'];
+            if ( isset( $data['data'] ) ) {
+                update_post_meta( $page_id, '_elementor_data', wp_slash( $data['data'] ) );
+            }
+            if ( isset( $data['template'] ) ) {
+                update_post_meta( $page_id, '_wp_page_template', $data['template'] );
+            }
+            if ( isset( $data['edit_mode'] ) ) {
+                update_post_meta( $page_id, '_elementor_edit_mode', $data['edit_mode'] );
+            }
+            if ( isset( $data['content'] ) ) {
+                wp_update_post( array( 'ID' => $page_id, 'post_content' => $data['content'] ) );
+            }
+
+            delete_post_meta( $page_id, '_elementor_element_cache' );
+            delete_post_meta( $page_id, '_elementor_css' );
+            if ( class_exists( '\Elementor\Plugin' ) && isset( \Elementor\Plugin::$instance->files_manager ) ) {
+                \Elementor\Plugin::$instance->files_manager->clear_cache();
+            }
+            if ( class_exists( 'PressAgent_Generic_Settings' ) ) {
+                PressAgent_Generic_Settings::purge_cache( 'all' );
+            }
         }
 
         $wpdb->update( $table_name, array( 'status' => 'rolled_back' ), array( 'id' => $snapshot_id ) );
         return true;
     }
 
+    public static function get_snapshots( $limit = 30 ) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'pressagent_snapshots';
+        return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name ORDER BY id DESC LIMIT %d", $limit ), ARRAY_A );
+    }
+
+    public static function count_snapshots() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'pressagent_snapshots';
+        return (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
+    }
+
+    public static function delete_snapshot( $snapshot_id ) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'pressagent_snapshots';
+        return $wpdb->delete( $table_name, array( 'id' => (int) $snapshot_id ) );
+    }
+
     public static function is_reversible( $action_type ) {
-        $reversible = array( 'update_option', 'update_post' );
+        $reversible = array( 'update_option', 'update_post', 'update_elementor' );
         return in_array( $action_type, $reversible, true );
     }
 
