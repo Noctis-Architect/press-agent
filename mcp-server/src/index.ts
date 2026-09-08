@@ -9,6 +9,7 @@ import { registerSettingsTools } from "./tools/settings.js";
 import { registerDebugLogTools } from "./tools/debug-log.js";
 import { registerSecurityTools } from "./tools/security.js";
 import { registerDevTools } from "./tools/dev.js";
+import { registerScreenshotTools } from "./tools/screenshot.js";
 
 async function main() {
   const wpUrl = process.env.PRESSAGENT_WP_URL;
@@ -39,6 +40,7 @@ async function main() {
   // Register all tools
   registerPagesTools(tools, handlers, client);
   registerElementorTools(tools, handlers, client);
+  registerScreenshotTools(tools, handlers, client);
   registerSettingsTools(tools, handlers, client);
   registerDebugLogTools(tools, handlers, client);
   registerSecurityTools(tools, handlers, client);
