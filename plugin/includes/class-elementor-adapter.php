@@ -61,12 +61,10 @@ class PressAgent_Elementor_Adapter {
             PressAgent_Action_Guard::create_snapshot( 'update_elementor', array( 'page_id' => $page_id ) );
         }
 
-        // Ensure user has administrator capabilities so Elementor save checks pass
+        // Elementor save requires edit_posts; if the authenticated token user is not
+        // a logged-in user with that capability, refuse instead of impersonating an admin.
         if ( ! current_user_can( 'edit_posts' ) ) {
-            $admins = get_users( array( 'role' => 'administrator', 'number' => 1 ) );
-            if ( ! empty( $admins ) ) {
-                wp_set_current_user( $admins[0]->ID );
-            }
+            return new WP_Error( 'forbidden', 'Elementor writes require a logged-in user with edit_posts capability.', array( 'status' => 403 ) );
         }
 
         $document = \Elementor\Plugin::$instance->documents->get( $page_id );

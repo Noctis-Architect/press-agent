@@ -3,24 +3,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class PressAgent_Generic_Settings {
     public static function read_option( $plugin_slug, $key ) {
-        if ( ! self::_is_allowed( $plugin_slug, $key ) ) {
+        if ( ! self::is_allowed( $key ) ) {
             return new WP_Error( 'forbidden_key', 'This settings key is not in the allowlist.', array( 'status' => 403 ) );
         }
         return get_option( $key );
     }
 
     public static function write_option( $plugin_slug, $key, $value ) {
-        if ( ! self::_is_allowed( $plugin_slug, $key ) ) {
+        if ( ! self::is_allowed( $key ) ) {
             return new WP_Error( 'forbidden_key', 'This settings key is not in the allowlist.', array( 'status' => 403 ) );
         }
-        
+
+        // Protect the allowlist itself: only a logged-in administrator may modify it.
+        if ( $key === 'pressagent_settings_allowlist' && ! current_user_can( 'manage_options' ) ) {
+            return new WP_Error( 'forbidden_key', 'The settings allowlist cannot be modified via API.', array( 'status' => 403 ) );
+        }
+
         PressAgent_Action_Guard::create_snapshot( 'update_option', array( 'option_name' => $key ) );
-        
-        if ( ! current_user_can( 'manage_options' ) ) {
-            $admins = get_users( array( 'role' => 'administrator', 'number' => 1 ) );
-            if ( ! empty( $admins ) ) {
-                wp_set_current_user( $admins[0]->ID );
-            }
+
+        // Only proceed with the actual privilege escalation if the current user is
+        // a logged-in administrator. Never silently impersonate the first admin.
+        if ( ! current_user_can( 'manage_options' ) && in_array( $key, array( 'users_can_register', 'default_role', 'active_plugins', 'siteurl', 'home', 'admin_email' ), true ) ) {
+            return new WP_Error( 'forbidden_key', 'This option requires administrator privileges.', array( 'status' => 403 ) );
         }
 
         update_option( $key, $value );
@@ -105,23 +109,24 @@ class PressAgent_Generic_Settings {
         ),
     );
 
-    private static function _is_allowed( $plugin_slug, $key ) {
+    public static function is_allowed( $key ) {
         // Check built-in allowlist first
-        if ( isset( self::$_builtin_allowlist[$plugin_slug] ) ) {
-            if ( in_array( $key, self::$_builtin_allowlist[$plugin_slug], true ) ) {
+        foreach ( self::$_builtin_allowlist as $builtin_keys ) {
+            if ( in_array( $key, $builtin_keys, true ) ) {
                 return true;
             }
         }
 
-        // Then check dynamic allowlist
+        // Then check dynamic allowlist (patterns apply to any plugin slug)
         $allowlist = get_option( 'pressagent_settings_allowlist', array() );
-        if ( ! isset( $allowlist[$plugin_slug] ) ) return false;
-        
-        foreach ( $allowlist[$plugin_slug] as $allowed_pattern ) {
-            if ( $allowed_pattern === $key ) return true;
-            if ( str_ends_with( $allowed_pattern, '*' ) ) {
-                $prefix = rtrim( $allowed_pattern, '*' );
-                if ( str_starts_with( $key, $prefix ) ) return true;
+        foreach ( $allowlist as $patterns ) {
+            if ( ! is_array( $patterns ) ) continue;
+            foreach ( $patterns as $allowed_pattern ) {
+                if ( $allowed_pattern === $key ) return true;
+                if ( is_string( $allowed_pattern ) && str_ends_with( $allowed_pattern, '*' ) ) {
+                    $prefix = rtrim( $allowed_pattern, '*' );
+                    if ( str_starts_with( $key, $prefix ) ) return true;
+                }
             }
         }
         return false;

@@ -4,6 +4,18 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class PressAgent_Debug_Log_Parser {
     public static function read_log( $lines = 100, $level = 'all' ) {
         $log_file = defined( 'WP_DEBUG_LOG' ) && is_string( WP_DEBUG_LOG ) ? WP_DEBUG_LOG : WP_CONTENT_DIR . '/debug.log';
+
+        // Only allow reading a real debug log under WP_CONTENT_DIR (or an explicitly
+        // configured WP_DEBUG_LOG path). Reject anything else to avoid arbitrary file reads.
+        $real = realpath( $log_file );
+        $content_real = realpath( WP_CONTENT_DIR );
+        if ( $real === false || $content_real === false || strpos( $real, $content_real ) !== 0 ) {
+            return new WP_Error( 'invalid_log', 'Debug log path is outside the allowed content directory.', array( 'status' => 403 ) );
+        }
+
+        // Bound the number of lines to something sane.
+        $lines = max( 1, min( (int) $lines, 5000 ) );
+
         if ( ! file_exists( $log_file ) ) {
             return new WP_Error( 'no_log', 'Debug log file not found.', array( 'status' => 404 ) );
         }

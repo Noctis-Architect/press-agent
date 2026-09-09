@@ -71,7 +71,18 @@ class PressAgent_Action_Guard {
         $data = json_decode( $snapshot->snapshot_data, true );
 
         if ( $snapshot->action_type === 'update_option' && isset( $context['option_name'] ) ) {
-            update_option( $context['option_name'], $data );
+            $option_name = $context['option_name'];
+
+            // Only allow rollback of options that are still within the settings allowlist,
+            // and never roll back the allowlist itself or security-critical options.
+            if ( $option_name === 'pressagent_settings_allowlist' ) {
+                return new WP_Error( 'forbidden', 'Rollback of the settings allowlist is not allowed.', array( 'status' => 403 ) );
+            }
+            if ( ! PressAgent_Generic_Settings::is_allowed( $option_name ) ) {
+                return new WP_Error( 'forbidden', 'Rollback is limited to allowlisted settings.', array( 'status' => 403 ) );
+            }
+
+            update_option( $option_name, $data );
             if ( class_exists( 'PressAgent_Generic_Settings' ) ) {
                 PressAgent_Generic_Settings::purge_cache( 'all' );
             }
