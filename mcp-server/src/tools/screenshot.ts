@@ -74,7 +74,18 @@ export function registerScreenshotTools(
       targetUrl = `${wpBaseUrl.replace(/\/$/, "")}/?p=${parsed.page_id}`;
     } else if (parsed.url) {
       if (parsed.url.startsWith("http://") || parsed.url.startsWith("https://")) {
-        targetUrl = parsed.url;
+        // SSRF guard: only allow URLs that belong to the configured WordPress origin.
+        const wpOrigin = new URL(wpBaseUrl).origin;
+        let candidate: URL;
+        try {
+          candidate = new URL(parsed.url);
+        } catch {
+          throw new Error("Invalid url provided.");
+        }
+        if (candidate.origin !== wpOrigin) {
+          throw new Error("Only URLs on the configured WordPress site are allowed.");
+        }
+        targetUrl = candidate.toString();
       } else {
         const cleanPath = parsed.url.startsWith("/") ? parsed.url : `/${parsed.url}`;
         targetUrl = `${wpBaseUrl.replace(/\/$/, "")}${cleanPath}`;

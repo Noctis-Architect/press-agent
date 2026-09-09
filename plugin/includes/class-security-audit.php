@@ -22,7 +22,7 @@ class PressAgent_Security_Audit {
             'wordpress_version' => get_bloginfo( 'version' ),
             'php_version' => PHP_VERSION,
             'active_plugins' => $plugin_info,
-            'file_permissions_ok' => is_writable( ABSPATH . 'wp-config.php' ) ? 'warning' : 'ok',
+            'wp_config_writable' => is_writable( ABSPATH . 'wp-config.php' ),
             'htaccess_exists' => file_exists( ABSPATH . '.htaccess' )
         );
     }
