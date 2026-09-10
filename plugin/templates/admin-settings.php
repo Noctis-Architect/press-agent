@@ -57,8 +57,9 @@ $tokens = get_option( 'pressagent_tokens', array() );
 $snapshots = PressAgent_Action_Guard::get_snapshots( 25 );
 $total_snapshots = PressAgent_Action_Guard::count_snapshots();
 
-// Active raw token for MCP config
-$active_token = isset( $new_token ) ? $new_token : get_option( 'pressagent_last_token', '' );
+// Active raw token for MCP config — only shown immediately after generation.
+// The raw token is never persisted in the database.
+$active_token = isset( $new_token ) ? $new_token : '';
 $has_active_token = ! empty( $active_token );
 ?>
 

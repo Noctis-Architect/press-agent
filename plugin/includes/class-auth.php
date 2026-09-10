@@ -67,15 +67,13 @@ class PressAgent_Auth {
             'id' => $id,
             'label' => sanitize_text_field( $label ),
             'hash' => $hash,
-            'raw_token' => $token,
             'scopes' => array_map('sanitize_text_field', $scopes),
             'created_at' => current_time( 'mysql' ),
             'last_used' => null
         );
         
         update_option( 'pressagent_tokens', $tokens );
-        update_option( 'pressagent_last_token', $token );
-        return $token; 
+        return $token;
     }
 
     public static function revoke_token( $token_id ) {
@@ -83,14 +81,6 @@ class PressAgent_Auth {
         if ( isset( $tokens[$token_id] ) ) {
             unset( $tokens[$token_id] );
             update_option( 'pressagent_tokens', $tokens );
-            if ( empty( $tokens ) ) {
-                delete_option( 'pressagent_last_token' );
-            } else {
-                $last = end( $tokens );
-                if ( ! empty( $last['raw_token'] ) ) {
-                    update_option( 'pressagent_last_token', $last['raw_token'] );
-                }
-            }
             return true;
         }
         return false;
