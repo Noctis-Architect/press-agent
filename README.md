@@ -1,212 +1,313 @@
 # PressAgent 🚀
 
-### The Autonomous AI Ops Bridge for WordPress
+### The Autonomous AI Ops & Design Bridge for WordPress
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)]()
-[![WordPress](https://img.shields.io/badge/WordPress-5.8%2B-blue.svg)]()
-[![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)]()
+[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/Noctis-Architect/press-agent)
+[![WordPress](https://img.shields.io/badge/WordPress-5.8%2B-blue.svg)](https://wordpress.org)
+[![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3%2B-blue.svg)](https://www.typescriptlang.org)
+[![MCP](https://img.shields.io/badge/MCP-1.0%2B-orange.svg)](https://modelcontextprotocol.io)
 
-> **PressAgent is NOT just another WordPress-to-MCP connector.** It's a secure AI Ops layer that reads debug logs, coordinates across plugins (Elementor, WP Rocket, Wordfence, and more), and fixes issues — all with tiered access control.
-
----
-
-## Why PressAgent?
-
-Several WordPress MCP projects already exist (`elementor-mcp`, `mcp-api-for-elementor`, `mcp-wordpress`, `elementify-mcp`). Here's what makes PressAgent different:
-
-| Feature | Others | PressAgent |
-|---|---|---|
-| **RBAC** | Single token, full access | Scoped tokens as core design |
-| **Action Safety** | No safeguards | Reversible/Non-reversible gate with auto-snapshots |
-| **Cross-Plugin Ops** | Single plugin focus | Unified interface for Elementor + Rocket + Wordfence + more |
-| **Security Audit** | None | Integration with `console.wphb.org` ecosystem |
-| **Open Source** | Varies | MIT, no vendor lock-in |
+> **PressAgent** connects AI coding assistants and autonomous agents (**Claude Code**, **Antigravity**, **Cursor**, **Windsurf**, **Cline**) directly to live WordPress environments.
+>
+> Unlike simple REST wrappers or generic MCP tools that dump raw, un-editable HTML, PressAgent is a **battle-tested AI Ops & Builder Bridge**. It builds native **Elementor Flexbox Containers**, takes headless visual regression screenshots, parses PHP debug logs for self-healing, provides automated snapshots with one-click rollbacks via **Action Guard™**, and enforces cryptographically hashed, role-based access control (RBAC).
 
 ---
 
-## Architecture
+## 🌟 Key Capabilities
+
+### 🎨 1. Native Elementor Page & Layout Engine
+- **100% Visual Drag-and-Drop Compatibility:** PressAgent does **not** inject raw HTML or opaque shortcodes. It creates and manipulates native Elementor widgets (`heading`, `text-editor`, `button`, `image`, `icon-box`, `counter`, etc.) within modern Elementor Flexbox Containers.
+- **Full WP Admin Editability:** Site administrators and clients can open the page in Elementor and visually customize colors, typography, paddings, and content without breaking the layout.
+- **Deep Core Integration:** Interacts directly with `Elementor\Plugin::$instance->documents->get($page_id)` and `$document->save()`, automatically invalidating Elementor CSS files (`_elementor_css`), widget element caches, and theme builder templates.
+
+### 📸 2. Headless Visual QA & Screenshot Engine
+- **AI Eyes for Pixel-Perfect Iteration:** Integrated headless browser screenshot tool (`pressagent_capture_screenshot`) enables the AI assistant to inspect rendered desktop, tablet, and mobile layouts visually.
+- **SSRF-Hardened:** Strictly validates target URLs against the configured WordPress host origin to prevent Server-Side Request Forgery.
+- **Configurable Captures:** Supports custom viewport widths/heights, full-page screenshots, delay timers (for JavaScript/animations), and targeted CSS selectors.
+
+### 🛡️ 3. Action Guard™: Automated Snapshots & One-Click Rollbacks
+- **Zero-Risk Operations:** Every destructive or layout-altering action (`update_elementor`, `update_option`, page deletions) automatically records an encrypted snapshot in `wp_pressagent_snapshots` before executing.
+- **One-Click Instant Rollback:** If an AI change causes a regression or styling conflict, revert immediately from the WordPress admin dashboard (`Settings → PressAgent`) or via the API.
+- **Two-Tier Safety Protocol:**
+  - **Reversible actions:** Automatically executed with pre-execution snapshots.
+  - **Non-reversible actions:** Require explicit confirmation tokens from the human operator before execution.
+- **Tamper-Proof:** Disallows rolling back security allowlists or escalating privileges through snapshot restoration.
+
+### 🔐 4. Enterprise RBAC & WordPress Authentication Pipeline
+- **Cryptographic Token Security:** Tokens are generated with high entropy (48-character passwords) and stored as salted hashes using WordPress's native `phpass` (`PasswordHash`). Raw tokens are never persisted in the database.
+- **Native User Context Mapping:** Hooks directly into WordPress core's `determine_current_user` authentication filter. REST API requests are authenticated and mapped to the authorized administrator user context, allowing standard capabilities (`edit_posts`, `edit_pages`, `manage_options`) to function seamlessly.
+- **Granular Least-Privilege Scopes:** Restrict access to specific functions (`pages:read`, `elementor:write`, `settings:read`, `cache:purge`, etc.).
+- **In-Memory Cache:** Request-level token caching delivers sub-millisecond authentication verification.
+
+### ⚙️ 5. Safe Cross-Plugin & Settings Management
+- **Strict Settings Allowlist:** Access to `wp_options` is strictly limited through a granular allowlist (`pressagent_settings_allowlist`) with wildcard pattern support (`wordfence*`, `litespeed.conf.*`).
+- **Pre-Configured Plugin Integrations:** Out-of-the-box support for popular caching and security plugins: **WP Rocket**, **LiteSpeed Cache**, and **Wordfence**.
+- **Privilege Escalation Defense:** Critical WordPress options (`users_can_register`, `default_role`, `active_plugins`, `siteurl`) are strictly guarded against unauthorized modification.
+- **Automatic Cache Invalidation:** Automatically triggers cache cleans across WP Rocket, LiteSpeed, and Elementor when settings or layouts are updated.
+
+### 🔍 6. Intelligent Debug Log Parser & Diagnostics
+- **Structured Error Extraction:** Automatically reads and parses `WP_DEBUG_LOG` (`debug.log`), extracting timestamps, error levels (`error`, `warning`, `notice`), culprit filenames, and line numbers into structured JSON.
+- **Path-Traversal Guard:** Strictly validates log paths to prevent arbitrary file reading outside `WP_CONTENT_DIR`.
+- **AI-Powered Diagnostics:** The `pressagent_diagnose_error` tool analyzes stack traces and conflict logs to suggest actionable remediation steps.
+
+### ⚡ 7. Developer / God Mode Scaffolding (Staging Only)
+- **Plugin Scaffolding:** Allows AI agents to generate and scaffold custom WordPress plugins (`pressagent_create_plugin`) on development and staging sites.
+- **Strictly Isolated:** Requires the `code:execute` scope, disabled by default in production.
+
+---
+
+## 🏗️ Architecture
 
 ```
-+-------------------------------------------------------------+
-|                     Local Development System                 |
-|          [Claude Code / Antigravity / Cursor IDE]            |
-|                           | (Stdio / JSON-RPC)              |
-|                           v                                  |
-|              [PressAgent MCP Server (Node.js)]               |
-+-------------------------------------------------------------+
-                            |
-                            | (HTTPS + Bearer Token + RBAC scope)
-                            v
-+-------------------------------------------------------------+
-|                     WordPress Server / Host                  |
-|                  [PressAgent Plugin (PHP)]                   |
-|                           |                                  |
-|   +------------+----------+----------+------------------+    |
-|   |            |                     |                  |    |
-|   v            v                     v                  v    |
-| [Elementor  [Generic Settings    [Debug Log       [Action    |
-|  Adapter]    Reader/Writer]       Parser]          Guard]    |
-| - save()    - allow-listed       - Extract &      - snapshot |
-|   path       wp_options           analyze          before    |
-| - cache-    - Rocket/Wordfence    with LLM         writes   |
-|   safe                                                       |
-+-------------------------------------------------------------+
++-------------------------------------------------------------------------+
+|                        AI Assistant / MCP Client                        |
+|       [Claude Code]  [Antigravity IDE]  [Cursor]  [Windsurf]  [Cline]   |
+|                                     |                                   |
+|                                     | (Stdio / JSON-RPC Protocol)       |
+|                                     v                                   |
+|                   [PressAgent MCP Server (Node.js/TS)]                  |
++-------------------------------------------------------------------------+
+                                      |
+                                      | (HTTPS + Bearer Token Header)
+                                      v
++-------------------------------------------------------------------------+
+|                       Target WordPress Environment                       |
+|                        [PressAgent Plugin (PHP)]                        |
+|                                     |                                   |
+|       +-----------------------------+-----------------------------+     |
+|       |                             |                             |     |
+|       v                             v                             v     |
+| [PressAgent_Auth]        [PressAgent_REST_API]         [Action Guard]   |
+| - determine_current_user - /pressagent/v1/pages        - DB Snapshots   |
+| - Scoped RBAC Validation - /pressagent/v1/elementor    - One-Click      |
+| - phpass Hashed Tokens   - /pressagent/v1/settings       Rollbacks      |
+| - In-Memory Cache        - /pressagent/v1/debug-log    - Confirmation   |
+|                          - /pressagent/v1/cache          Tokens         |
+|                                     |                                   |
+|       +-----------------------------+-----------------------------+     |
+|       |                             |                             |     |
+|       v                             v                             v     |
+| [Elementor Adapter]       [Generic Settings]       [Debug Log Parser]   |
+| - Container Tree Builder  - Whitelist Validator    - Structured Parsing |
+| - Native Widget Injection - WP Rocket / LiteSpeed  - Traversal Shield   |
+| - Internal save() Path    - Privilege Guard        - AI Diagnostic      |
+| - Elementor CSS Clearing  - Auto Cache Purge         Remediation        |
++-------------------------------------------------------------------------+
 ```
 
 ---
 
-## MCP Tools
+## 🧰 Complete MCP Tools Reference
 
-### 1. 📄 Pages (Elementor)
-- `pressagent_list_pages` — List all WordPress pages
-- `pressagent_create_page` — Create a new page
-- `pressagent_get_elementor_layout` — Get Elementor layout tree
-- `pressagent_update_widget` — Update widget via Elementor's internal save() path
-- `pressagent_add_elementor_section` — Add a new section/container
-
-### 2. ⚙️ Generic Settings
-- `pressagent_read_option` — Read allow-listed plugin options
-- `pressagent_write_option` — Write options with auto-snapshot
-- `pressagent_purge_cache` — Purge cache (WP Rocket, LiteSpeed)
-- `pressagent_get_cache_status` — Get cache status
-
-### 3. 🔒 Security
-- `pressagent_security_summary` — Security audit summary
-
-### 4. 🔍 Diagnostics
-- `pressagent_read_debug_log` — Read recent debug log entries
-- `pressagent_diagnose_error` — AI-powered error diagnosis
-
-### 5. 🛠️ Developer / God Mode (disabled by default)
-- `pressagent_create_plugin` — Create a new plugin (staging only, requires explicit confirmation)
+| Category | Tool Name | Description | Required Scope |
+|---|---|---|---|
+| **Pages & Content** | `pressagent_list_pages` | List all pages with ID, slug, title, status, and Elementor edit mode | `pages:read` |
+| | `pressagent_create_page` | Create new pages (draft/publish) with optional Elementor builder mode | `pages:write` |
+| | `pressagent_delete_page` | Safely delete a page (Action Guard confirmation token required) | `pages:write` |
+| **Elementor Builder** | `pressagent_get_elementor_layout` | Retrieve the complete hierarchical JSON element tree of any Elementor page | `elementor:read` |
+| | `pressagent_update_widget` | Update settings/content of a specific Elementor widget by its ID | `elementor:write` |
+| | `pressagent_add_elementor_section` | Add new containers/sections or replace entire layout with native widgets | `elementor:write` |
+| **Visual Inspection** | `pressagent_capture_screenshot` | Capture headless browser screenshots (Desktop/Tablet/Mobile) with SSRF guard | `pages:read` |
+| **Settings & Cache** | `pressagent_read_option` | Read allow-listed WordPress or plugin options | `settings:read` |
+| | `pressagent_write_option` | Safely update allow-listed options with automatic pre-snapshots | `settings:write` |
+| | `pressagent_purge_cache` | Clear site caches (WP Rocket, LiteSpeed Cache, Elementor files) | `settings:write` |
+| | `pressagent_get_cache_status` | Check active caching systems, versions, and directory status | `settings:read` |
+| **Diagnostics & Logs** | `pressagent_read_debug_log` | Read recent parsed `debug.log` entries (filtered by error/warning/notice) | `debug:read` |
+| | `pressagent_diagnose_error` | Get structured AI-guided diagnostics and resolution steps for an error | `debug:read` |
+| **Security & Audits** | `pressagent_security_summary` | Inspect WordPress version, PHP version, writable permissions, and plugins | `security:read` |
+| **Dev / Scaffolding** | `pressagent_create_plugin` | Scaffold and generate custom WordPress plugins (Staging only) | `code:execute` |
 
 ---
 
-## Installation
+## 🔒 Security Architecture
 
-### WordPress Plugin
+Security is at the foundation of PressAgent:
 
-1. Clone this repository:
+1. **No Plaintext Tokens:** All API tokens are hashed using `PasswordHash` (WordPress core phpass) before storage. Stolen database dumps cannot expose raw tokens.
+2. **True WordPress RBAC Integration:** PressAgent integrates directly into WordPress's `determine_current_user` hook. The token resolves to an actual administrator account, so native WordPress permission gates (`edit_posts`, `edit_pages`, `manage_options`) work out of the box.
+3. **SSRF Guarding:** Headless screenshot requests are strictly verified against the configured `PRESSAGENT_WP_URL` origin. Attempting to target private IPs or external hosts will be rejected.
+4. **Path-Traversal Guards:** Debug log inspection is locked to the content directory via `realpath` validation. Reading arbitrary files (like `wp-config.php` or `/etc/passwd`) is strictly impossible.
+5. **Settings Allowlist & Privilege Escalation Protection:** Only explicitly allowed options can be read or written. Critical options like `users_can_register`, `active_plugins`, and `siteurl` require explicit administrator privileges and cannot be hijacked by lower scopes.
+6. **Action Guard Rollback Verification:** Rollbacks can only restore allowlisted options and cannot restore the allowlist itself to an insecure state.
+
+---
+
+## 🚀 Quickstart Guide
+
+### Step 1: Install the WordPress Plugin
+
+1. Clone or copy the `plugin/` directory into your WordPress plugins folder:
    ```bash
-   git clone https://github.com/your-org/pressagent.git
+   cd /path/to/wordpress/wp-content/plugins
+   git clone https://github.com/Noctis-Architect/press-agent.git
+   mv press-agent/plugin pressagent
    ```
+2. Activate the plugin:
+   - In WP Admin: Go to **Plugins → Installed Plugins** and activate **PressAgent**.
+   - Or via WP-CLI: `wp plugin activate pressagent`
+3. Open **Settings → PressAgent** in your WordPress dashboard:
+   - Click **Quick Setup (کلید پیش‌فرض)** to generate a standard access token.
+   - Copy the generated token string.
 
-2. Copy or symlink the `plugin/` directory to your WordPress plugins folder:
+### Step 2: Build the MCP Server
+
+1. Navigate to the `mcp-server` directory:
    ```bash
-   ln -s /path/to/pressagent/plugin /path/to/wordpress/wp-content/plugins/pressagent
-   ```
-
-3. Activate the plugin in WordPress admin → Plugins
-
-4. Go to **Settings → PressAgent** to:
-   - Generate an API token
-   - Configure RBAC scopes
-   - Set up the settings allow-list
-   - Enable/disable modules
-
-### MCP Server
-
-1. Install dependencies:
-   ```bash
-   cd mcp-server
+   cd /path/to/press-agent/mcp-server
    npm install
-   ```
-
-2. Build:
-   ```bash
    npm run build
    ```
-
-3. Configure environment variables:
+2. Test the build:
    ```bash
-   export PRESSAGENT_WP_URL="https://your-wordpress-site.com"
-   export PRESSAGENT_TOKEN="your-api-token-from-wp-admin"
+   node dist/index.js
    ```
 
-4. Add to your MCP client config (e.g., Claude Code):
-   ```json
-   {
-     "mcpServers": {
-       "pressagent": {
-         "command": "node",
-         "args": ["/path/to/pressagent/mcp-server/dist/index.js"],
-         "env": {
-           "PRESSAGENT_WP_URL": "https://your-site.com",
-           "PRESSAGENT_TOKEN": "your-token"
-         }
-       }
-     }
-   }
+### Step 3: Configure Your AI Assistant / IDE
+
+Add PressAgent to your MCP client configuration file:
+
+#### 🟣 Claude Desktop
+Edit `~/.config/Claude/claude_desktop_config.json` (Linux) or `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
+```json
+{
+  "mcpServers": {
+    "pressagent": {
+      "command": "node",
+      "args": ["/absolute/path/to/press-agent/mcp-server/dist/index.js"],
+      "env": {
+        "PRESSAGENT_WP_URL": "https://your-wordpress-site.com",
+        "PRESSAGENT_TOKEN": "your-generated-token-here"
+      }
+    }
+  }
+}
+```
+
+#### 🌐 Antigravity IDE / CLI
+Edit `/home/noctis/.gemini/config/mcp_config.json`:
+```json
+{
+  "mcpServers": {
+    "pressagent": {
+      "command": "node",
+      "args": ["/home/noctis/press-agent/mcp-server/dist/index.js"],
+      "env": {
+        "PRESSAGENT_WP_URL": "https://your-wordpress-site.com",
+        "PRESSAGENT_TOKEN": "your-generated-token-here"
+      }
+    }
+  }
+}
+```
+
+#### ⚡ Cursor / Windsurf
+In `.cursor/mcp.json` or your MCP workspace settings:
+```json
+{
+  "mcpServers": {
+    "pressagent": {
+      "command": "node",
+      "args": ["/absolute/path/to/press-agent/mcp-server/dist/index.js"],
+      "env": {
+        "PRESSAGENT_WP_URL": "https://your-wordpress-site.com",
+        "PRESSAGENT_TOKEN": "your-generated-token-here"
+      }
+    }
+  }
+}
+```
+
+---
+
+## 🌐 Connecting Local or Remote WordPress Instances
+
+### Scenario A: Remote WordPress Site
+If your WordPress site is hosted on a public domain with HTTPS (e.g. `https://example.com`), simply provide the URL in `PRESSAGENT_WP_URL`.
+
+### Scenario B: Local WordPress via SSH Reverse Tunnel
+If your WordPress site is running on your local machine (e.g. `http://localhost:8000`) while your AI assistant / Antigravity is running on a remote server:
+1. Run a reverse SSH tunnel from your local machine:
+   ```bash
+   ssh -R 8888:localhost:8000 user@remote-server-ip
+   ```
+2. Set your environment variable:
+   ```bash
+   PRESSAGENT_WP_URL="http://localhost:8888"
    ```
 
+### Scenario C: Local WordPress via Cloudflare Tunnel
+```bash
+npx cloudflared tunnel --url http://localhost:8000
+```
+Use the resulting public HTTPS URL in `PRESSAGENT_WP_URL`.
+
 ---
 
-## Configuration
+## 📋 RBAC Scopes Reference
 
-### Environment Variables
-
-| Variable | Description | Required |
+| Scope | Category | Description |
 |---|---|---|
-| `PRESSAGENT_WP_URL` | WordPress site URL (with https://) | ✅ |
-| `PRESSAGENT_TOKEN` | API token generated from WP admin | ✅ |
-
-### RBAC Scopes
-
-| Scope | Description |
-|---|---|
-| `pages:read` | List and read pages |
-| `pages:write` | Create and delete pages |
-| `elementor:read` | Read Elementor layouts |
-| `elementor:write` | Modify Elementor content |
-| `settings:read` | Read plugin settings |
-| `settings:write` | Modify plugin settings |
-| `debug:read` | Read debug logs |
-| `debug:write` | Trigger diagnostics |
-| `security:read` | View security reports |
-| `code:execute` | God Mode (staging only) |
+| `pages:read` | Content | Read and list WordPress pages and metadata |
+| `pages:write` | Content | Create, update status, and delete pages |
+| `elementor:read` | Builder | Read Elementor layout JSON trees and widget settings |
+| `elementor:write` | Builder | Add sections/containers, update widgets, and rebuild designs |
+| `appearance:css` | Design | Manage custom CSS styles and page templates |
+| `settings:read` | Settings | Read allowlisted options for core and plugins |
+| `settings:write` | Settings | Update allowlisted options (creates Action Guard snapshot) |
+| `cache:purge` | Cache | Invalidate and purge cache for WP Rocket, LiteSpeed, and Elementor |
+| `debug:read` | Diagnostics | Read and parse recent debug log errors |
+| `debug:write` | Diagnostics | Run diagnostic and troubleshooting commands |
+| `security:read` | Security | Inspect site health, plugin versions, and configuration status |
+| `code:execute` | Developer | God Mode: execute code and scaffold plugins (staging only) |
+| `*` or `god_mode` | Full Admin | Unrestricted access across all PressAgent endpoints |
 
 ---
 
-## Roadmap
+## 🧪 Testing & Verification
 
-| Phase | Content | Goal |
-|---|---|---|
-| **Phase 1** ✅ | Core (Auth/RBAC) + Action Guard + Generic Settings + Debug Log Parser | First installable & testable version |
-| **Phase 2** 🔄 | Elementor Adapter (internal save path + cache-safety) | Most complex & most used component |
-| **Phase 3** 📋 | Security Audit (WPHB integration) + God Mode (staging-only) | Complete ecosystem |
+PressAgent includes comprehensive syntax checks and unit tests:
 
----
+```bash
+# Verify PHP plugin syntax
+find plugin/ -name "*.php" -exec php -l {} \;
 
-## Action Guard: Reversible vs Non-Reversible
-
-This is a core safety feature unique to PressAgent:
-
-| Action Type | Example | Behavior |
-|---|---|---|
-| **Reversible** | Cache purge, disable broken plugin, change an option | Executed automatically with pre-snapshot for rollback |
-| **Non-Reversible** | Code changes, activate new plugin, security settings | Only **suggested** — requires explicit user confirmation |
+# Build TypeScript MCP server
+cd mcp-server && npm run build
+```
 
 ---
 
-## Contributing
+## 🛣️ Roadmap
 
-Contributions are welcome! This is an open-source project designed for collaboration.
+- [x] **Phase 1: Core Foundation** — Cryptographic RBAC, `determine_current_user` WordPress auth bridge, Action Guard™ snapshots & rollback, Settings allowlist.
+- [x] **Phase 2: Elementor Native Engine** — Native widget generation (no raw HTML), container hierarchy, Elementor internal save path, CSS cache purging.
+- [x] **Phase 3: Visual Inspection** — Headless browser screenshotting, multi-viewport previews (Desktop/Tablet/Mobile), SSRF protection.
+- [x] **Phase 4: Diagnostics & Self-Healing** — Regex-based debug log parsing, log traversal guards, AI diagnostic remediation.
+- [ ] **Phase 5: WooCommerce Deep Integration** — Direct manipulation of WooCommerce product tabs, custom attributes, variation pricing, and checkout builders.
+- [ ] **Phase 6: Gutenberg Block Support** — Native block template generation and block pattern transformation alongside Elementor.
+
+---
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome!
+Feel free to check the [issues page](https://github.com/Noctis-Architect/press-agent/issues).
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
 ---
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
-
----
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 <p align="center">
-  Built with ❤️ for the WordPress community
+  Built with ❤️ for the WordPress and AI developer communities.
 </p>
+
