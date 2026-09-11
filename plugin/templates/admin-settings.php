@@ -72,6 +72,36 @@ if ( isset( $_POST['pressagent_save_allowlist'] ) && check_admin_referer( 'press
     $alert_type = 'success';
 }
 
+// Handle GitHub Update actions
+if ( isset( $_POST['pressagent_check_update'] ) && check_admin_referer( 'pressagent_check_update_nonce' ) ) {
+    $update_info = class_exists( 'PressAgent_Updater' ) ? PressAgent_Updater::check_update( true ) : array();
+    if ( ! empty( $update_info['has_update'] ) ) {
+        $alert_message_en = 'Update check complete: A new version (v' . esc_html( $update_info['remote_version'] ) . ') is available on GitHub!';
+        $alert_message_fa = 'بررسی انجام شد: نسخه جدیدتر (نسخه ' . esc_html( $update_info['remote_version'] ) . ') در مخزن گیت‌هاب در دسترس است!';
+        $alert_type = 'warning';
+    } else {
+        $alert_message_en = 'PressAgent is up to date with GitHub (v' . esc_html( $update_info['current_version'] ) . ').';
+        $alert_message_fa = 'افزونه شما با آخرین نسخه موجود در گیت‌هاب همگام است (نسخه ' . esc_html( $update_info['current_version'] ) . ').';
+        $alert_type = 'success';
+    }
+}
+
+if ( isset( $_POST['pressagent_trigger_update'] ) && check_admin_referer( 'pressagent_trigger_update_nonce' ) ) {
+    $res = class_exists( 'PressAgent_Updater' ) ? PressAgent_Updater::perform_update() : new WP_Error( 'not_found', 'Updater class not found.' );
+    if ( is_wp_error( $res ) ) {
+        $alert_message_en = 'Update failed: ' . $res->get_error_message();
+        $alert_message_fa = 'خطا در نصب به‌روزرسانی: ' . $res->get_error_message();
+        $alert_type = 'error';
+    } else {
+        $alert_message_en = 'PressAgent was successfully updated from GitHub to version ' . esc_html( $res['new_version'] ) . ( ! empty( $res['commit_sha'] ) ? ' (' . esc_html( $res['commit_sha'] ) . ')' : '' ) . '! All caches purged.';
+        $alert_message_fa = 'افزونه PressAgent با موفقیت از گیت‌هاب به نسخه ' . esc_html( $res['new_version'] ) . ( ! empty( $res['commit_sha'] ) ? ' (' . esc_html( $res['commit_sha'] ) . ')' : '' ) . ' به‌روزرسانی شد و کش‌ها پاکسازی گردیدند.';
+        $alert_type = 'success';
+    }
+}
+
+$update_info = class_exists( 'PressAgent_Updater' ) ? PressAgent_Updater::check_update( false ) : array();
+$has_update = ! empty( $update_info['has_update'] );
+
 $tokens = get_option( 'pressagent_tokens', array() );
 $snapshots = PressAgent_Action_Guard::get_snapshots( 50 );
 $total_snapshots = PressAgent_Action_Guard::count_snapshots();
@@ -744,6 +774,40 @@ $has_active_token = ! empty( $active_token );
         </div>
     <?php endif; ?>
 
+    <!-- GitHub Update Notification Banner -->
+    <?php if ( ! empty( $has_update ) ) : ?>
+        <div class="pa-alert pa-alert-warning" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; border-left: 4px solid #d97706; background: #fffbeb;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 32px; height: 32px; border-radius: 6px; background: #fef3c7; border: 1px solid #fde68a; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                    ⚡
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 13.5px; color: #92400e;">
+                        <span class="pa-en">New Update Available: v<?php echo esc_html( $update_info['remote_version'] ); ?></span>
+                        <span class="pa-fa">نسخه جدید در دسترس است: نسخه <?php echo esc_html( $update_info['remote_version'] ); ?></span>
+                    </div>
+                    <div style="font-size: 12px; color: #b45309; margin-top: 2px;">
+                        <span class="pa-en">Current: v<?php echo esc_html( $update_info['current_version'] ); ?> &bull; A newer release is available on GitHub. You can upgrade safely with 1-click.</span>
+                        <span class="pa-fa">نسخه فعلی: <?php echo esc_html( $update_info['current_version'] ); ?> &bull; نگارش جدیدتری در گیت‌هاب موجود است. می‌توانید با یک کلیک و با ایمنی کامل ارتقا دهید.</span>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <form method="post" style="margin: 0;" onsubmit="return confirm('Upgrade PressAgent to v<?php echo esc_js( $update_info['remote_version'] ); ?> directly from GitHub? Action Guard will record a safety snapshot.');">
+                    <?php wp_nonce_field( 'pressagent_trigger_update_nonce' ); ?>
+                    <button type="submit" name="pressagent_trigger_update" class="pa-btn pa-btn-primary pa-btn-sm" style="background: #2563eb; color: #ffffff;">
+                        <span class="pa-en">Update Now</span>
+                        <span class="pa-fa">نصب به‌روزرسانی</span>
+                    </button>
+                </form>
+                <button type="button" class="pa-btn pa-btn-secondary pa-btn-sm" onclick="switchTab('updates', document.querySelector('.pa-tab-link[onclick*=\'updates\']'))">
+                    <span class="pa-en">View Details</span>
+                    <span class="pa-fa">مشاهده جزئیات</span>
+                </button>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- Newly Generated Token Banner -->
     <?php if ( isset( $new_token ) ) : ?>
         <div class="pa-token-box">
@@ -788,6 +852,13 @@ $has_active_token = ! empty( $active_token );
         <button type="button" class="pa-tab-link" onclick="switchTab('diagnostics', this)">
             <span class="pa-en">Diagnostics &amp; Logs</span>
             <span class="pa-fa">عیب‌یابی و لاگ‌ها</span>
+        </button>
+        <button type="button" class="pa-tab-link" onclick="switchTab('updates', this)">
+            <span class="pa-en">Updates &amp; Sync</span>
+            <span class="pa-fa">به‌روزرسانی و گیت‌هاب</span>
+            <?php if ( ! empty( $has_update ) ) : ?>
+                <span class="pa-chip pa-chip-danger" style="padding: 1px 6px; font-size: 10px; line-height: 1.2;">NEW</span>
+            <?php endif; ?>
         </button>
     </div>
 
@@ -1642,6 +1713,190 @@ $has_active_token = ! empty( $active_token );
             <?php endif; ?>
         </div>
     </div>
+
+    <!-- ==================== TAB 6: UPDATES & GITHUB SYNC ==================== -->
+    <div id="tab-updates" class="pa-tab-pane">
+        <!-- Stat Grid -->
+        <div class="pa-stats-grid">
+            <div class="pa-stat-card">
+                <div class="pa-stat-label">
+                    <span class="pa-en">Installed Version</span>
+                    <span class="pa-fa">نسخه نصب‌شده</span>
+                </div>
+                <div class="pa-stat-val">v<?php echo esc_html( ! empty( $update_info['current_version'] ) ? $update_info['current_version'] : '1.0.0' ); ?></div>
+                <div class="pa-stat-sub">
+                    <span class="pa-en">Active on this WordPress site</span>
+                    <span class="pa-fa">فعال روی این سایت وردپرسی</span>
+                </div>
+            </div>
+            <div class="pa-stat-card">
+                <div class="pa-stat-label">
+                    <span class="pa-en">Latest GitHub Version</span>
+                    <span class="pa-fa">آخرین نسخه گیت‌هاب</span>
+                </div>
+                <div class="pa-stat-val" style="display: flex; align-items: center; gap: 8px;">
+                    v<?php echo esc_html( ! empty( $update_info['remote_version'] ) ? $update_info['remote_version'] : '1.0.0' ); ?>
+                    <?php if ( ! empty( $has_update ) ) : ?>
+                        <span class="pa-chip pa-chip-danger" style="font-size: 11px;">UPDATE READY</span>
+                    <?php else : ?>
+                        <span class="pa-chip pa-chip-success" style="font-size: 11px;">UP TO DATE</span>
+                    <?php endif; ?>
+                </div>
+                <div class="pa-stat-sub">
+                    <span class="pa-en">From <code>Noctis-Architect/press-agent</code></span>
+                    <span class="pa-fa">از مخزن رسمی <code>Noctis-Architect/press-agent</code></span>
+                </div>
+            </div>
+            <div class="pa-stat-card">
+                <div class="pa-stat-label">
+                    <span class="pa-en">Tracked Branch</span>
+                    <span class="pa-fa">شاخه رهگیری‌شده</span>
+                </div>
+                <div class="pa-stat-val pa-mono" style="font-size: 17px; color: var(--pa-primary);">
+                    <?php echo esc_html( ! empty( $update_info['branch'] ) ? $update_info['branch'] : 'main' ); ?>
+                </div>
+                <div class="pa-stat-sub">
+                    <span class="pa-en">Production deployment branch</span>
+                    <span class="pa-fa">شاخه اصلی استقرار پایدار</span>
+                </div>
+            </div>
+            <div class="pa-stat-card">
+                <div class="pa-stat-label">
+                    <span class="pa-en">Last Checked</span>
+                    <span class="pa-fa">آخرین بررسی</span>
+                </div>
+                <div class="pa-stat-val pa-mono" style="font-size: 13px; font-weight: 600; line-height: 1.4;">
+                    <?php echo esc_html( ! empty( $update_info['last_checked'] ) ? $update_info['last_checked'] : 'Pending check' ); ?>
+                </div>
+                <div class="pa-stat-sub" style="color: var(--pa-success);">
+                    <span class="pa-en">Auto-check: Twice daily active</span>
+                    <span class="pa-fa">بررسی خودکار: دو بار در روز فعال</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Action Panel -->
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <div>
+                    <h2 class="pa-card-title">
+                        <span class="pa-en">GitHub Update &amp; Synchronization</span>
+                        <span class="pa-fa">موتور همگام‌سازی و به‌روزرسانی گیت‌هاب</span>
+                    </h2>
+                    <div class="pa-card-desc">
+                        <span class="pa-en">Download official plugin code directly from GitHub and install it in-place with zero downtime.</span>
+                        <span class="pa-fa">دریافت مستقیم فایل‌های رسمی از مخزن گیت‌هاب و نصب آنی آن‌ها در محل افزونه بدون قطعی.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid var(--pa-border); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700; color: var(--pa-text-main);">
+                            <?php if ( ! empty( $has_update ) ) : ?>
+                                <span class="pa-en">🚀 A newer release (v<?php echo esc_html( $update_info['remote_version'] ); ?>) is waiting to be installed.</span>
+                                <span class="pa-fa">🚀 نسخه جدیدتر (نسخه <?php echo esc_html( $update_info['remote_version'] ); ?>) آماده نصب است.</span>
+                            <?php else : ?>
+                                <span class="pa-en">✓ Your PressAgent installation is fully up to date with GitHub main.</span>
+                                <span class="pa-fa">✓ افزونه PressAgent شما با آخرین نسخه شاخه main گیت‌هاب کاملاً همگام است.</span>
+                            <?php endif; ?>
+                        </div>
+                        <div style="font-size: 12px; color: var(--pa-text-muted); margin-top: 4px;">
+                            <span class="pa-en">Target Package: <code>https://github.com/Noctis-Architect/press-agent/archive/refs/heads/main.zip</code></span>
+                            <span class="pa-fa">بسته هدف: <code>https://github.com/Noctis-Architect/press-agent/archive/refs/heads/main.zip</code></span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <!-- Check updates button -->
+                        <form method="post" style="margin: 0;">
+                            <?php wp_nonce_field( 'pressagent_check_update_nonce' ); ?>
+                            <button type="submit" name="pressagent_check_update" class="pa-btn pa-btn-secondary">
+                                <span class="pa-en">Check for Updates</span>
+                                <span class="pa-fa">بررسی مجدد گیت‌هاب</span>
+                            </button>
+                        </form>
+
+                        <!-- Direct Update / Force Sync button -->
+                        <form method="post" style="margin: 0;" onsubmit="return confirm('Download and apply latest code from GitHub now? Action Guard will automatically record a safety rollback snapshot.');">
+                            <?php wp_nonce_field( 'pressagent_trigger_update_nonce' ); ?>
+                            <?php if ( ! empty( $has_update ) ) : ?>
+                                <button type="submit" name="pressagent_trigger_update" class="pa-btn pa-btn-primary" style="background: #2563eb; color: #ffffff;">
+                                    <span class="pa-en">Install Update Now (v<?php echo esc_html( $update_info['remote_version'] ); ?>)</span>
+                                    <span class="pa-fa">نصب به‌روزرسانی (نسخه <?php echo esc_html( $update_info['remote_version'] ); ?>)</span>
+                                </button>
+                            <?php else : ?>
+                                <button type="submit" name="pressagent_trigger_update" class="pa-btn pa-btn-secondary" style="border-color: #94a3b8;">
+                                    <span class="pa-en">Force Re-sync with GitHub main</span>
+                                    <span class="pa-fa">همگام‌سازی مجدد با شاخه main</span>
+                                </button>
+                            <?php endif; ?>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Guard Safety Guarantee Notice -->
+            <div style="display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;">
+                <div style="font-size: 18px; line-height: 1;">🛡️</div>
+                <div>
+                    <strong style="font-size: 13px; color: #1e40af; display: block; margin-bottom: 2px;">
+                        <span class="pa-en">Action Guard™ Automated Rollback Protection</span>
+                        <span class="pa-fa">محافظت خودکار و تضمین بازگردانی با Action Guard™</span>
+                    </strong>
+                    <span style="font-size: 12px; color: #1e3a8a; line-height: 1.5;">
+                        <span class="pa-en">Every update automatically captures an Action Guard safety snapshot prior to extracting files. If needed, you can restore or audit prior states in the Rollback tab.</span>
+                        <span class="pa-fa">قبل از استخراج و جایگزینی هرگونه فایل، سامانه Action Guard یک اسنپ‌شات امنیتی ثبت می‌کند. در صورت تمایل می‌توانید در تب «محافظت و بازگردانی» وضعیت را در هر لحظه رول‌بک کنید.</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Latest Commit & GitHub Metadata -->
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <div>
+                    <h2 class="pa-card-title">
+                        <span class="pa-en">Latest GitHub Commit Metadata</span>
+                        <span class="pa-fa">مشخصات آخرین کامیت ثبت‌شده در گیت‌هاب</span>
+                    </h2>
+                    <div class="pa-card-desc">
+                        <span class="pa-en">Live tracking of the most recent commit on the <code>main</code> branch.</span>
+                        <span class="pa-fa">اطلاعات زنده آخرین تغییرات و کامیت اعمال‌شده روی شاخه <code>main</code>.</span>
+                    </div>
+                </div>
+                <a href="https://github.com/Noctis-Architect/press-agent/commits/main" target="_blank" class="pa-btn pa-btn-secondary pa-btn-sm">
+                    <span class="pa-en">Commit History &rarr;</span>
+                    <span class="pa-fa">تاریخچه کامیت‌ها &larr;</span>
+                </a>
+            </div>
+
+            <?php if ( ! empty( $update_info['commit_sha'] ) ) : ?>
+                <div class="pa-terminal">
+                    <div class="pa-terminal-header">
+                        <div class="pa-terminal-title">
+                            <span class="pa-terminal-dots">
+                                <span class="pa-terminal-dot"></span>
+                                <span class="pa-terminal-dot"></span>
+                                <span class="pa-terminal-dot"></span>
+                            </span>
+                            git commit: <?php echo esc_html( $update_info['commit_sha'] ); ?> &bull; <?php echo esc_html( ! empty( $update_info['commit_date'] ) ? date_i18n( 'Y-m-d H:i', strtotime( $update_info['commit_date'] ) ) : '' ); ?>
+                        </div>
+                        <a href="https://github.com/Noctis-Architect/press-agent/commit/<?php echo esc_attr( $update_info['commit_sha'] ); ?>" target="_blank" style="color: #94a3b8; font-size: 11px; text-decoration: none;" class="pa-mono">
+                            View on GitHub &nearr;
+                        </a>
+                    </div>
+                    <pre class="pa-terminal-body" style="color: #e2e8f0; font-family: var(--pa-font-mono); font-size: 12.5px;"><?php echo esc_html( ! empty( $update_info['commit_message'] ) ? $update_info['commit_message'] : 'Latest commit' ); ?></pre>
+                </div>
+            <?php else : ?>
+                <div style="padding: 20px; text-align: center; color: var(--pa-text-muted); font-size: 12.5px;">
+                    <span class="pa-en">Commit details will appear here after your first GitHub update check.</span>
+                    <span class="pa-fa">اطلاعات آخرین کامیت پس از اولین استعلام از گیت‌هاب در این بخش نمایش می‌یابد.</span>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -1702,9 +1957,18 @@ function switchTab(tabId, tabEl) {
     } catch(e) {}
 }
 
-// Restore user active tab on load
+// Restore user active tab on load (with hash check)
 (function() {
     try {
+        var hash = window.location.hash.replace('#tab-', '').replace('#', '');
+        if (hash && document.getElementById('tab-' + hash)) {
+            var hashBtn = document.querySelector('.pa-tab-link[onclick*="' + hash + '"]');
+            if (hashBtn) {
+                switchTab(hash, hashBtn);
+                return;
+            }
+        }
+
         var savedTab = localStorage.getItem('pressagent_tab');
         if (savedTab) {
             var btn = document.querySelector('.pa-tab-link[onclick*="' + savedTab + '"]');
