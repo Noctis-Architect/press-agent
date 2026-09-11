@@ -7,7 +7,7 @@
 </p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/Noctis-Architect/press-agent)
+[![Version](https://img.shields.io/badge/version-1.0.1-green.svg)](https://github.com/Noctis-Architect/press-agent)
 [![WordPress](https://img.shields.io/badge/WordPress-5.8%2B-blue.svg)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3%2B-blue.svg)](https://www.typescriptlang.org)
@@ -140,20 +140,38 @@ Security is at the foundation of PressAgent:
 
 ## 🚀 Quickstart Guide
 
+### 📦 Pre-Packaged Downloads (Direct Release ZIPs)
+
+If you prefer ready-to-use packages without building from source or cloning the repository, download the compiled assets from the [GitHub Releases (v1.0.1)](https://github.com/Noctis-Architect/press-agent/releases/tag/v1.0.1):
+
+| Package | Download Link | Description | How to Install |
+| :--- | :--- | :--- | :--- |
+| **WordPress Plugin** | [📥 `pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-wordpress-plugin.zip) | Ready-to-install WordPress plugin zip (includes auto-updater) | In WP Admin: **Plugins → Add New → Upload Plugin** |
+| **MCP Server** | [📥 `pressagent-mcp-server.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-mcp-server.zip) | Standalone pre-compiled TypeScript MCP Server with `dist/` | Unpack zip, run `npm install --omit=dev`, and point client to `dist/index.js` |
+
+---
+
 ### Step 1: Install the WordPress Plugin
 
+#### Option A: 1-Click Upload (Recommended)
+1. Download [`pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-wordpress-plugin.zip) from the latest release.
+2. In WP Admin, navigate to **Plugins → Add New Plugin → Upload Plugin**, choose the zip file, and click **Install Now**.
+3. Click **Activate Plugin**.
+
+#### Option B: From Source / Git Clone
 1. Clone or copy the `plugin/` directory into your WordPress plugins folder:
    ```bash
    cd /path/to/wordpress/wp-content/plugins
    git clone https://github.com/Noctis-Architect/press-agent.git
    mv press-agent/plugin pressagent
    ```
-2. Activate the plugin:
-   - In WP Admin: Go to **Plugins → Installed Plugins** and activate **PressAgent**.
-   - Or via WP-CLI: `wp plugin activate pressagent`
-3. Open **Settings → PressAgent** in your WordPress dashboard:
-   - Click **Quick Setup (کلید پیش‌فرض)** to generate a standard access token.
+2. Activate the plugin via WP Admin (**Plugins → Installed Plugins**) or via WP-CLI (`wp plugin activate pressagent`).
+
+#### Configuration:
+3. Click on the dedicated **PressAgent** menu item in your WordPress admin sidebar:
+   - Click **Quick Setup (کلید پیش‌فرض)** to generate a standard access token with full capabilities.
    - Copy the generated token string.
+   - *(Note: PressAgent also includes an **Auto-Updater** tab to check and pull the latest releases directly from GitHub with 1-click).*
 
 ### Step 2: Build the MCP Server
 
@@ -451,9 +469,26 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ## 🚀 راهنمای راه‌اندازی سریع
 
+### 📦 دانلود بسته‌های آماده (فایل‌های زیپ ریلیز)
+
+اگر نمی‌خواهید سورس پروژه را با Git کلون کنید یا سرور MCP را خودتان بیلد نمایید، بسته‌های آماده و کامپایل‌شده را مستقیماً از [صفحه ریلیزهای گیت‌هاب (v1.0.1)](https://github.com/Noctis-Architect/press-agent/releases/tag/v1.0.1) دانلود کنید:
+
+| بسته | لینک دانلود مستقیم | توضیحات | روش راه‌اندازی |
+| :--- | :--- | :--- | :--- |
+| **افزونه وردپرس** | [📥 `pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-wordpress-plugin.zip) | فایل زیپ استاندارد افزونه آماده آپلود (مجهز به سیستم خودکار آپدیت از گیت‌هاب) | در پیشخوان وردپرس: **افزونه‌ها ← افزودن افزونه تازه ← بارگذاری افزونه** |
+| **سرور MCP** | [📥 `pressagent-mcp-server.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-mcp-server.zip) | بسته سرور پیش‌کامپایل‌شده تایپ‌اسکریپت همراه با پوشه `dist/` | آنزیپ کنید، دستور `npm install --omit=dev` را بزنید و در هوش مصنوعی به `dist/index.js` اشاره کنید |
+
+---
+
 ### گام اول: نصب افزونه روی وردپرس
 
-۱. فایل‌های دایرکتوری `plugin/` را درون پوشه افزونه‌های وردپرس کپی کنید:
+#### روش اول: بارگذاری مستقیم فایل زیپ (پیشنهادی و آسان)
+۱. فایل [`pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-wordpress-plugin.zip) را دانلود کنید.
+۲. در پیشخوان وردپرس به مسیر **افزونه‌ها ← افزودن افزونه تازه ← بارگذاری افزونه** رفته، فایل را انتخاب و دکمه **نصب** را بزنید.
+۳. روی دکمه **فعال‌سازی افزونه** کلیک کنید.
+
+#### روش دوم: از طریق Git و سورس‌کد
+۱. فایل‌های دایرکتوری `plugin/` را درون پوشه افزونه‌های وردپرس کلون یا کپی کنید:
 ```bash
 cd /path/to/wordpress/wp-content/plugins
 git clone https://github.com/Noctis-Architect/press-agent.git
@@ -462,9 +497,12 @@ mv press-agent/plugin pressagent
 ۲. افزونه را فعال کنید:
 - از طریق پیشخوان وردپرس بخش **افزونه‌ها**، گزینه **PressAgent** را فعال کنید.
 - یا با دستور WP-CLI: `wp plugin activate pressagent`
-۳. وارد منوی **تنظیمات ← PressAgent** شوید:
+
+#### پیکربندی اولیه:
+۳. وارد منوی اختصاصی **PressAgent** در سایدبار اصلی پیشخوان وردپرس شوید:
 - روی دکمه **کلید پیش‌فرض (Quick Setup)** کلیک کنید تا یک کلید استاندارد با تمامی دسترسی‌های لازم صادر شود.
 - توکن تولیدشده را کپی کنید.
+- *(نکته: افزونه دارای تب **بروزرسانی (Updater)** اختصاصی با هشدار بج آپدیت است که در صورت انتشار نسخه جدید در گیت‌هاب به شما هشدار داده و با یک کلیک آپدیت می‌کند).*
 
 ### گام دوم: بیلد و کامپایل سرور MCP
 
