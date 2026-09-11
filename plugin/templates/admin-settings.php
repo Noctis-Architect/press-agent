@@ -26,7 +26,7 @@ if ( isset( $_POST['pressagent_rollback_snapshot'] ) && check_admin_referer( 'pr
 // Handle quick default token generation
 if ( isset( $_POST['pressagent_quick_setup'] ) && check_admin_referer( 'pressagent_quick_setup_nonce' ) ) {
     $default_scopes = array( 'pages:read', 'pages:write', 'elementor:read', 'elementor:write', 'settings:read', 'settings:write', 'cache:purge', 'debug:read', 'debug:write', 'security:read' );
-    $new_token = PressAgent_Auth::generate_token( 'کلید پیش‌فرض (' . current_time( 'Y/m/d H:i' ) . ')', $default_scopes );
+    $new_token = PressAgent_Auth::generate_token( 'کلید پیش‌فرض (' . current_time( 'Y/m/d H:i' ) . ')', $default_scopes, get_current_user_id() );
     $alert_message = '🎉 کلید دسترسی استاندارد با موفقیت ساخته شد و کدهای اتصال IDE فعال شدند!';
     $alert_type = 'success';
 }
@@ -39,7 +39,7 @@ if ( isset( $_POST['pressagent_generate_token'] ) && check_admin_referer( 'press
         $alert_message = 'لطفاً حداقل یک دسترسی را برای کلید انتخاب کنید.';
         $alert_type = 'error';
     } else {
-        $new_token = PressAgent_Auth::generate_token( $label, $scopes );
+        $new_token = PressAgent_Auth::generate_token( $label, $scopes, get_current_user_id() );
         $alert_message = '🎉 کلید دسترسی اختصاصی با موفقیت ساخته شد و کدهای کانفیگ فعال شدند!';
         $alert_type = 'success';
     }

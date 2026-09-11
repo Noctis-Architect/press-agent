@@ -61,10 +61,9 @@ class PressAgent_Elementor_Adapter {
             PressAgent_Action_Guard::create_snapshot( 'update_elementor', array( 'page_id' => $page_id ) );
         }
 
-        // Elementor save requires edit_posts; if the authenticated token user is not
-        // a logged-in user with that capability, refuse instead of impersonating an admin.
-        if ( ! current_user_can( 'edit_posts' ) ) {
-            return new WP_Error( 'forbidden', 'Elementor writes require a logged-in user with edit_posts capability.', array( 'status' => 403 ) );
+        // Elementor save requires edit_posts or edit_pages capability on the authenticated user.
+        if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) ) {
+            return new WP_Error( 'forbidden', 'Elementor writes require a logged-in user with edit_posts or edit_pages capability.', array( 'status' => 403 ) );
         }
 
         $document = \Elementor\Plugin::$instance->documents->get( $page_id );
