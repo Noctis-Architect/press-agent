@@ -5,14 +5,44 @@ export function registerDevTools(tools: any[], handlers: Map<string, (args: any)
   // 1. Create Plugin
   tools.push({
     name: "pressagent_create_plugin",
-    description: "Create and scaffold a new custom WordPress plugin (God Mode)",
+    description: `Create and scaffold a production-grade WordPress plugin directly into wp-content/plugins/ (God Mode).
+
+🛡️ STRICT WORDPRESS & SECURITY STANDARDS (MANDATORY):
+1. HEADER: Must include standard WordPress plugin header comments:
+   /*
+    * Plugin Name: My Custom Feature
+    * Description: Purpose of plugin
+    * Version: 1.0.0
+    * Author: AI Engineer
+    * License: GPL v2 or later
+    */
+2. SECURITY GUARD: Always prevent direct script access at top of file:
+   defined('ABSPATH') || exit;
+3. DATA SANITIZATION & ESCAPING:
+   - Always sanitize inputs: sanitize_text_field(), absint(), sanitize_email(), wp_unslash().
+   - Always escape outputs: esc_html(), esc_attr(), esc_url().
+   - Use parameterized queries with $wpdb->prepare() for custom SQL.
+4. AUTHORIZATION: Protect admin actions with current_user_can('manage_options') and verify nonces.
+5. PRE-VALIDATION: PressAgent automatically performs syntax validation via 'php -l' before saving. If a syntax error is detected, the operation aborts to protect the site from downtime.`,
     inputSchema: {
       type: "object",
       properties: {
-        name: { type: "string", description: "Display name or slug of the plugin" },
-        code: { type: "string", description: "Full PHP code of the plugin" },
-        description: { type: "string", description: "Optional description of the plugin" },
-        activate: { type: "boolean", description: "Whether to activate immediately (default: true)" }
+        name: {
+          type: "string",
+          description: "Human-readable plugin name (e.g. 'PressAgent Analytics Hub')"
+        },
+        code: {
+          type: "string",
+          description: "Complete PHP code for the plugin, including <?php, plugin header, and secure implementation"
+        },
+        description: {
+          type: "string",
+          description: "Brief description of the plugin functionality"
+        },
+        activate: {
+          type: "boolean",
+          description: "Whether to immediately activate the plugin after creation (default: true)"
+        }
       },
       required: ["name", "code"]
     }
@@ -32,11 +62,14 @@ export function registerDevTools(tools: any[], handlers: Map<string, (args: any)
   // 2. Delete Plugin
   tools.push({
     name: "pressagent_delete_plugin",
-    description: "Delete an existing custom WordPress plugin (God Mode)",
+    description: "Delete an existing custom WordPress plugin directory and files (God Mode / Scaffolding cleanup).",
     inputSchema: {
       type: "object",
       properties: {
-        slug: { type: "string", description: "Slug/folder name of the plugin to delete" }
+        slug: {
+          type: "string",
+          description: "Slug/folder name of the custom plugin to delete (e.g. 'my-custom-plugin')"
+        }
       },
       required: ["slug"]
     }
@@ -53,12 +86,19 @@ export function registerDevTools(tools: any[], handlers: Map<string, (args: any)
   // 3. Toggle Plugin
   tools.push({
     name: "pressagent_toggle_plugin",
-    description: "Activate or deactivate a WordPress plugin (God Mode)",
+    description: "Activate or deactivate a WordPress plugin safely via WordPress core API.",
     inputSchema: {
       type: "object",
       properties: {
-        slug: { type: "string", description: "Slug/folder name of the plugin" },
-        action: { type: "string", enum: ["activate", "deactivate"], description: "Action to perform" }
+        slug: {
+          type: "string",
+          description: "Slug or relative file path of the plugin (e.g. 'woocommerce/woocommerce.php' or 'pressagent-custom')"
+        },
+        action: {
+          type: "string",
+          enum: ["activate", "deactivate"],
+          description: "Target action: 'activate' or 'deactivate'"
+        }
       },
       required: ["slug", "action"]
     }
@@ -76,11 +116,16 @@ export function registerDevTools(tools: any[], handlers: Map<string, (args: any)
   // 4. Run Snippet
   tools.push({
     name: "pressagent_run_snippet",
-    description: "Execute a raw PHP snippet inside WordPress environment and capture output (God Mode)",
+    description: `Execute an isolated PHP snippet inside the live WordPress runtime and capture returned stdout/stderr (God Mode).
+
+Use for diagnostics, testing hooks, inspecting WP options, querying $wpdb, or testing integrations.`,
     inputSchema: {
       type: "object",
       properties: {
-        code: { type: "string", description: "PHP code snippet to execute" }
+        code: {
+          type: "string",
+          description: "PHP code to run inside WordPress runtime (without enclosing <?php tags or with them)"
+        }
       },
       required: ["code"]
     }
@@ -94,3 +139,4 @@ export function registerDevTools(tools: any[], handlers: Map<string, (args: any)
     return client.runSnippet(parsed.code);
   });
 }
+

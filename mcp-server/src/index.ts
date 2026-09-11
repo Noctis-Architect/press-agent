@@ -10,6 +10,7 @@ import { registerDebugLogTools } from "./tools/debug-log.js";
 import { registerSecurityTools } from "./tools/security.js";
 import { registerDevTools } from "./tools/dev.js";
 import { registerScreenshotTools } from "./tools/screenshot.js";
+import { registerPrompts } from "./prompts/index.js";
 
 async function main() {
   const wpUrl = process.env.PRESSAGENT_WP_URL;
@@ -25,11 +26,12 @@ async function main() {
   const server = new Server(
     {
       name: "pressagent",
-      version: "1.0.0"
+      version: "1.0.1"
     },
     {
       capabilities: {
-        tools: {}
+        tools: {},
+        prompts: {}
       }
     }
   );
@@ -45,6 +47,9 @@ async function main() {
   registerDebugLogTools(tools, handlers, client);
   registerSecurityTools(tools, handlers, client);
   registerDevTools(tools, handlers, client);
+
+  // Register MCP Prompts
+  registerPrompts(server);
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: tools

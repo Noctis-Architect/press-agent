@@ -27,7 +27,17 @@ export function registerScreenshotTools(
 ) {
   tools.push({
     name: "pressagent_capture_screenshot",
-    description: "Capture a visual screenshot of a WordPress page (desktop, mobile, or tablet) using headless browser to inspect layout, styling, and visual rendering.",
+    description: `Capture a high-fidelity visual screenshot of a WordPress page (desktop, mobile, or tablet) using a headless browser.
+
+👁️ MANDATORY VISUAL QA WORKFLOW FOR AI AGENTS:
+AI coding agents are visually blind without rendered browser screenshots. Relying only on raw code or JSON creates severe bugs (vertical stacking instead of horizontal rows, broken line wraps, unreadable contrast, and mobile cutoffs).
+
+FOLLOW THIS 5-STEP QA LOOP FOR EVERY PAGE CREATION OR REDESIGN:
+1. INVALIDATE CACHE: Always run "pressagent_purge_cache({ plugin_slug: 'all' })" BEFORE capturing screenshot so new CSS is compiled.
+2. DESKTOP CAPTURE: Call this tool with viewport: "desktop" (1280x800) to verify broad layout, grid alignment, hero banners, and spacing.
+3. VISUAL INSPECTION: Inspect the returned "image_path" using your file viewer / image inspector (e.g. view_file).
+4. MOBILE RESPONSIVENESS: Call this tool with viewport: "mobile" (375x812) to verify that cards stack gracefully, fonts scale properly, and no horizontal scrollbars occur.
+5. ITERATIVE REFINEMENT: If visual flaws exist (e.g., misaligned icons, overlapping headers, broken container gaps), refine your Elementor settings and re-capture until pixel-perfect.`,
     inputSchema: {
       type: "object",
       properties: {
