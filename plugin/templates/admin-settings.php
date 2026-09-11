@@ -99,6 +99,18 @@ if ( isset( $_POST['pressagent_trigger_update'] ) && check_admin_referer( 'press
     }
 }
 
+// Handle God Mode toggle
+if ( isset( $_POST['pressagent_toggle_god_mode'] ) && check_admin_referer( 'pressagent_toggle_god_mode_nonce' ) ) {
+    $current_god = get_option( 'pressagent_god_mode_enabled', 'yes' );
+    $new_god = ( 'yes' === $current_god ) ? 'no' : 'yes';
+    update_option( 'pressagent_god_mode_enabled', $new_god );
+    $alert_message_en = 'God Mode ' . ( 'yes' === $new_god ? 'ENABLED. AI agents can now scaffold plugins.' : 'DISABLED.' );
+    $alert_message_fa = 'گاد مود ' . ( 'yes' === $new_god ? 'فعال شد. اکنون ایجنت‌ها امکان ساخت و مدیریت افزونه‌ها را دارند.' : 'غیرفعال شد.' );
+    $alert_type = ( 'yes' === $new_god ) ? 'warning' : 'success';
+}
+
+$god_mode_active = class_exists( 'PressAgent_Code_Executor' ) ? PressAgent_Code_Executor::is_enabled() : false;
+
 $update_info = class_exists( 'PressAgent_Updater' ) ? PressAgent_Updater::check_update( false ) : array();
 $has_update = ! empty( $update_info['has_update'] );
 
@@ -1138,6 +1150,46 @@ $has_active_token = ! empty( $active_token );
 
     <!-- ==================== TAB 2: ACCESS TOKENS & RBAC ==================== -->
     <div id="tab-tokens" class="pa-tab-pane">
+        <!-- God Mode Status Banner / Toggle -->
+        <div class="pa-card" style="border-left: 4px solid <?php echo $god_mode_active ? '#ef4444' : '#64748b'; ?>; background: <?php echo $god_mode_active ? '#fff5f5' : '#f8fafc'; ?>;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 22px;">⚡</span>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <strong style="font-size: 14px; color: var(--pa-text-main);">
+                                <span class="pa-en">Developer God Mode Engine</span>
+                                <span class="pa-fa">موتور توسعه و گاد مود (God Mode)</span>
+                            </strong>
+                            <?php if ( $god_mode_active ) : ?>
+                                <span class="pa-chip pa-chip-danger" style="font-size: 10px;">ACTIVE / فعال</span>
+                            <?php else : ?>
+                                <span class="pa-chip pa-chip-neutral" style="font-size: 10px;">DISABLED / قفل</span>
+                            <?php endif; ?>
+                        </div>
+                        <div style="font-size: 12px; color: var(--pa-text-muted); margin-top: 2px;">
+                            <span class="pa-en">Allows AI agents with <code>code:execute</code> scope to scaffold, install, toggle, or delete custom plugins.</span>
+                            <span class="pa-fa">به ایجنت‌های هوش مصنوعی دارای کلید گاد مود اجازه می‌دهد مستقیماً افزونه‌های جدید بنویسند، نصب یا حذف کنند.</span>
+                        </div>
+                    </div>
+                </div>
+                <form method="post" style="margin: 0;">
+                    <?php wp_nonce_field( 'pressagent_toggle_god_mode_nonce' ); ?>
+                    <?php if ( $god_mode_active ) : ?>
+                        <button type="submit" name="pressagent_toggle_god_mode" class="pa-btn pa-btn-secondary pa-btn-sm" style="border-color: #ef4444; color: #dc2626;">
+                            <span class="pa-en">Disable God Mode</span>
+                            <span class="pa-fa">غیرفعال‌سازی گاد مود</span>
+                        </button>
+                    <?php else : ?>
+                        <button type="submit" name="pressagent_toggle_god_mode" class="pa-btn pa-btn-primary pa-btn-sm" style="background: #dc2626; color: #fff;">
+                            <span class="pa-en">Enable God Mode</span>
+                            <span class="pa-fa">فعال‌سازی گاد مود</span>
+                        </button>
+                    <?php endif; ?>
+                </form>
+            </div>
+        </div>
+
         <!-- Token Generator Card -->
         <div class="pa-card">
             <div class="pa-card-header">

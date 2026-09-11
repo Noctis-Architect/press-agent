@@ -116,8 +116,20 @@ export class WPClient {
   }
 
   // Dev
-  async createPlugin(name: string, code: string, description?: string) {
-    return this.request("/pressagent/v1/code/create-plugin", "POST", { name, code, description });
+  async createPlugin(name: string, code: string, description?: string, activate: boolean = true) {
+    return this.request("/pressagent/v1/code/create-plugin", "POST", { name, code, description, activate });
+  }
+
+  async deletePlugin(slug: string) {
+    return this.request("/pressagent/v1/code/delete-plugin", "POST", { slug });
+  }
+
+  async togglePlugin(slug: string, action: "activate" | "deactivate" = "activate") {
+    return this.request("/pressagent/v1/code/toggle-plugin", "POST", { slug, action });
+  }
+
+  async runSnippet(code: string) {
+    return this.request("/pressagent/v1/code/run", "POST", { code });
   }
 
   async rollback(snapshotId: string) {

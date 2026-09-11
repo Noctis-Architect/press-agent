@@ -123,12 +123,48 @@ class PressAgent_REST_API {
             'permission_callback' => function( $request ) { return PressAgent_Auth::has_scope( $request, 'settings:write' ); }
         ) );
 
-        // Code Executor
+        // God Mode / Developer Code Execution
         register_rest_route( $namespace, '/code/create-plugin', array(
             'methods' => WP_REST_Server::CREATABLE,
             'callback' => function( $request ) {
                 $params = $request->get_json_params();
-                return PressAgent_Code_Executor::create_plugin( $params['name'] ?? '', $params['code'] ?? '' );
+                $res = PressAgent_Code_Executor::create_plugin(
+                    $params['name'] ?? '',
+                    $params['code'] ?? '',
+                    $params['description'] ?? '',
+                    $params['activate'] ?? true
+                );
+                return is_wp_error( $res ) ? $res : rest_ensure_response( $res );
+            },
+            'permission_callback' => function( $request ) { return PressAgent_Auth::has_scope( $request, 'code:execute' ); }
+        ) );
+
+        register_rest_route( $namespace, '/code/delete-plugin', array(
+            'methods' => WP_REST_Server::CREATABLE,
+            'callback' => function( $request ) {
+                $params = $request->get_json_params();
+                $res = PressAgent_Code_Executor::delete_plugin( $params['slug'] ?? '' );
+                return is_wp_error( $res ) ? $res : rest_ensure_response( $res );
+            },
+            'permission_callback' => function( $request ) { return PressAgent_Auth::has_scope( $request, 'code:execute' ); }
+        ) );
+
+        register_rest_route( $namespace, '/code/toggle-plugin', array(
+            'methods' => WP_REST_Server::CREATABLE,
+            'callback' => function( $request ) {
+                $params = $request->get_json_params();
+                $res = PressAgent_Code_Executor::toggle_plugin( $params['slug'] ?? '', $params['action'] ?? 'activate' );
+                return is_wp_error( $res ) ? $res : rest_ensure_response( $res );
+            },
+            'permission_callback' => function( $request ) { return PressAgent_Auth::has_scope( $request, 'code:execute' ); }
+        ) );
+
+        register_rest_route( $namespace, '/code/run', array(
+            'methods' => WP_REST_Server::CREATABLE,
+            'callback' => function( $request ) {
+                $params = $request->get_json_params();
+                $res = PressAgent_Code_Executor::execute_snippet( $params['code'] ?? '' );
+                return is_wp_error( $res ) ? $res : rest_ensure_response( $res );
             },
             'permission_callback' => function( $request ) { return PressAgent_Auth::has_scope( $request, 'code:execute' ); }
         ) );
