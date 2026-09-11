@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PressAgent
  * Description: The Autonomous AI Ops Bridge for WordPress
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: PressAgent Team
  * Text Domain: pressagent
  * Requires PHP: 7.4
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'PRESSAGENT_VERSION', '1.0.0' );
+define( 'PRESSAGENT_VERSION', '1.0.1' );
 define( 'PRESSAGENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PRESSAGENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
