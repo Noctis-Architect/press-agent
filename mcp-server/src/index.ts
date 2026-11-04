@@ -34,7 +34,7 @@ async function main() {
   const server = new Server(
     {
       name: "pressagent",
-      version: "1.1.0"
+      version: "1.2.0"
     },
     {
       capabilities: {

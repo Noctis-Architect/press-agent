@@ -125,6 +125,99 @@ if ( isset( $_POST['pressagent_save_appearance_mode'] ) && check_admin_referer( 
     }
 }
 
+// Handle child theme creation / setup
+if ( isset( $_POST['pressagent_create_child'] ) && check_admin_referer( 'pressagent_child_theme_nonce' ) ) {
+    $res = PressAgent_Child_Theme_Manager::create_child(
+        sanitize_title( wp_unslash( $_POST['parent_slug'] ?? '' ) ),
+        sanitize_title( wp_unslash( $_POST['child_slug'] ?? '' ) ),
+        ! empty( $_POST['activate_child'] ),
+        ! empty( $_POST['overwrite_child'] )
+    );
+    if ( is_wp_error( $res ) ) {
+        $alert_message_en = 'Child theme creation failed: ' . $res->get_error_message();
+        $alert_message_fa = 'خطا در ساخت چایلد تم: ' . $res->get_error_message();
+        $alert_type = 'error';
+    } else {
+        $alert_message_en = 'Child theme created and activated: ' . $res['child'];
+        $alert_message_fa = 'چایلد تم ساخته و فعال شد: ' . $res['child'];
+        $alert_type = 'success';
+    }
+}
+
+if ( isset( $_POST['pressagent_setup_child'] ) && check_admin_referer( 'pressagent_child_theme_nonce' ) ) {
+    $res = PressAgent_Child_Theme_Manager::setup( sanitize_key( $_POST['setup_mode'] ?? '' ) );
+    if ( is_wp_error( $res ) ) {
+        $alert_message_en = 'Child theme setup failed: ' . $res->get_error_message();
+        $alert_message_fa = 'خطا در آماده‌سازی چایلد تم: ' . $res->get_error_message();
+        $alert_type = 'error';
+    } else {
+        $alert_message_en = 'Child theme setup completed. Global CSS and enqueue block are ready.';
+        $alert_message_fa = 'آماده‌سازی چایلد تم کامل شد. CSS سراسری و بلوک enqueue آماده است.';
+        $alert_type = 'success';
+    }
+}
+
+// Performance audit / fixes / page analysis
+$performance_audit = null;
+$page_audit = null;
+
+if ( isset( $_POST['pressagent_run_performance_audit'] ) && check_admin_referer( 'pressagent_performance_nonce' ) ) {
+    $performance_audit = PressAgent_Performance_Manager::audit();
+}
+
+if ( isset( $_POST['pressagent_performance_fix'] ) && check_admin_referer( 'pressagent_performance_nonce' ) ) {
+    $res = PressAgent_Performance_Manager::fix(
+        sanitize_key( $_POST['fix_id'] ?? '' ),
+        array(
+            'age_days' => absint( $_POST['age_days'] ?? 30 ),
+            'limit'    => absint( $_POST['fix_limit'] ?? 500 ),
+        ),
+        ! empty( $_POST['confirm_destructive'] )
+    );
+    if ( is_wp_error( $res ) ) {
+        $alert_message_en = 'Performance fix failed: ' . $res->get_error_message();
+        $alert_message_fa = 'خطا در اعمال fix عملکرد: ' . $res->get_error_message();
+        $alert_type = 'error';
+    } else {
+        $alert_message_en = 'Performance fix applied: ' . sanitize_key( $_POST['fix_id'] ?? '' );
+        $alert_message_fa = 'fix عملکرد اعمال شد: ' . sanitize_key( $_POST['fix_id'] ?? '' );
+        $alert_type = 'success';
+    }
+    $performance_audit = PressAgent_Performance_Manager::audit();
+}
+
+if ( isset( $_POST['pressagent_analyze_page'] ) && check_admin_referer( 'pressagent_performance_nonce' ) ) {
+    $page_audit = PressAgent_Performance_Manager::page(
+        absint( $_POST['perf_page_id'] ?? 0 ),
+        sanitize_text_field( wp_unslash( $_POST['perf_page_url'] ?? '' ) )
+    );
+    if ( is_wp_error( $page_audit ) ) {
+        $alert_message_en = 'Page analysis failed: ' . $page_audit->get_error_message();
+        $alert_message_fa = 'خطا در آنالیز صفحه: ' . $page_audit->get_error_message();
+        $alert_type = 'error';
+        $page_audit = null;
+    }
+}
+
+// WordPress core settings
+if ( isset( $_POST['pressagent_save_wp_settings'] ) && check_admin_referer( 'pressagent_wp_settings_nonce' ) ) {
+    $raw_settings = isset( $_POST['wp_settings'] ) && is_array( $_POST['wp_settings'] ) ? wp_unslash( $_POST['wp_settings'] ) : array();
+    $res = PressAgent_WP_Settings_Manager::set( $raw_settings, ! empty( $_POST['confirm_siteurl'] ) );
+    if ( is_wp_error( $res ) ) {
+        $alert_message_en = 'Site settings were not saved: ' . $res->get_error_message();
+        $alert_message_fa = 'تنظیمات سایت ذخیره نشد: ' . $res->get_error_message();
+        $alert_type = 'error';
+    } elseif ( empty( $res['changed'] ) ) {
+        $alert_message_en = 'No site settings changes were needed.';
+        $alert_message_fa = 'تغییری در تنظیمات سایت لازم نبود.';
+        $alert_type = 'success';
+    } else {
+        $alert_message_en = 'Site settings saved. Snapshots: ' . implode( ', ', $res['snapshot_ids'] );
+        $alert_message_fa = 'تنظیمات سایت ذخیره شد. اسنپ‌شات‌ها: ' . implode( ', ', $res['snapshot_ids'] );
+        $alert_type = 'success';
+    }
+}
+
 $god_mode_active = class_exists( 'PressAgent_Code_Executor' ) ? PressAgent_Code_Executor::is_enabled() : false;
 $appearance_mode = get_option( PressAgent_Child_Theme_Manager::MODE_OPTION, '' );
 if ( ! in_array( $appearance_mode, $appearance_modes, true ) ) {
@@ -132,6 +225,27 @@ if ( ! in_array( $appearance_mode, $appearance_modes, true ) ) {
 }
 $appearance_theme  = wp_get_theme();
 $appearance_parent = $appearance_theme->parent();
+$theme_status      = PressAgent_Child_Theme_Manager::get_status();
+$wp_settings       = PressAgent_WP_Settings_Manager::get();
+$role_names        = function_exists( 'wp_roles' ) ? wp_roles()->get_names() : array();
+$available_languages = function_exists( 'get_available_languages' ) ? get_available_languages() : array();
+
+$supported_plugins = array();
+foreach ( array_keys( PressAgent_Plugin_Registry::all() ) as $supported_slug ) {
+    $catalog = PressAgent_Plugin_Registry::get_catalog( $supported_slug );
+    if ( ! is_wp_error( $catalog ) ) {
+        $supported_plugins[ $supported_slug ] = $catalog;
+    }
+}
+$installed_plugin_data = PressAgent_Plugin_Manager::list_plugins();
+$installed_plugin_count = (int) ( $installed_plugin_data['count'] ?? 0 );
+$installed_plugins_by_slug = array();
+foreach ( (array) ( $installed_plugin_data['plugins'] ?? array() ) as $installed_plugin ) {
+    $installed_plugins_by_slug[ $installed_plugin['slug'] ] = $installed_plugin;
+}
+$active_supported_count = count( array_filter( $supported_plugins, static function ( $plugin ) {
+    return ! empty( $plugin['active'] );
+} ) );
 
 $update_info = class_exists( 'PressAgent_Updater' ) ? PressAgent_Updater::check_update( false ) : array();
 $has_update = ! empty( $update_info['has_update'] );
@@ -769,6 +883,88 @@ $has_active_token = ! empty( $active_token );
             margin-right: 0;
             margin-left: 4px;
         }
+
+        /* v1.2: settings, performance and plugin hub */
+        .pa-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+        .pa-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 12.5px;
+        }
+        .pa-field > label {
+            font-weight: 600;
+            color: var(--pa-text-main);
+        }
+        .pa-field small,
+        .pa-help {
+            color: var(--pa-text-muted);
+            font-size: 11px;
+            line-height: 1.5;
+        }
+        .pa-inline-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12.5px;
+            color: var(--pa-text-main);
+        }
+        .pa-section-label {
+            margin: 26px 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--pa-border-subtle);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--pa-text-main);
+        }
+        .pa-metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 12px;
+        }
+        .pa-issue {
+            border: 1px solid var(--pa-border);
+            border-left: 3px solid var(--pa-text-subtle);
+            border-radius: 8px;
+            padding: 13px 16px;
+            margin-bottom: 10px;
+            background: #ffffff;
+        }
+        .pa-issue.high { border-left-color: #dc2626; }
+        .pa-issue.medium { border-left-color: #d97706; }
+        .pa-issue.low { border-left-color: #2563eb; }
+        .pa-issue-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--pa-text-main);
+            margin-bottom: 4px;
+        }
+        .pa-issue-detail {
+            font-size: 12px;
+            color: var(--pa-text-muted);
+            line-height: 1.6;
+        }
+        .pa-issue-actions {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: flex-end;
+        }
+        .pa-issue-actions input[type="number"] {
+            width: 90px;
+        }
+        .pa-checkbox-line {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            color: var(--pa-text-muted);
+        }
     </style>
 
     <!-- Top Bar -->
@@ -778,7 +974,7 @@ $has_active_token = ! empty( $active_token );
             <div>
                 <h1 class="pa-nav-title">
                     PressAgent
-                    <span class="pa-badge-version">v1.0.0</span>
+                    <span class="pa-badge-version">v<?php echo esc_html( PRESSAGENT_VERSION ); ?></span>
                 </h1>
                 <p class="pa-nav-subtitle">
                     <span class="pa-en">Autonomous AI Operations &amp; Design Bridge for WordPress</span>
@@ -882,6 +1078,22 @@ $has_active_token = ! empty( $active_token );
         <button type="button" class="pa-tab-link" onclick="switchTab('appearance', this)">
             <span class="pa-en">Appearance</span>
             <span class="pa-fa">ظاهر سایت</span>
+        </button>
+        <button type="button" class="pa-tab-link" onclick="switchTab('plugins', this)">
+            <span class="pa-en">Plugin Hub</span>
+            <span class="pa-fa">مرکز پلاگین‌ها</span>
+            <span class="pa-tab-badge"><?php echo count( $supported_plugins ); ?></span>
+        </button>
+        <button type="button" class="pa-tab-link" onclick="switchTab('performance', this)">
+            <span class="pa-en">Performance</span>
+            <span class="pa-fa">عملکرد</span>
+            <?php if ( ! empty( $performance_audit['issues'] ) ) : ?>
+                <span class="pa-tab-badge"><?php echo count( $performance_audit['issues'] ); ?></span>
+            <?php endif; ?>
+        </button>
+        <button type="button" class="pa-tab-link" onclick="switchTab('site-settings', this)">
+            <span class="pa-en">Site Settings</span>
+            <span class="pa-fa">تنظیمات سایت</span>
         </button>
         <button type="button" class="pa-tab-link" onclick="switchTab('allowlist', this)">
             <span class="pa-en">Settings Allowlist</span>
@@ -1786,9 +1998,89 @@ $has_active_token = ! empty( $active_token );
                     <span class="pa-en">Recommended for Elementor + WooCommerce sites: <strong>Hybrid</strong>. Use the PressAgent agent (pressagent_theme) to create or switch the child theme and edit files with automatic backups and PHP lint.</span>
                     <span class="pa-fa">برای سایت‌های المنتور + ووکامرس حالت <strong>هیبرید</strong> پیشنهاد می‌شود. برای ساخت/تغییر چایلد تم و ویرایش فایل‌ها با بکاپ و lint خودکار از ایجنت (pressagent_theme) استفاده کنید.</span>
                 </div>
+
+                <div class="pa-section-label"><span class="pa-en">Child Theme</span><span class="pa-fa">چایلد تم</span></div>
+                <div class="pa-metric-grid">
+                    <div class="pa-stat-card">
+                        <div class="pa-stat-label"><span class="pa-en">Active stylesheet</span><span class="pa-fa">استایل‌شیت فعال</span></div>
+                        <div class="pa-stat-val" style="font-size:15px;"><?php echo esc_html( $theme_status['active_theme']['stylesheet'] ?? $appearance_theme->get_stylesheet() ); ?></div>
+                        <div class="pa-stat-sub"><?php echo ! empty( $theme_status['active_theme']['is_child'] ) ? esc_html( 'Child of ' . ( $theme_status['active_theme']['parent_name'] ?? '' ) ) : esc_html( 'Parent theme only' ); ?></div>
+                    </div>
+                    <div class="pa-stat-card">
+                        <div class="pa-stat-label"><span class="pa-en">Functions.php</span><span class="pa-fa">فایل functions.php</span></div>
+                        <div class="pa-stat-val" style="font-size:15px;"><?php echo ! empty( $theme_status['active_theme']['has_functions'] ) ? 'Present' : 'Missing'; ?></div>
+                        <div class="pa-stat-sub"><?php echo (int) ( $theme_status['active_theme']['style_bytes'] ?? 0 ); ?> bytes style.css</div>
+                    </div>
+                    <div class="pa-stat-card">
+                        <div class="pa-stat-label"><span class="pa-en">File backups</span><span class="pa-fa">بکاپ فایل‌ها</span></div>
+                        <div class="pa-stat-val" style="font-size:15px;"><?php echo count( $theme_status['backups'] ?? array() ); ?></div>
+                        <div class="pa-stat-sub"><span class="pa-en">Restorable via pressagent_theme</span><span class="pa-fa">قابل بازگردانی با pressagent_theme</span></div>
+                    </div>
+                </div>
+
+                <?php if ( ! empty( $theme_status['recommendations'] ) ) : ?>
+                    <div class="pa-help" style="line-height:1.9;">
+                        <?php foreach ( $theme_status['recommendations'] as $recommendation ) : ?>
+                            <div>• <?php echo esc_html( $recommendation ); ?></div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ( empty( $theme_status['active_theme']['is_child'] ) ) : ?>
+                    <form method="post" class="pa-form-grid" style="align-items:end;">
+                        <?php wp_nonce_field( 'pressagent_child_theme_nonce' ); ?>
+                        <input type="hidden" name="pressagent_create_child" value="1">
+                        <div class="pa-field">
+                            <label for="pa_parent_slug"><span class="pa-en">Parent theme</span><span class="pa-fa">قالب والد</span></label>
+                            <input type="text" class="pa-input" id="pa_parent_slug" name="parent_slug" value="<?php echo esc_attr( get_template() ); ?>">
+                        </div>
+                        <div class="pa-field">
+                            <label for="pa_child_slug"><span class="pa-en">Child theme slug</span><span class="pa-fa">نامک چایلد</span></label>
+                            <input type="text" class="pa-input" id="pa_child_slug" name="child_slug" value="<?php echo esc_attr( get_template() . '-child' ); ?>">
+                        </div>
+                        <div class="pa-field" style="gap:10px;">
+                            <label class="pa-inline-check"><input type="checkbox" name="activate_child" value="1" checked> <span class="pa-en">Activate after creation</span><span class="pa-fa">فعال‌سازی پس از ساخت</span></label>
+                            <label class="pa-inline-check"><input type="checkbox" name="overwrite_child" value="1"> <span class="pa-en">Overwrite existing scaffold</span><span class="pa-fa">بازنویسی ساختار موجود</span></label>
+                        </div>
+                        <div>
+                            <button type="submit" class="pa-btn pa-btn-primary" onclick="return confirm('Create and activate this child theme?');">
+                                <span class="pa-en">Create Child Theme</span>
+                                <span class="pa-fa">ساخت چایلد تم</span>
+                            </button>
+                        </div>
+                    </form>
+                <?php else : ?>
+                    <form method="post" class="pa-form-grid" style="align-items:end;">
+                        <?php wp_nonce_field( 'pressagent_child_theme_nonce' ); ?>
+                        <input type="hidden" name="pressagent_setup_child" value="1">
+                        <div class="pa-field">
+                            <label for="pa_setup_mode"><span class="pa-en">Mode while setting up</span><span class="pa-fa">حالت هنگام آماده‌سازی</span></label>
+                            <select class="pa-input" id="pa_setup_mode" name="setup_mode">
+                                <option value=""><?php esc_html_e( 'Keep current mode', 'pressagent' ); ?></option>
+                                <option value="hybrid">Hybrid</option>
+                                <option value="elementor">Elementor</option>
+                                <option value="child-theme">Child theme</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button type="submit" class="pa-btn pa-btn-primary">
+                                <span class="pa-en">Create Global CSS + Enqueue</span>
+                                <span class="pa-fa">ساخت CSS سراسری و enqueue</span>
+                            </button>
+                        </div>
+                        <div class="pa-help" style="grid-column: 1 / -1;">
+                            <span class="pa-en">Idempotent: creates assets/css/pressagent.css if missing and adds the PressAgent enqueue block once, with a backup and PHP lint.</span>
+                            <span class="pa-fa">ایمن و تکرارپذیر: در صورت نبود، assets/css/pressagent.css را می‌سازد و بلوک enqueue را یک‌بار با بکاپ و lint اضافه می‌کند.</span>
+                        </div>
+                    </form>
+                <?php endif; ?>
             </div>
         </div>
     </div>
+
+    <?php require PRESSAGENT_PLUGIN_DIR . 'templates/admin-tabs/plugins.php'; ?>
+    <?php require PRESSAGENT_PLUGIN_DIR . 'templates/admin-tabs/performance.php'; ?>
+    <?php require PRESSAGENT_PLUGIN_DIR . 'templates/admin-tabs/site-settings.php'; ?>
 
     <div id="tab-allowlist" class="pa-tab-pane">
         <div class="pa-card">

@@ -7,7 +7,7 @@
 </p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](https://github.com/Noctis-Architect/press-agent)
+[![Version](https://img.shields.io/badge/version-1.2.0-green.svg)](https://github.com/Noctis-Architect/press-agent)
 [![WordPress](https://img.shields.io/badge/WordPress-5.8%2B-blue.svg)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3%2B-blue.svg)](https://www.typescriptlang.org)
@@ -176,6 +176,12 @@
 | **Really Simple Security** | 9.8.4 | Hardening, login protection, firewall and notification settings; rule rebuild |
 
 > **Premium policy:** PressAgent never downloads nulled or unlicensed copies. Free plugins come from the official WordPress.org API; Pro features are supported only when the site already has a valid license, and are documented rather than bundled.
+
+---
+
+## Admin Console
+
+The top-level **PressAgent** menu includes: Overview & Connect, Access Tokens, Appearance (Elementor/child-theme/hybrid modes + child theme creation), Plugin Hub, Performance audit and fixes, WordPress Site Settings (general/reading/discussion/media/permalinks/privacy), Action Guard snapshots, Settings Allowlist, Diagnostics and Updates.
 
 ---
 
@@ -596,6 +602,12 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 | **Really Simple Security** | 9.8.4 | سخت‌سازی، محافظت لاگین، فایروال و اعلان‌ها؛ بازسازی قوانین |
 
 > **سیاست نسخه Pro:** PressAgent هرگز نسخه نال‌شده یا بدون لایسنس دانلود نمی‌کند. نسخه‌های رایگان از API رسمی WordPress.org می‌آیند؛ قابلیت‌های Pro فقط اگر سایت لایسنس معتبر داشته باشد پشتیبانی می‌شوند و در MCP بسته‌بندی نمی‌شوند.
+
+---
+
+## کنسول مدیریت
+
+منوی اصلی **PressAgent** شامل این تب‌هاست: نمای کلی و اتصال، کلیدهای دسترسی، ظاهر سایت (حالت المنتور/چایلد/هیبرید + ساخت چایلد تم)، مرکز پلاگین‌ها، آنالیز و رفع عملکرد، تنظیمات سایت وردپرس (عمومی/خواندن/دیدگاه‌ها/رسانه/پیوندها/حریم خصوصی)، اسنپ‌شات‌های Action Guard، لیست سفید تنظیمات، عیب‌یابی و به‌روزرسانی.
 
 ---
 
