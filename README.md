@@ -1,4 +1,4 @@
-# PressAgent 🚀
+# PressAgent
 
 ### The Autonomous AI Ops & Design Bridge for WordPress
 
@@ -19,19 +19,19 @@
 
 ---
 
-## 🌟 Key Capabilities
+## Key Capabilities
 
-### 🎨 1. Native Elementor Page & Layout Engine
+### 1. Native Elementor Page & Layout Engine
 - **100% Visual Drag-and-Drop Compatibility:** PressAgent does **not** inject raw HTML or opaque shortcodes. It creates and manipulates native Elementor widgets (`heading`, `text-editor`, `button`, `image`, `icon-box`, `counter`, etc.) within modern Elementor Flexbox Containers.
 - **Full WP Admin Editability:** Site administrators and clients can open the page in Elementor and visually customize colors, typography, paddings, and content without breaking the layout.
 - **Deep Core Integration:** Interacts directly with `Elementor\Plugin::$instance->documents->get($page_id)` and `$document->save()`, automatically invalidating Elementor CSS files (`_elementor_css`), widget element caches, and theme builder templates.
 
-### 📸 2. Headless Visual QA & Screenshot Engine
+### 2. Headless Visual QA & Screenshot Engine
 - **AI Eyes for Pixel-Perfect Iteration:** Integrated headless browser screenshot tool (`pressagent_capture_screenshot`) enables the AI assistant to inspect rendered desktop, tablet, and mobile layouts visually.
 - **SSRF-Hardened:** Strictly validates target URLs against the configured WordPress host origin to prevent Server-Side Request Forgery.
 - **Configurable Captures:** Supports custom viewport widths/heights, full-page screenshots, delay timers (for JavaScript/animations), and targeted CSS selectors.
 
-### 🛡️ 3. Action Guard™: Automated Snapshots & One-Click Rollbacks
+### 3. Action Guard™: Automated Snapshots & One-Click Rollbacks
 - **Zero-Risk Operations:** Every destructive or layout-altering action (`update_elementor`, `update_option`, page deletions) automatically records an encrypted snapshot in `wp_pressagent_snapshots` before executing.
 - **One-Click Instant Rollback:** If an AI change causes a regression or styling conflict, revert immediately from the WordPress admin dashboard (`Settings → PressAgent`) or via the API.
 - **Two-Tier Safety Protocol:**
@@ -39,46 +39,46 @@
   - **Non-reversible actions:** Require explicit confirmation tokens from the human operator before execution.
 - **Tamper-Proof:** Disallows rolling back security allowlists or escalating privileges through snapshot restoration.
 
-### 🔐 4. Enterprise RBAC & WordPress Authentication Pipeline
+### 4. Enterprise RBAC & WordPress Authentication Pipeline
 - **Cryptographic Token Security:** Tokens are generated with high entropy (48-character passwords) and stored as salted hashes using WordPress's native `phpass` (`PasswordHash`). Raw tokens are never persisted in the database.
 - **Native User Context Mapping:** Hooks directly into WordPress core's `determine_current_user` authentication filter. REST API requests are authenticated and mapped to the authorized administrator user context, allowing standard capabilities (`edit_posts`, `edit_pages`, `manage_options`) to function seamlessly.
 - **Granular Least-Privilege Scopes:** Restrict access to specific functions (`pages:read`, `elementor:write`, `settings:read`, `cache:purge`, etc.).
 - **In-Memory Cache:** Request-level token caching delivers sub-millisecond authentication verification.
 
-### ⚙️ 5. Safe Cross-Plugin & Settings Management
+### 5. Safe Cross-Plugin & Settings Management
 - **Strict Settings Allowlist:** Access to `wp_options` is strictly limited through a granular allowlist (`pressagent_settings_allowlist`) with wildcard pattern support (`wordfence*`, `litespeed.conf.*`).
 - **Pre-Configured Plugin Integrations:** Out-of-the-box support for popular caching and security plugins: **WP Rocket**, **LiteSpeed Cache**, and **Wordfence**.
 - **Privilege Escalation Defense:** Critical WordPress options (`users_can_register`, `default_role`, `active_plugins`, `siteurl`) are strictly guarded against unauthorized modification.
 - **Automatic Cache Invalidation:** Automatically triggers cache cleans across WP Rocket, LiteSpeed, and Elementor when settings or layouts are updated.
 
-### 🔍 6. Intelligent Debug Log Parser & Diagnostics
+### 6. Intelligent Debug Log Parser & Diagnostics
 - **Structured Error Extraction:** Automatically reads and parses `WP_DEBUG_LOG` (`debug.log`), extracting timestamps, error levels (`error`, `warning`, `notice`), culprit filenames, and line numbers into structured JSON.
 - **Path-Traversal Guard:** Strictly validates log paths to prevent arbitrary file reading outside `WP_CONTENT_DIR`.
 - **AI-Powered Diagnostics:** The `pressagent_diagnose_error` tool analyzes stack traces and conflict logs to suggest actionable remediation steps.
 
-### ⚡ 7. Developer / God Mode Scaffolding (Staging Only)
+### 7. Developer / God Mode Scaffolding (Staging Only)
 - **Plugin Scaffolding:** Allows AI agents to generate and scaffold custom WordPress plugins (`pressagent_create_plugin`) on development and staging sites.
 - **Strictly Isolated:** Requires the `code:execute` scope, disabled by default in production.
 
-### 🧩 8. Plugin Intelligence Hub (12 verified integrations)
+### 8. Plugin Intelligence Hub (12 verified integrations)
 - **Validated, not guessed:** Every option/meta/action is declared in a per-plugin registry and verified against the plugin source (`docs/plugin-capabilities/*.json`). Unknown keys are rejected with the allowed list.
 - **Supported free plugins:** Yoast SEO, Rank Math SEO, Wordfence, AIOS, Elementor, LiteSpeed Cache, Contact Form 7, WPForms Lite, WooCommerce, Redirection, WP Mail SMTP, Really Simple Security.
 - **SEO bridge:** `pressagent_seo` normalizes titles, descriptions, focus keywords, canonical, robots, Open Graph, X/Twitter, schema and primary category across Yoast and Rank Math, including term SEO (Yoast's term storage is an option, not term meta).
 - **Lifecycle:** inventory, install from the official WordPress.org directory, activate/deactivate and update. Premium plugins are never sideloaded; a valid license is required.
 
-### 🏗️ 9. Child Theme & Appearance Modes
+### 9. Child Theme & Appearance Modes
 - **User-selected mode:** `elementor`, `child-theme`, or `hybrid` (recommended with Elementor). The mode is stored per site and returned with guidance so the agent knows which layer owns layout.
 - **Safe scaffolding:** create and activate a child theme, add `assets/css/pressagent.css`, and install an idempotent enqueue block into `functions.php`.
 - **Safe editing:** list/read/write only the active child theme, with path-traversal protection, automatic backups, `php -l` for PHP, and one-call restore.
 - **Hybrid playbook:** Elementor owns pages/header/footer; the child theme owns global tokens, CSS and hooks; WooCommerce overrides live in the child theme.
 
-### 🪶 10. Token-Efficient by Design
+### 10. Token-Efficient by Design
 - **Compact schemas:** 26 tools cost ~5.9k fixed tokens (measured), with profiles bringing that much lower.
 - **Tool profiles:** set `PRESSAGENT_TOOLSETS=pages,elementor,screenshot,theme` (or any subset) to load only what a session needs.
 - **Summary-first reads:** `pressagent_get_elementor_layout` returns a compact node summary by default; request `detail:"full"` or `include_kit:true` only when required.
 - **On-demand knowledge:** long guides live in MCP prompts and skills; tools return compact JSON without pretty-print padding. Use `node scripts/token-report.mjs` to measure.
 
-### ⚡ 11. Speed Audit & Core Settings
+### 11. Speed Audit & Core Settings
 - **Server audit:** PHP/memory/OPcache, object cache, page cache, autoload size, revisions, transients, debug.log, Elementor/LiteSpeed state, active plugin matches and prioritized issues with `fix_id`.
 - **Page audit:** same-origin fetch measures response time, HTML size, scripts/styles, render-blocking assets, image dimensions/alt/lazy, Elementor CSS, Google Fonts, compression and cache headers.
 - **Safe fixes:** enable LiteSpeed cache/minify/lazy/browser cache, switch Elementor CSS to external, enable element caching and optimization experiments, purge caches, delete expired transients. Revision deletion and database cleanup (orphaned meta/term relationships, trashed comments) require explicit confirmation.
@@ -86,7 +86,7 @@
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 +-------------------------------------------------------------------------+
@@ -127,7 +127,7 @@
 
 ---
 
-## 🧰 Complete MCP Tools Reference
+## Complete MCP Tools Reference
 
 | Category | Tool Name | Description | Required Scope |
 |---|---|---|---|
@@ -158,7 +158,7 @@
 
 ---
 
-## 🧩 Supported Plugin Matrix (verified free versions)
+## Supported Plugin Matrix (verified free versions)
 
 | Plugin | Version analyzed | Exposed capabilities |
 |---|---|---|
@@ -179,7 +179,7 @@
 
 ---
 
-## 🪶 Token Efficiency
+## Token Efficiency
 
 | Mechanism | Effect |
 |---|---|
@@ -192,7 +192,7 @@
 
 ---
 
-## 🔒 Security Architecture
+## Security Architecture
 
 Security is at the foundation of PressAgent:
 
@@ -205,16 +205,16 @@ Security is at the foundation of PressAgent:
 
 ---
 
-## 🚀 Quickstart Guide
+## Quickstart Guide
 
-### 📦 Pre-Packaged Downloads (Direct Release ZIPs)
+### Pre-Packaged Downloads (Direct Release ZIPs)
 
 If you prefer ready-to-use packages without building from source or cloning the repository, download the compiled assets from the [GitHub Releases (v1.0.1)](https://github.com/Noctis-Architect/press-agent/releases/tag/v1.0.1). The v1.1.0 plugin/theme/SEO features are available from source until the next release assets are published:
 
 | Package | Download Link | Description | How to Install |
 | :--- | :--- | :--- | :--- |
-| **WordPress Plugin** | [📥 `pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-wordpress-plugin.zip) | Ready-to-install WordPress plugin zip (includes auto-updater) | In WP Admin: **Plugins → Add New → Upload Plugin** |
-| **MCP Server** | [📥 `pressagent-mcp-server.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-mcp-server.zip) | Standalone pre-compiled TypeScript MCP Server with `dist/` | Unpack zip, run `npm install --omit=dev`, and point client to `dist/index.js` |
+| **WordPress Plugin** | [`pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-wordpress-plugin.zip) | Ready-to-install WordPress plugin zip (includes auto-updater) | In WP Admin: **Plugins → Add New → Upload Plugin** |
+| **MCP Server** | [`pressagent-mcp-server.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-mcp-server.zip) | Standalone pre-compiled TypeScript MCP Server with `dist/` | Unpack zip, run `npm install --omit=dev`, and point client to `dist/index.js` |
 
 ---
 
@@ -257,7 +257,7 @@ If you prefer ready-to-use packages without building from source or cloning the 
 
 Add PressAgent to your MCP client configuration file:
 
-#### 🟣 Claude Desktop
+#### Claude Desktop
 Edit `~/.config/Claude/claude_desktop_config.json` (Linux) or `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
 ```json
 {
@@ -274,7 +274,7 @@ Edit `~/.config/Claude/claude_desktop_config.json` (Linux) or `~/Library/Applica
 }
 ```
 
-#### 🌐 Antigravity IDE / CLI
+#### Antigravity IDE / CLI
 Edit `/home/noctis/.gemini/config/mcp_config.json`:
 ```json
 {
@@ -291,7 +291,7 @@ Edit `/home/noctis/.gemini/config/mcp_config.json`:
 }
 ```
 
-#### ⚡ Cursor / Windsurf
+#### Cursor / Windsurf
 In `.cursor/mcp.json` or your MCP workspace settings:
 ```json
 {
@@ -310,7 +310,7 @@ In `.cursor/mcp.json` or your MCP workspace settings:
 
 ---
 
-## 🌐 Connecting Local or Remote WordPress Instances
+## Connecting Local or Remote WordPress Instances
 
 ### Scenario A: Remote WordPress Site
 If your WordPress site is hosted on a public domain with HTTPS (e.g. `https://example.com`), simply provide the URL in `PRESSAGENT_WP_URL`.
@@ -334,7 +334,7 @@ Use the resulting public HTTPS URL in `PRESSAGENT_WP_URL`.
 
 ---
 
-## 📋 RBAC Scopes Reference
+## RBAC Scopes Reference
 
 | Scope | Category | Description |
 |---|---|---|
@@ -363,7 +363,7 @@ Use the resulting public HTTPS URL in `PRESSAGENT_WP_URL`.
 
 ---
 
-## 🧪 Testing & Verification
+## Testing & Verification
 
 PressAgent includes comprehensive syntax checks and unit tests:
 
@@ -389,7 +389,7 @@ python3 scripts/fetch_plugin_sources.py
 
 ---
 
-## 🛣️ Roadmap
+## Roadmap
 
 - [x] **Phase 1: Core Foundation** — Cryptographic RBAC, `determine_current_user` WordPress auth bridge, Action Guard™ snapshots & rollback, Settings allowlist.
 - [x] **Phase 2: Elementor Native Engine** — Native widget generation (no raw HTML), container hierarchy, Elementor internal save path, CSS cache purging.
@@ -402,7 +402,7 @@ python3 scripts/fetch_plugin_sources.py
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions, issues, and feature requests are welcome!
 Feel free to check the [issues page](https://github.com/Noctis-Architect/press-agent/issues).
@@ -415,18 +415,18 @@ Feel free to check the [issues page](https://github.com/Noctis-Architect/press-a
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 <p align="center">
-  Built with ❤️ for the WordPress and AI developer communities.
+  Built for the WordPress and AI developer communities.
 </p>
 
 ---
 
 <a name="-پرسایجنت-pressagent"></a>
-# پرس‌ایجنت (PressAgent) 🚀
+# پرس‌ایجنت (PressAgent)
 
 ### پل ارتباطی هوشمند و امن برای مدیریت، طراحی و عملیات وردپرس با هوش مصنوعی (MCP)
 
@@ -440,19 +440,19 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ---
 
-## 🌟 قابلیت‌های کلیدی
+## قابلیت‌های کلیدی
 
-### 🎨 ۱. موتور طراحی بومی المنتور (Native Elementor Engine)
+### ۱. موتور طراحی بومی المنتور (Native Elementor Engine)
 - **سازگاری ۱۰۰٪ با ویرایشگر دیداری (Drag & Drop):** پرس‌ایجنت هرگز کد خام HTML یا شورت‌کدهای غیرقابل ویرایش درج نمی‌کند؛ بلکه تمامی المان‌ها را در قالب ابزارک‌های واقعی المنتور (`heading`، `text-editor`، `button`، `image`، `icon-box`، `counter` و...) درون کانتینرهای مدرن Flexbox ایجاد می‌کند.
 - **امکان ویرایش کامل در پیشخوان وردپرس:** پس از ساخت صفحه توسط هوش مصنوعی، مدیر سایت یا کاربر می‌تواند وارد ویرایشگر المنتور شده و متن‌ها، رنگ‌ها، پدینگ‌ها و استایل‌ها را به‌صورت بصری تغییر دهد بدون اینکه ساختار صفحه دچار به‌هم‌ریختگی شود.
 - **اتصال عمیق به هسته المنتور:** ذخیره‌سازی مستقیماً از طریق متد داخلی `$document->save()` در هسته المنتور انجام شده و فایل‌های CSS کش‌شده (`_elementor_css`) و کش تمپلیت‌ها به‌صورت خودکار بازتولید می‌شوند.
 
-### 📸 ۲. موتور تست ظاهر و ثبت اسکرین‌شات (Visual QA & Headless Screenshots)
+### ۲. موتور تست ظاهر و ثبت اسکرین‌شات (Visual QA & Headless Screenshots)
 - **چشم‌های هوش مصنوعی برای ویرایش پیکسل به پیکسل:** ابزار داخلی ثبت اسکرین‌شات (`pressagent_capture_screenshot`) به ایجنت این امکان را می‌دهد که خروجی بصری صفحه را در ابعاد دسکتاپ، تبلت و موبایل بررسی کرده و تا رسیدن به طراحی بی‌نقص خطاها را اصلاح کند.
 - **مقاوم در برابر حملات SSRF:** آدرس‌های ارسالی دقیقاً با دامنه مبدأ سایت وردپرس مطابقت داده می‌شوند تا از سوءاستفاده‌های امنیتی یا پویش شبکه‌های داخلی جلوگیری شود.
 - **تنظیمات پیشرفته:** پشتیبانی از عرض و ارتفاع سفارشی، اسکرین‌شات تمام‌صفحه (Full-page)، تاخیر زمانی (برای لود اسکریپت‌ها) و انتخاب‌گر اختصاصی CSS.
 
-### 🛡️ ۳. محافظ هوشمند عملیات (Action Guard™: اسنپ‌شات و بازگردانی آنی)
+### ۳. محافظ هوشمند عملیات (Action Guard™: اسنپ‌شات و بازگردانی آنی)
 - **عملیات بدون ریسک و دلهره:** پیش از هرگونه تغییر اساسی روی ساختار المنتور، ویرایش آپشن‌های وردپرس یا حذف برگه، یک نسخه کامل و رمزنگاری‌شده در جدول دیتابیس `wp_pressagent_snapshots` ذخیره می‌شود.
 - **بازگردانی سریع تنها با ۱ کلیک:** در صورت بروز تداخل ظاهری یا اشتباه هوش مصنوعی، وضعیت برگه یا تنظیمات بلافاصله از داخل پنل مدیریت وردپرس (`تنظیمات ← PressAgent`) یا از طریق API به حالت قبل بازمی‌گردد.
 - **پروتکل ایمنی دومرحله‌ای:**
@@ -460,46 +460,46 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
   - **عملیات غیرقابل برگشت (Non-Reversible):** نیازمند توکن تاییدیه صریح از سمت کاربر انسانی هستند.
 - **جلوگیری از دور زدن امنیت:** سیستم بازگردانی اجازه سوءاستفاده یا تغییر لیست سفید امنیتی از طریق اسنپ‌شات‌ها را نمی‌دهد.
 
-### 🔐 ۴. پایپ‌لاین احراز هویت سازمانی و سطوح دسترسی (RBAC)
+### ۴. پایپ‌لاین احراز هویت سازمانی و سطوح دسترسی (RBAC)
 - **امنیت بر پایه رمزنگاری توکن‌ها:** کلیدهای دسترسی دارای انتروپی بالا (رمزهای ۴۸ کاراکتری) بوده و تنها هش‌های امن آن‌ها با الگوریتم phpass وردپرس ذخیره می‌شوند؛ توکن‌های خام هرگز در دیتابیس باقی نمی‌مانند.
 - **اتصال به هوک استاندارد `determine_current_user` هسته وردپرس:** درخواست‌های REST API با توکن معتبر، به کانتکست حساب کاربری ادمین متصل می‌شوند تا دسترسی‌های پایه‌ای وردپرس (`edit_posts`، `edit_pages`، `manage_options`) به‌درستی اعتبارسنجی شوند.
 - **محدودسازی دسترسی (Least Privilege Scopes):** امکان صدور کلیدهای اختصاصی با دسترسی‌های جزئی و مشخص (مانند فقط خواندن صفحات یا فقط تخلیه کش).
 - **کش حافظه‌ای سریع:** اعتبارسنجی در کسری از میلی‌ثانیه به کمک کش استاتیک در چرخه هر درخواست PHP انجام می‌پذیرد.
 
-### ⚙️ ۵. مدیریت امن تنظیمات و کش افزونه‌ها
+### ۵. مدیریت امن تنظیمات و کش افزونه‌ها
 - **لیست سفید سخت‌گیرانه تنظیمات:** دسترسی به جدول `wp_options` فقط محدود به کلیدهای تعریف‌شده در لیست سفید (`pressagent_settings_allowlist`) با قابلیت استفاده از الگوهای وایلدکارت (`wordfence*` و `litespeed.conf.*`) است.
 - **پشتیبانی پیش‌فرض از افزونه‌های محبوب:** سازگاری توکار با پلاگین‌های سرعت و امنیت نظیر **WP Rocket**، **LiteSpeed Cache** و **Wordfence**.
 - **سد دفاعی در برابر ارتقای غیرمجاز دسترسی:** آپشن‌های حساس هسته وردپرس مانند `users_can_register`، `default_role`، `active_plugins` و `siteurl` به طور ویژه در برابر تغییرات محافظت می‌شوند.
 - **تخلیه خودکار کش:** با تغییر هر برگه یا تنظیم، کش افزونه‌های لایت‌اسپید و راکت به طور خودکار پاکسازی می‌شوند.
 
-### 🔍 ۶. پارسر هوشمند لاگ‌های خطا و عیب‌یابی (Debug Log Parser)
+### ۶. پارسر هوشمند لاگ‌های خطا و عیب‌یابی (Debug Log Parser)
 - **استخراج ساختاریافته خطاها:** فایل `debug.log` وردپرس پردازش شده و زمان، سطح خطا (`error`، `warning`، `notice`)، فایل مربوطه و شماره سطر به فرمت خوانای JSON استخراج می‌شود.
 - **مسدودسازی حملات پیمایش مسیر (Path-Traversal):** دسترسی به فایل‌ها دقیقاً در محدوده `WP_CONTENT_DIR` با تابع `realpath` محدود می‌شود و خواندن سایر فایل‌های حساس سیستم غیرممکن است.
 - **راهنمای عیب‌یابی مبتنی بر AI:** ابزار `pressagent_diagnose_error` متن خطا را بررسی کرده و گام‌های عملی برای رفع تداخل را پیشنهاد می‌دهد.
 
-### ⚡ ۷. ساخت و توسعه پلاگین (God Mode / Scaffolding)
+### ۷. ساخت و توسعه پلاگین (God Mode / Scaffolding)
 - **ساخت سریع افزونه‌ها:** ایجنت هوش مصنوعی می‌تواند ساختار پلاگین‌های جدید وردپرسی را اسکلت‌بندی و تولید کند (`pressagent_create_plugin`).
 - **محدود به محیط استیجینگ:** این ابزار تحت Scope اختصاصی `code:execute` قرار داشته و در محیط‌های پروداکشن به طور پیش‌فرض غیرفعال است.
 
-### 🧩 ۸. مرکز هوشمند پلاگین‌ها (۱۲ یکپارچه‌سازی تأییدشده)
+### ۸. مرکز هوشمند پلاگین‌ها (۱۲ یکپارچه‌سازی تأییدشده)
 - **دقیق، نه حدسی:** هر option/meta/action در یک رجیستری per-plugin تعریف شده و با سورس پلاگین اعتبارسنجی شده است (`docs/plugin-capabilities/*.json`). کلید ناشناخته با لیست مجاز رد می‌شود.
 - **پلاگین‌های رایگان پشتیبانی‌شده:** Yoast SEO، Rank Math، Wordfence، AIOS، Elementor، LiteSpeed Cache، Contact Form 7، WPForms Lite، WooCommerce، Redirection، WP Mail SMTP و Really Simple Security.
 - **پل سئو:** `pressagent_seo` فیلدهای title، description، focus keyword، canonical، robots، Open Graph، X/Twitter، schema و primary category را بین Yoast و Rank Math نرمال می‌کند؛ شامل سئوی ترم‌ها (ذخیره‌سازی ترم Yoast در option است، نه term meta).
 - **چرخه نصب:** فهرست، نصب از مخزن رسمی WordPress.org، فعال/غیرفعال و آپدیت. نسخه Pro هرگز sideload نمی‌شود و نیاز به لایسنس معتبر دارد.
 
-### 🏗️ ۹. چایلد تم و حالت‌های ظاهری
+### ۹. چایلد تم و حالت‌های ظاهری
 - **انتخاب کاربر:** `elementor`، `child-theme` یا `hybrid` (پیشنهادی همراه المنتور). حالت در سایت ذخیره می‌شود و راهنمای آن به ایجنت برمی‌گردد.
 - **ساخت امن:** ساخت و فعال‌سازی چایلد، ایجاد `assets/css/pressagent.css` و افزودن بلوک enqueue idempotent به `functions.php`.
 - **ویرایش امن:** فقط چایلد فعال قابل خواندن/نوشتن است؛ محافظت path traversal، بکاپ خودکار، `php -l` برای PHP و بازگردانی یک‌مرحله‌ای.
 - **سناریوی هیبرید:** المنتور مالک برگه/هدر/فوتر؛ چایلد مالک توکن‌ها، CSS سراسری و هوک‌ها؛ override ووکامرس در چایلد.
 
-### 🪶 ۱۰. بهینه برای مصرف توکن
+### ۱۰. بهینه برای مصرف توکن
 - **اسکیمای فشرده:** ۲۶ ابزار حدود ۵٬۹ هزار توکن ثابت مصرف می‌کنند (اندازه‌گیری‌شده)؛ با پروفایل ابزار بسیار کمتر می‌شود.
 - **پروفایل ابزار:** با `PRESSAGENT_TOOLSETS=pages,elementor,screenshot,theme` فقط ابزارهای لازم بارگذاری می‌شوند.
 - **خواندن خلاصه‌محور:** `pressagent_get_elementor_layout` به‌صورت پیش‌فرض خلاصه گره‌ها را برمی‌گرداند؛ `detail:"full"` یا `include_kit:true` فقط در صورت نیاز.
 - **دانش هنگام نیاز:** راهنماهای بلند در promptها و skillها هستند؛ خروجی JSON فشرده است. با `node scripts/token-report.mjs` اندازه را بسنجید.
 
-### ⚡ ۱۱. آنالیز سرعت و تنظیمات هسته
+### ۱۱. آنالیز سرعت و تنظیمات هسته
 - **آنالیز سرور:** PHP/حافظه/OPcache، object cache، page cache، حجم autoload، ریبایژن‌ها، transientها، debug.log، وضعیت المنتور/لایت‌اسپید، پلاگین‌های فعال و issueهای اولویت‌دار با `fix_id`.
 - **آنالیز صفحه:** دریافت same-origin و اندازه‌گیری زمان پاسخ، حجم HTML، تعداد script/style، منابع render-blocking، تصاویر بدون ابعاد/alt/lazy، CSS المنتور، فونت خارجی، فشرده‌سازی و هدر کش.
 - **رفع امن:** روشن کردن کش/فشرده‌سازی/lazy/کش مرورگر لایت‌اسپید، CSS خارجی المنتور، کش المنتور و experimentهای بهینه‌سازی، purge کش، حذف transient منقضی. حذف ریبایژن و پاکسازی دیتابیس (متای یتیم، رابطه ترم یتیم، کامنت trash) نیازمند تایید صریح است.
@@ -507,7 +507,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ---
 
-## 🏗️ معماری ارتباطی
+## معماری ارتباطی
 
 ```
 +-------------------------------------------------------------------------+
@@ -548,7 +548,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ---
 
-## 🧰 فهرست کامل ابزارهای MCP
+## فهرست کامل ابزارهای MCP
 
 | دسته‌بندی | نام ابزار | توضیحات عملکرد | سطح دسترسی مورد نیاز |
 |---|---|---|---|
@@ -578,7 +578,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ---
 
-## 🧩 ماتریس پلاگین‌های پشتیبانی‌شده (نسخه‌های رایگان تأییدشده)
+## ماتریس پلاگین‌های پشتیبانی‌شده (نسخه‌های رایگان تأییدشده)
 
 | پلاگین | نسخه تحلیل‌شده | قابلیت‌های در دسترس |
 |---|---|---|
@@ -599,7 +599,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ---
 
-## 🪶 بهینه‌سازی توکن
+## بهینه‌سازی توکن
 
 | مکانیزم | اثر |
 |---|---|
@@ -612,27 +612,27 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ---
 
-## 🔒 لایه‌های امنیتی پیاده‌سازی شده
+## لایه‌های امنیتی پیاده‌سازی شده
 
-۱. **عدم ذخیره توکن خام در دیتابیس:** توکن‌ها بلافاصله پس از ایجاد با ابزار امنیتی phpass هسته وردپرس هش شده و در صورت نفوذ به دیتابیس، امکان بازیابی رمزها وجود ندارد.  
-۲. **اتصال اصولی به نشست کاربری وردپرس:** استفاده از هوک استاندارد `determine_current_user` باعث می‌شود تمام دسترسی‌های داخلی وردپرس بدون نیاز به کدهای ناامن اعمال شوند.  
-۳. **حفاظت کامل در برابر SSRF:** ابزار اسکرین‌شات تنها مجاز به بازدید از دامنه‌ای است که در تنظیمات `PRESSAGENT_WP_URL` ثبت شده و از بررسی شبکه داخلی جلوگیری می‌کند.  
-۴. **سد دفاعی در برابر Path-Traversal:** فایل‌های لاگ با تابع `realpath` اعتبارسنجی شده و دسترسی به فایل‌های حیاتی نظیر `wp-config.php` مسدود است.  
-۵. **لیست سفید سخت‌گیرانه برای گزینه‌ها:** ویرایش متغیرهای هسته وردپرس تنها در صورت داشتن دسترسی مدیریت امکان‌پذیر است.  
+۱. **عدم ذخیره توکن خام در دیتابیس:** توکن‌ها بلافاصله پس از ایجاد با ابزار امنیتی phpass هسته وردپرس هش شده و در صورت نفوذ به دیتابیس، امکان بازیابی رمزها وجود ندارد.
+۲. **اتصال اصولی به نشست کاربری وردپرس:** استفاده از هوک استاندارد `determine_current_user` باعث می‌شود تمام دسترسی‌های داخلی وردپرس بدون نیاز به کدهای ناامن اعمال شوند.
+۳. **حفاظت کامل در برابر SSRF:** ابزار اسکرین‌شات تنها مجاز به بازدید از دامنه‌ای است که در تنظیمات `PRESSAGENT_WP_URL` ثبت شده و از بررسی شبکه داخلی جلوگیری می‌کند.
+۴. **سد دفاعی در برابر Path-Traversal:** فایل‌های لاگ با تابع `realpath` اعتبارسنجی شده و دسترسی به فایل‌های حیاتی نظیر `wp-config.php` مسدود است.
+۵. **لیست سفید سخت‌گیرانه برای گزینه‌ها:** ویرایش متغیرهای هسته وردپرس تنها در صورت داشتن دسترسی مدیریت امکان‌پذیر است.
 ۶. **امنیت در بازگردانی اسنپ‌شات‌ها:** بازگردانی اسنپ‌شات نمی‌تواند لیست سفید امنیتی را دستکاری یا دور بزند.
 
 ---
 
-## 🚀 راهنمای راه‌اندازی سریع
+## راهنمای راه‌اندازی سریع
 
-### 📦 دانلود بسته‌های آماده (فایل‌های زیپ ریلیز)
+### دانلود بسته‌های آماده (فایل‌های زیپ ریلیز)
 
 اگر نمی‌خواهید سورس پروژه را با Git کلون کنید یا سرور MCP را خودتان بیلد نمایید، بسته‌های آماده و کامپایل‌شده را مستقیماً از [صفحه ریلیزهای گیت‌هاب (v1.0.1)](https://github.com/Noctis-Architect/press-agent/releases/tag/v1.0.1) دانلود کنید. قابلیت‌های پلاگین/چایلد/سئوی نسخه ۱.۱.۰ تا انتشار ریلیز بعدی از سورس در دسترس هستند:
 
 | بسته | لینک دانلود مستقیم | توضیحات | روش راه‌اندازی |
 | :--- | :--- | :--- | :--- |
-| **افزونه وردپرس** | [📥 `pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-wordpress-plugin.zip) | فایل زیپ استاندارد افزونه آماده آپلود (مجهز به سیستم خودکار آپدیت از گیت‌هاب) | در پیشخوان وردپرس: **افزونه‌ها ← افزودن افزونه تازه ← بارگذاری افزونه** |
-| **سرور MCP** | [📥 `pressagent-mcp-server.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-mcp-server.zip) | بسته سرور پیش‌کامپایل‌شده تایپ‌اسکریپت همراه با پوشه `dist/` | آنزیپ کنید، دستور `npm install --omit=dev` را بزنید و در هوش مصنوعی به `dist/index.js` اشاره کنید |
+| **افزونه وردپرس** | [`pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-wordpress-plugin.zip) | فایل زیپ استاندارد افزونه آماده آپلود (مجهز به سیستم خودکار آپدیت از گیت‌هاب) | در پیشخوان وردپرس: **افزونه‌ها ← افزودن افزونه تازه ← بارگذاری افزونه** |
+| **سرور MCP** | [`pressagent-mcp-server.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-mcp-server.zip) | بسته سرور پیش‌کامپایل‌شده تایپ‌اسکریپت همراه با پوشه `dist/` | آنزیپ کنید، دستور `npm install --omit=dev` را بزنید و در هوش مصنوعی به `dist/index.js` اشاره کنید |
 
 ---
 
@@ -672,7 +672,7 @@ npm run build
 
 ### گام سوم: تنظیم در ادیتور هوش مصنوعی
 
-#### 🟣 Claude Desktop
+#### Claude Desktop
 فایل تنظیمات `claude_desktop_config.json` را باز کنید:
 ```json
 {
@@ -689,7 +689,7 @@ npm run build
 }
 ```
 
-#### 🌐 Antigravity IDE / CLI
+#### Antigravity IDE / CLI
 فایل `/home/noctis/.gemini/config/mcp_config.json` را ویرایش نمایید:
 ```json
 {
@@ -706,7 +706,7 @@ npm run build
 }
 ```
 
-#### ⚡ Cursor / Windsurf
+#### Cursor / Windsurf
 در تنظیمات MCP ادیتور (فایل `.cursor/mcp.json`):
 ```json
 {
@@ -725,7 +725,7 @@ npm run build
 
 ---
 
-## 🌐 روش‌های اتصال وردپرس محلی و سرور ابری
+## روش‌های اتصال وردپرس محلی و سرور ابری
 
 - **سایت آنلاین:** در صورتی که وردپرس شما روی یک هاست یا سرور با آدرس اینترنتی مشخص بالا باشد، کافیست آدرس آن را در `PRESSAGENT_WP_URL` قرار دهید.
 - **وردپرس لوکال از طریق تونل معکوس SSH:** اگر وردپرس روی سیستم شخصی شما (مثلاً پورت ۸۰۰۰) و دستیار هوش مصنوعی روی سرور ابری است:
@@ -740,7 +740,7 @@ npm run build
 
 ---
 
-## 📋 جدول دسترسی‌ها (RBAC Scopes)
+## جدول دسترسی‌ها (RBAC Scopes)
 
 | دسترسی (Scope) | دسته‌بندی | توضیحات |
 |---|---|---|
@@ -769,7 +769,7 @@ npm run build
 
 ---
 
-## 🛣️ نقشه راه توسعه (Roadmap)
+## نقشه راه توسعه (Roadmap)
 
 - [x] **فاز ۱: هسته پایه‌ای** — کنترل دسترسی رمزنگاری‌شده، هوک ورود استاندارد وردپرس، اسنپ‌شات و بازگردانی Action Guard، لیست سفید تنظیمات.
 - [x] **فاز ۲: موتور بومی المنتور** — ساخت ویجت‌های کامپوننتی استاندارد (بدون کد خام HTML)، کانتینرهای فلکس‌باکس، ذخیره‌سازی از طریق متد داخلی المنتور، پاکسازی خودکار کش‌های CSS.
@@ -782,14 +782,14 @@ npm run build
 
 ---
 
-## 🤝 مشارکت در پروژه
+## مشارکت در پروژه
 
 از هرگونه مشارکت، ارسال Issue و پیشنهادات بهبود صمیمانه استقبال می‌کنیم!
 صفحه [Issues در گیت‌هاب](https://github.com/Noctis-Architect/press-agent/issues) آماده دریافت بازخوردهای شماست.
 
 ---
 
-## 📄 مجوز (License)
+## مجوز (License)
 
 این پروژه تحت مجوز متن‌باز **MIT License** منتشر شده است.
 
