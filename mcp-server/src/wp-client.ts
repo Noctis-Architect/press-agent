@@ -35,7 +35,7 @@ export class WPClient {
     };
 
     if (body) {
-      options.body = JSON.stringify(body);
+      options.body = typeof body === "string" ? body : JSON.stringify(body);
     }
 
     const response = await fetch(url, options);
@@ -67,6 +67,10 @@ export class WPClient {
   }
 
   // Elementor
+  async getElementorKit() {
+    return this.request("/pressagent/v1/elementor/kit");
+  }
+
   async getElementorLayout(pageId: number) {
     return this.request(`/pressagent/v1/elementor/${pageId}`);
   }

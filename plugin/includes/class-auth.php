@@ -10,6 +10,14 @@ class PressAgent_Auth {
      */
     private static $token_cache = array();
 
+    /**
+     * Scopes validated during the current request, used as a fallback when
+     * WP_REST_Request refuses the internal parameter assignment.
+     *
+     * @var array|null
+     */
+    private static $current_scopes = null;
+
     public function __construct() {
         add_filter( 'determine_current_user', array( __CLASS__, 'determine_current_user' ), 20 );
     }
@@ -168,7 +176,10 @@ class PressAgent_Auth {
         $tokens[$id] = $token_data;
         update_option( 'pressagent_tokens', $tokens );
 
-        $request->set_param( 'pressagent_scopes', $token_data['scopes'] );
+        self::$current_scopes = $token_data['scopes'];
+        try {
+            $request->set_param( 'pressagent_scopes', $token_data['scopes'] );
+        } catch ( \Throwable $e ) {}
         $request->set_param( 'pressagent_token_id', $id );
 
         // Associate user context with the authenticated token
@@ -193,8 +204,7 @@ class PressAgent_Auth {
         if ( is_wp_error( $auth_result ) ) {
             return $auth_result;
         }
-
-        $scopes = $request->get_param( 'pressagent_scopes' );
+        $scopes = self::$current_scopes ?? $request->get_param( 'pressagent_scopes' );
         if ( ! is_array( $scopes ) ) {
             return new WP_Error( 'rest_forbidden', 'Insufficient scope: ' . $required_scope, array( 'status' => 403 ) );
         }

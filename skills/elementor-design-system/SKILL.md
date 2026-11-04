@@ -1,129 +1,58 @@
 ---
 name: elementor-design-system
 description: >-
-  Provides modern design patterns, Elementor Flexbox Container recipes, and Hybrid HTML/CSS
-  techniques for creating stunning WordPress pages. Solves layout stacking bugs, vertical misalignment,
-  and empowers LLMs to use their full CSS/HTML design creativity inside Elementor.
+  Provides modern design patterns, container layout recipes, and design token best practices
+  for creating professional Persian WordPress pages using PressAgent MCP.
 ---
 
-# Elementor Design System & Layout Recipes
+# سیستم طراحی و الگوهای چیدمان کانتینر در المنتور (Elementor Design System)
 
-این اسکیل مشکل طراحی انتزاعی و باگ‌های چینش در المنتور (مانند انباشته شدن عمودی کارت‌ها به‌جای افقی قرار گرفتن، یا ظاهر خشک ویجت‌ها) را از طریق الگوهای تست‌شده و تکنیک **ترکیب قدرت CSS خام با المنتور** حل می‌کند.
-
----
-
-## ۱. تکنیک طلایی: هیبرید HTML/CSS در المنتور (Hybrid Technique)
-
-مدل‌های زبانی در نوشتن HTML/CSS و دیزاین‌های مدرن (Glassmorphism، CSS Grid، انیمیشن‌های نرم، گرادینت‌های لوکس) فوق‌العاده آموزش دیده‌اند. اما در ویرایشگر المنتور، محدود شدن صرف به تنظیمات محدود ویجت‌ها دست طراح را می‌بندد.
-
-### راهکار هیبرید:
-می‌توان در ساختار المنتور یک کانتینر مادر تعریف کرد و درون آن یک ویجت `html` قرار داد. با این روش:
-1. المان در قالب المنتور ذخیره می‌شود و ادمین می‌تواند جابجایش کند.
-2. تمام قدرت استایل‌دهی مدرن، فلکس‌باکس و ریسپانسیو CSS در اختیار شماست.
-
-```json
-{
-  "id": "c_features_wrap",
-  "elType": "container",
-  "settings": {
-    "content_width": "boxed",
-    "boxed_width": { "unit": "px", "size": 1200 }
-  },
-  "elements": [
-    {
-      "id": "w_features_html",
-      "elType": "widget",
-      "widgetType": "html",
-      "settings": {
-        "html": "<div class=\"pro-cards-grid\">\n  <div class=\"pro-card\">\n    <div class=\"card-badge\">ویژه</div>\n    <div class=\"card-icon\"><svg ...></svg></div>\n    <h3 class=\"card-title\">عنوان اشتراک</h3>\n    <p class=\"card-desc\">توضیحات کوتاه محصول</p>\n    <div class=\"card-price\">۹۹,۰۰۰ <span>تومان / ماه</span></div>\n    <a href=\"/buy\" class=\"card-btn\">خرید اشتراک</a>\n  </div>\n</div>\n<style>\n.pro-cards-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));\n  gap: 24px;\n  direction: rtl;\n}\n.pro-card {\n  background: rgba(255, 255, 255, 0.04);\n  border: 1px solid rgba(255, 255, 255, 0.1);\n  border-radius: 16px;\n  padding: 24px;\n  backdrop-filter: blur(12px);\n  transition: all 0.3s ease;\n}\n.pro-card:hover {\n  transform: translateY(-6px);\n  border-color: #ec4899;\n}\n</style>"
-      },
-      "elements": []
-    }
-  ]
-}
-```
+این راهنما الگوهای چیدمان حرفه‌ای و نحوه بهره‌گیری از **توکن‌های طراحی (Design Tokens)** را برای خلق صفحات مدرن و متناسب با فرهنگ و زبان فارسی آموزش می‌دهد.
 
 ---
 
-## ۲. فرمول قطعی چیدمان افقی کارت‌ها در کانتینرهای بومی (Flexbox Recipes)
+## ۱. زبان توکن‌های طراحی (Design Token Harmony)
 
-علت اصلی باگ «عمودی شدن کارت‌ها به‌جای افقی»:
-در المنتور کانتینر به‌صورت پیش‌فرض `flex_direction: column` است. برای قرار گرفتن کارت‌ها در یک ردیف افقی، تنظیمات زیر در کانتینر مادر الزامی است:
+سرور PressAgent توکن‌های انتزاعی را مستقیماً از **Elementor Kit** سایت هدف استخراج کرده و به استایل‌های واقعی متصل می‌کند. برای داشتن طراحی منسجم:
 
-### کانتینر ردیفی (Row Container):
-```json
-{
-  "id": "c_row_parent",
-  "elType": "container",
-  "settings": {
-    "content_width": "boxed",
-    "boxed_width": { "unit": "px", "size": 1280 },
-    "flex_direction": "row",
-    "flex_wrap": "wrap",
-    "flex_justify_content": "space-between",
-    "flex_align_items": "stretch",
-    "flex_gap": { "unit": "px", "size": 24, "column": "24", "row": "24" }
-  },
-  "elements": [
-    /* کارت‌های ستونی در اینجا قرار می‌گیرند */
-  ]
-}
-```
+1. **توکن‌های رنگی:**
+   - `primary`: رنگ اصلی برند؛ برای تیترهای شاخص، آیکون‌های کلیدی و هویت سایت.
+   - `accent`: رنگ کنتراست‌بالا؛ مخصوص دکمه‌های اقدام به عمل اصلی (Primary CTA) و بج‌های فروش ویژه.
+   - `secondary`: رنگ دوم برای تیترهای فرعی، پس‌زمینه‌های ملایم و کارت‌های فرعی.
+   - `text`: رنگ متن بدنه برای خوانایی بدون خستگی چشم.
+   - `muted`: برای متون ثانویه، تاریخ، فوتر یا برچسب‌های کم‌اهمیت‌تر.
 
-### تنظیمات هر کارت فرزند (Child Card Container):
-هر کارت درون این ردیف باید عرض مشخص داشته باشد:
-```json
-{
-  "id": "c_card_item_1",
-  "elType": "container",
-  "settings": {
-    "content_width": "full",
-    "width": { "unit": "%", "size": 31 },
-    "width_tablet": { "unit": "%", "size": 48 },
-    "width_mobile": { "unit": "%", "size": 100 },
-    "padding": { "unit": "px", "top": "24", "right": "24", "bottom": "24", "left": "24", "isLinked": true },
-    "background_background": "classic",
-    "background_color": "#111827",
-    "border_border": "solid",
-    "border_width": { "unit": "px", "top": "1", "right": "1", "bottom": "1", "left": "1", "isLinked": true },
-    "border_color": "rgba(255, 255, 255, 0.1)",
-    "border_radius": { "unit": "px", "top": "16", "right": "16", "bottom": "16", "left": "16", "isLinked": true }
-  },
-  "elements": [ ... ]
-}
-```
+2. **توکن‌های فاصله (Spacing Tokens):**
+   - برای گپ بین ویجت‌ها در کانتینر: عموماً `md` (معادل ۱۶ پیکسل) یا `lg` (معادل ۲۴ پیکسل).
+   - برای پدینگ کارت‌های داخلی: `lg` یا `xl`.
+   - برای پدینگ بالا و پایین سکشن‌های اصلی: `2xl`.
 
 ---
 
-## ۳. الگوی هدر مدرن و ریسپانسیو (Header Recipe)
+## ۲. الگوهای مدرن چیدمان با کانتینرهای بومی (Flexbox Recipes)
 
-هدر در زبان فارسی (RTL) باید ۳ بخش مجزا در یک ردیف افقی داشته باشد:
-1. **راست:** لوگو و نام برند
-2. **وسط:** منوی ناوبری اصلی (لینک‌های تمیز)
-3. **چپ:** دکمه ورود/عضویت و سبد خرید
+### الگوی الف: کارت‌های ویژگی در یک ردیف افقی (Row Grid)
+برای چیدمان افقی کارت‌های مزایا یا خدمات، کانتینر مادر را با مشخصات زیر تعریف کنید:
+- `direction: "row"`
+- `wrap: "wrap"`
+- `justify_content: "space-between"`
+- `gap: "lg"`
 
-```json
-{
-  "id": "hdr_outer",
-  "elType": "container",
-  "settings": {
-    "content_width": "full",
-    "flex_direction": "row",
-    "flex_justify_content": "space-between",
-    "flex_align_items": "center",
-    "padding": { "unit": "px", "top": "16", "right": "32", "bottom": "16", "left": "32", "isLinked": false }
-  },
-  "elements": [
-    /* ۳ کانتینر فرزند با flex_direction: row برای لوگو، منو و دکمه‌ها */
-  ]
-}
-```
+کارت‌های فرزند به عنوان کانتینرهای مجزا با پدینگ `lg`، پس‌زمینه مناسب، گوشه‌های گرد (`border_radius: "md"`) و ویجت‌های بومی (`icon-box` یا `heading` + `text-editor`) قرار می‌گیرند.
+
+### الگوی ب: بخش قهرمان دو ستونه (Hero Section)
+- کانتینر مادر: `direction: "row"`, `align_items: "center"`, `justify_content: "space-between"`
+- ستون راست (در وب فارسی RTL): کانتینر عمودی حاوی تیتر جذاب `h1`، متن کوتاه، و دکمه CTA با رنگ `accent`.
+- ستون چپ: تصویر شاخص یا بنر معرفی محصول با گوشه‌های گرد و نسبت ابعاد مناسب.
+
+### الگوی ج: نوار آمار و اثبات اجتماعی (Social Proof Bar)
+- کانتینر ردیفی با `direction: "row"`, `justify_content: "space-around"`, پس‌زمینه `secondary` یا `primary`.
+- ویجت‌های `counter` با ارقام شاخص و عنوان کوتاه.
 
 ---
 
-## ۴. چک‌لیست جلوگیری از خطاهای رایج بصری
+## ۳. استانداردهای بصری و خوانایی در زبان فارسی (RTL First)
 
-- [ ] **هیچ کارتی با عرض ۱۰۰٪ بدون نیاز در دسکتاپ رها نشود.**
-- [ ] **برای صفحات تاریک (Dark Mode):** از متن‌های با کنتراست بالا (`#f8fafc` برای عناوین و `#94a3b8` برای توضیحات) استفاده کنید.
-- [ ] **فاصله مناسب بین سکشن‌ها:** هر سکشن اصلی در دسکتاپ حداقل `80px` تا `100px` پدینگ بالا و پایین داشته باشد.
-- [ ] **عدم استفاده بیش از حد از ایموجی:** به جای ایموجی، از آیکون‌های SVG استاندارد FontAwesome یا استروک‌های مینیمال استفاده کنید.
+- **جهت‌گیری دید مخاطب:** چشم کاربران فارسی‌زبان از راست به چپ حرکت می‌کند. پیام اصلی، آیکون‌ها و نقاط شروع متن همواره در سمت راست قرار گیرند.
+- **تضاد و کنتراست رنگی:** در تم‌های تیره یا پس‌زمینه‌های پررنگ، متون حتماً با توکن‌های روشن (`white` یا رنگ‌های با کنتراست بالا) همراه شوند تا خوانایی فدای زیبایی نشود.
+- **تراکم اطلاعات:** از شلوغی بیش از حد پرهیز کنید. استفاده سخاوتمندانه از فضاهای تنفس (`gap` و `padding`) حس لوکس و مدرن بودن به سایت می‌دهد.

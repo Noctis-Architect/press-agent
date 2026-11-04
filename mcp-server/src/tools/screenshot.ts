@@ -20,6 +20,115 @@ function findChromiumPath(): string {
   return "chromium";
 }
 
+export interface ScreenshotOptions {
+  page_id?: number;
+  url?: string;
+  viewport?: "desktop" | "mobile" | "tablet";
+  full_page?: boolean;
+  wait_ms?: number;
+}
+
+export async function captureScreenshotInternal(options: ScreenshotOptions) {
+  const page_id = options.page_id;
+  const url = options.url;
+  const viewport = options.viewport || "desktop";
+  const full_page = options.full_page ?? false;
+  const wait_ms = options.wait_ms ?? 2500;
+  const wpBaseUrl = process.env.PRESSAGENT_WP_URL || "http://localhost:8000";
+
+  // Determine target URL
+  let targetUrl = wpBaseUrl;
+  if (page_id) {
+    targetUrl = `${wpBaseUrl.replace(/\/$/, "")}/?p=${page_id}`;
+  } else if (url) {
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      // SSRF guard: only allow URLs that belong to the configured WordPress origin.
+      const wpOrigin = new URL(wpBaseUrl).origin;
+      let candidate: URL;
+      try {
+        candidate = new URL(url);
+      } catch {
+        throw new Error("Invalid url provided.");
+      }
+      if (candidate.origin !== wpOrigin) {
+        throw new Error("Only URLs on the configured WordPress site are allowed.");
+      }
+      targetUrl = candidate.toString();
+    } else {
+      const cleanPath = url.startsWith("/") ? url : `/${url}`;
+      targetUrl = `${wpBaseUrl.replace(/\/$/, "")}${cleanPath}`;
+    }
+  }
+
+  // Viewport resolution
+  let width = 1280;
+  let height = full_page ? 2400 : 800;
+  let userAgent: string | undefined;
+
+  if (viewport === "mobile") {
+    width = 375;
+    height = full_page ? 2200 : 812;
+    userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1";
+  } else if (viewport === "tablet") {
+    width = 768;
+    height = full_page ? 2400 : 1024;
+    userAgent = "Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1";
+  }
+
+  const timestamp = Date.now();
+  const outputFilename = `pressagent_${viewport}_${timestamp}.png`;
+  const outputPath = path.join("/tmp", outputFilename);
+  const symlinkPath = path.join("/tmp", `pressagent_preview_${viewport}.png`);
+
+  const chromiumBin = findChromiumPath();
+  const chromeArgs = [
+    "--headless",
+    "--disable-gpu",
+    "--no-sandbox",
+    "--hide-scrollbars",
+    `--virtual-time-budget=${wait_ms}`,
+    `--window-size=${width},${height}`,
+    `--screenshot=${outputPath}`
+  ];
+
+  if (userAgent) {
+    chromeArgs.push(`--user-agent=${userAgent}`);
+  }
+
+  chromeArgs.push(targetUrl);
+
+  try {
+    await execFileAsync(chromiumBin, chromeArgs, { timeout: 30000 });
+
+    // Create/update friendly symlink
+    try {
+      if (fs.existsSync(symlinkPath)) {
+        fs.unlinkSync(symlinkPath);
+      }
+      fs.symlinkSync(outputPath, symlinkPath);
+    } catch (e) {
+      // Ignore symlink failure
+    }
+
+    return {
+      success: true,
+      target_url: targetUrl,
+      viewport: viewport,
+      width,
+      height,
+      image_path: outputPath,
+      preview_symlink: symlinkPath,
+      message: `Screenshot captured successfully. Use view_file on "${outputPath}" to visually inspect the rendered page layout.`
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      target_url: targetUrl,
+      error: `Failed to capture screenshot with chromium: ${err.message || err}`
+    };
+  }
+}
+
 export function registerScreenshotTools(
   tools: any[],
   handlers: Map<string, (args: any) => Promise<any>>,
@@ -76,94 +185,11 @@ FOLLOW THIS 5-STEP QA LOOP FOR EVERY PAGE CREATION OR REDESIGN:
     });
 
     const parsed = schema.parse(args || {});
-    const wpBaseUrl = process.env.PRESSAGENT_WP_URL || "http://localhost:8000";
-
-    // Determine target URL
-    let targetUrl = wpBaseUrl;
-    if (parsed.page_id) {
-      targetUrl = `${wpBaseUrl.replace(/\/$/, "")}/?p=${parsed.page_id}`;
-    } else if (parsed.url) {
-      if (parsed.url.startsWith("http://") || parsed.url.startsWith("https://")) {
-        // SSRF guard: only allow URLs that belong to the configured WordPress origin.
-        const wpOrigin = new URL(wpBaseUrl).origin;
-        let candidate: URL;
-        try {
-          candidate = new URL(parsed.url);
-        } catch {
-          throw new Error("Invalid url provided.");
-        }
-        if (candidate.origin !== wpOrigin) {
-          throw new Error("Only URLs on the configured WordPress site are allowed.");
-        }
-        targetUrl = candidate.toString();
-      } else {
-        const cleanPath = parsed.url.startsWith("/") ? parsed.url : `/${parsed.url}`;
-        targetUrl = `${wpBaseUrl.replace(/\/$/, "")}${cleanPath}`;
-      }
+    const result = await captureScreenshotInternal(parsed);
+    if (!result.success) {
+      throw new Error(result.error);
     }
-
-    // Viewport resolution
-    let width = 1280;
-    let height = parsed.full_page ? 2400 : 800;
-    let userAgent: string | undefined;
-
-    if (parsed.viewport === "mobile") {
-      width = 375;
-      height = parsed.full_page ? 2200 : 812;
-      userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1";
-    } else if (parsed.viewport === "tablet") {
-      width = 768;
-      height = parsed.full_page ? 2400 : 1024;
-      userAgent = "Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1";
-    }
-
-    const timestamp = Date.now();
-    const outputFilename = `pressagent_${parsed.viewport}_${timestamp}.png`;
-    const outputPath = path.join("/tmp", outputFilename);
-    const symlinkPath = path.join("/tmp", `pressagent_preview_${parsed.viewport}.png`);
-
-    const chromiumBin = findChromiumPath();
-    const chromeArgs = [
-      "--headless",
-      "--disable-gpu",
-      "--no-sandbox",
-      "--hide-scrollbars",
-      `--virtual-time-budget=${parsed.wait_ms}`,
-      `--window-size=${width},${height}`,
-      `--screenshot=${outputPath}`
-    ];
-
-    if (userAgent) {
-      chromeArgs.push(`--user-agent=${userAgent}`);
-    }
-
-    chromeArgs.push(targetUrl);
-
-    try {
-      await execFileAsync(chromiumBin, chromeArgs, { timeout: 30000 });
-
-      // Create/update friendly symlink
-      try {
-        if (fs.existsSync(symlinkPath)) {
-          fs.unlinkSync(symlinkPath);
-        }
-        fs.symlinkSync(outputPath, symlinkPath);
-      } catch (e) {
-        // Ignore symlink failure
-      }
-
-      return {
-        success: true,
-        target_url: targetUrl,
-        viewport: parsed.viewport,
-        width,
-        height,
-        image_path: outputPath,
-        preview_symlink: symlinkPath,
-        message: `Screenshot captured successfully. Use view_file on "${outputPath}" to visually inspect the rendered page layout.`
-      };
-    } catch (err: any) {
-      throw new Error(`Failed to capture screenshot with chromium: ${err.message || err}`);
-    }
+    return result;
   });
 }
+

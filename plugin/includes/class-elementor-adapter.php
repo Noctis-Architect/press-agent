@@ -30,6 +30,13 @@ class PressAgent_Elementor_Adapter {
     public static function add_section( $page_id, $section_data ) {
         if ( ! self::is_active() ) return new WP_Error( 'elementor_missing', 'Elementor is not active' );
         
+        if ( is_string( $section_data ) ) {
+            $decoded = json_decode( $section_data, true );
+            if ( is_array( $decoded ) ) {
+                $section_data = $decoded;
+            }
+        }
+        
         if ( isset( $section_data['_replace_all'] ) && $section_data['_replace_all'] === true ) {
             $elements = $section_data['elements'] ?? array();
         } else {
@@ -104,5 +111,57 @@ class PressAgent_Elementor_Adapter {
             }
         }
         return false;
+    }
+
+    public static function get_kit() {
+        if ( ! self::is_active() ) {
+            return new WP_Error( 'elementor_missing', 'Elementor is not active' );
+        }
+
+        $kit = \Elementor\Plugin::$instance->kits_manager->get_active_kit();
+        if ( ! $kit ) {
+            return array(
+                'kit_id' => null,
+                'colors' => array(),
+                'typography' => array(),
+                'container_width' => 1140,
+                'space_between_widgets' => 20
+            );
+        }
+
+        $settings = $kit->get_settings();
+        $system_colors = $settings['system_colors'] ?? array();
+        $custom_colors = $settings['custom_colors'] ?? array();
+        $system_typography = $settings['system_typography'] ?? array();
+        $custom_typography = $settings['custom_typography'] ?? array();
+
+        $colors = array();
+        foreach ( array_merge( $system_colors, $custom_colors ) as $c ) {
+            if ( ! empty( $c['_id'] ) && ! empty( $c['color'] ) ) {
+                $colors[$c['_id']] = array(
+                    'title' => $c['title'] ?? $c['_id'],
+                    'value' => $c['color']
+                );
+            }
+        }
+
+        $typography = array();
+        foreach ( array_merge( $system_typography, $custom_typography ) as $t ) {
+            if ( ! empty( $t['_id'] ) ) {
+                $typography[$t['_id']] = array(
+                    'title' => $t['title'] ?? $t['_id'],
+                    'font_family' => $t['typography_font_family'] ?? 'inherit',
+                    'font_weight' => $t['typography_font_weight'] ?? 'normal'
+                );
+            }
+        }
+
+        return array(
+            'kit_id' => $kit->get_id(),
+            'colors' => $colors,
+            'typography' => $typography,
+            'container_width' => $settings['container_width'] ?? 1140,
+            'space_between_widgets' => $settings['space_between_widgets'] ?? 20
+        );
     }
 }

@@ -30,6 +30,12 @@ class PressAgent_REST_API {
         ) );
 
         // Elementor
+        register_rest_route( $namespace, '/elementor/kit', array(
+            'methods' => WP_REST_Server::READABLE,
+            'callback' => function() { return rest_ensure_response( PressAgent_Elementor_Adapter::get_kit() ); },
+            'permission_callback' => function( $request ) { return PressAgent_Auth::has_scope( $request, 'elementor:read' ); }
+        ) );
+
         register_rest_route( $namespace, '/elementor/(?P<page_id>\d+)', array(
             'methods' => WP_REST_Server::READABLE,
             'callback' => function( $request ) { return rest_ensure_response( PressAgent_Elementor_Adapter::get_layout( $request->get_param( 'page_id' ) ) ); },
@@ -49,6 +55,12 @@ class PressAgent_REST_API {
             'methods' => WP_REST_Server::CREATABLE,
             'callback' => function( $request ) {
                 $params = $request->get_json_params();
+                if ( is_string( $params ) ) {
+                    $decoded = json_decode( $params, true );
+                    if ( is_array( $decoded ) ) {
+                        $params = $decoded;
+                    }
+                }
                 $section_data = isset( $params['section_data'] ) ? $params['section_data'] : $params;
                 return PressAgent_Elementor_Adapter::add_section( $request->get_param( 'page_id' ), $section_data );
             },
