@@ -1,0 +1,400 @@
+{
+  "slug": "litespeed-cache",
+  "name": "LiteSpeed Cache",
+  "plugin_file": "litespeed-cache/litespeed-cache.php",
+  "version_analyzed": "7.9.3",
+  "storage_notes": "Every setting is a separate wp_options row named litespeed.conf.<id> (Root::name() builds 'litespeed.' + lowercase class + '.' + id; src/root.cls.php:563). Array values are JSON-encoded by Conf::_maybe_encode (src/root.cls.php:668). litespeed.conf.hash is a random 32-char secret, not a settings checksum; litespeed.conf._version is the installed schema version. Defaults come from data/const.default.json and class defaults, so many rows do not exist until configured. Cache/optimized files live under wp-content/litespeed (LITESPEED_STATIC_DIR, litespeed-cache.php:67).",
+  "settings": [
+    {
+      "key": "litespeed.conf.hash",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Random 32-character security key generated on install and used for ESI HMAC/vary hashing. It is explicitly not settable and is skipped by Conf::update(). Never write it.",
+      "fields": {"not_settable": true},
+      "source": "src/base.cls.php:32",
+      "safe_to_write": false
+    },
+    {
+      "key": "litespeed.conf._version",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Internal configuration/version marker used by upgrade routines. Read-only.",
+      "fields": {"example": "7.9.3"},
+      "source": "src/base.cls.php:31",
+      "safe_to_write": false
+    },
+    {
+      "key": "litespeed.conf.cache",
+      "storage": "option",
+      "shape": "int",
+      "summary": "Master page-cache switch. 0 off, 1 on; multisite also uses 2 (inherit network admin setting). Changing it purges all caches.",
+      "fields": {"0": "off", "1": "on", "2": "network setting (multisite)"},
+      "source": "src/base.cls.php:45",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.cache-priv",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Cache private pages for logged-in users.",
+      "fields": {},
+      "source": "src/base.cls.php:46",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.cache-mobile",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Enable separate mobile cache; user-agent rules are in cache-mobile_rules.",
+      "fields": {},
+      "source": "src/base.cls.php:51",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.cache-browser",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Enable browser cache headers; TTL is cache-ttl_browser.",
+      "fields": {},
+      "source": "src/base.cls.php:53",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.cache-rest",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Cache REST API responses according to cache-ttl_rest.",
+      "fields": {},
+      "source": "src/base.cls.php:48",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.cache-ttl_pub",
+      "storage": "option",
+      "shape": "int",
+      "summary": "Public page TTL in seconds. Default 604800; UI recommends minimum 30.",
+      "fields": {"unit": "seconds", "default": 604800},
+      "source": "src/base.cls.php:65",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.cache-ttl_frontpage",
+      "storage": "option",
+      "shape": "int",
+      "summary": "Front-page TTL in seconds. Default 604800.",
+      "fields": {"unit": "seconds", "default": 604800},
+      "source": "src/base.cls.php:67",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.cache-exc",
+      "storage": "option",
+      "shape": "array",
+      "summary": "URLs excluded from cache. Array items are normalized to relative paths; changing it purges listed URLs.",
+      "fields": {"item": "string URL/path", "filter": "relative"},
+      "source": "src/base.cls.php:62",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.cache-exc_cookies",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Cookie names/patterns that bypass cache.",
+      "fields": {"item": "string cookie name"},
+      "source": "src/base.cls.php:55",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.cache-exc_useragents",
+      "storage": "option",
+      "shape": "array",
+      "summary": "User-agent strings that bypass cache.",
+      "fields": {"item": "string user agent"},
+      "source": "src/base.cls.php:54",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.cache-exc_qs",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Query-string parameters ignored when matching cache entries.",
+      "fields": {"item": "string parameter"},
+      "source": "src/base.cls.php:56",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.cache-force_uri",
+      "storage": "option",
+      "shape": "array",
+      "summary": "URLs forced to be cached even if they would normally be excluded.",
+      "fields": {"item": "string URL/path", "filter": "relative"},
+      "source": "src/base.cls.php:59",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.purge-post_all",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Purge the whole cache when a post is published/updated instead of selected ancestors.",
+      "fields": {},
+      "source": "src/base.cls.php:82",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.purge-upgrade",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Purge all caches after plugin upgrade.",
+      "fields": {},
+      "source": "src/base.cls.php:80",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.optm-css_min",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Minify CSS.",
+      "fields": {},
+      "source": "src/base.cls.php:135",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.optm-css_comb",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Combine CSS files (CCS must be configured when enabled).",
+      "fields": {},
+      "source": "src/base.cls.php:136",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.optm-ucss",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Generate and use Unique CSS; requires QUIC.cloud service quota.",
+      "fields": {},
+      "source": "src/base.cls.php:138",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.optm-js_min",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Minify JavaScript.",
+      "fields": {},
+      "source": "src/base.cls.php:144",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.optm-js_comb",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Combine JavaScript files.",
+      "fields": {},
+      "source": "src/base.cls.php:145",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.optm-js_defer",
+      "storage": "option",
+      "shape": "int",
+      "summary": "JavaScript defer mode; multi-switch 0/1/2 (off / deferred / delayed).",
+      "fields": {"0": "off", "1": "deferred", "2": "delayed"},
+      "source": "src/base.cls.php:161",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.optm-html_min",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Minify HTML output.",
+      "fields": {},
+      "source": "src/base.cls.php:149",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.optm-css_font_display",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Add font-display support to optimized CSS.",
+      "fields": {},
+      "source": "src/base.cls.php:160",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.media-lazy",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Enable native lazy loading for images/iframes.",
+      "fields": {},
+      "source": "src/base.cls.php:203",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.img_optm-webp",
+      "storage": "option",
+      "shape": "int",
+      "summary": "Image replacement format; multi-switch 0/1/2 (off / WebP / AVIF). AVIF is a paid QUIC.cloud feature.",
+      "fields": {"0": "off", "1": "WebP", "2": "AVIF"},
+      "source": "src/base.cls.php:234",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.object",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Enable LiteSpeed object cache. Related credentials are object-kind, object-host, object-port, object-user, object-pswd and object-db_id.",
+      "fields": {"related": ["object-kind", "object-host", "object-port", "object-user", "object-pswd", "object-db_id"]},
+      "source": "src/base.cls.php:180",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.crawler",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Enable the built-in crawler. Related options include crawler-sitemap, crawler-load_limit and crawler-crawl_interval.",
+      "fields": {"related": ["crawler-sitemap", "crawler-load_limit", "crawler-crawl_interval"]},
+      "source": "src/base.cls.php:244",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.debug",
+      "storage": "option",
+      "shape": "int",
+      "summary": "Debug logging switch; multi-switch 0/1/2 (off / on / admin IP only).",
+      "fields": {"0": "off", "1": "on", "2": "admin IP only"},
+      "source": "src/base.cls.php:115",
+      "safe_to_write": true
+    },
+    {
+      "key": "litespeed.conf.debug-level",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Advanced debug detail switch used when debug logging is enabled.",
+      "fields": {},
+      "source": "src/base.cls.php:117",
+      "safe_to_write": true
+    }
+  ],
+  "meta": [],
+  "actions": [
+    {
+      "name": "save_settings",
+      "summary": "Canonical settings write path: validates IDs, casts types, updates per-setting options, applies purge rules, updates cron and syncs config files.",
+      "implementation": "LiteSpeed\\API::cls()->save_conf($matrix)",
+      "params": {"matrix": "object of id => value, e.g. {\"cache\":1,\"optm-css_min\":1}"},
+      "safety": "write",
+      "source": "src/api.cls.php:317"
+    },
+    {
+      "name": "update_conf",
+      "summary": "Lower-level equivalent used by save_conf; calls Conf::update() per id then purge/file/cron side effects.",
+      "implementation": "LiteSpeed\\Conf::cls()->update_confs($matrix)",
+      "params": {"matrix": "object of id => value"},
+      "safety": "write",
+      "source": "src/conf.cls.php:637"
+    },
+    {
+      "name": "get_setting",
+      "summary": "Read an effective setting, including defaults, constants, filters and multisite overrides.",
+      "implementation": "LiteSpeed\\Conf::cls()->conf($id)",
+      "params": {"id": "string setting id without litespeed.conf. prefix"},
+      "safety": "read",
+      "source": "src/root.cls.php:482"
+    },
+    {
+      "name": "purge_all",
+      "summary": "Purge LSCache, CSS/JS, local resources, object cache and OPcache; also Cloudflare if configured.",
+      "implementation": "do_action('litespeed_purge_all') or LiteSpeed\\Purge::purge_all($reason)",
+      "params": {"reason": "string optional"},
+      "safety": "destructive",
+      "source": "src/purge.cls.php:231"
+    },
+    {
+      "name": "purge_url",
+      "summary": "Purge one URL from LSCache.",
+      "implementation": "do_action('litespeed_purge_url', $url)",
+      "params": {"url": "string absolute URL"},
+      "safety": "destructive",
+      "source": "src/api.cls.php:113"
+    },
+    {
+      "name": "purge_post",
+      "summary": "Purge cache entries related to one post ID.",
+      "implementation": "do_action('litespeed_purge_post', $post_id)",
+      "params": {"post_id": "int"},
+      "safety": "destructive",
+      "source": "src/api.cls.php:111"
+    },
+    {
+      "name": "purge_posttype",
+      "summary": "Purge all cache entries for a post type.",
+      "implementation": "do_action('litespeed_purge_posttype', $post_type)",
+      "params": {"post_type": "string"},
+      "safety": "destructive",
+      "source": "src/api.cls.php:112"
+    },
+    {
+      "name": "purge_all_lscache",
+      "summary": "Purge only the web-server page cache, leaving CSS/JS/object caches.",
+      "implementation": "LiteSpeed\\Purge::purge_all_lscache($reason)",
+      "params": {"reason": "string optional"},
+      "safety": "destructive",
+      "source": "src/purge.cls.php:283"
+    }
+  ],
+  "rest_routes": [
+    {
+      "route": "/wp-json/litespeed/v1/toggle_crawler_state",
+      "methods": ["POST"],
+      "permission": "manage_options or manage_network_options",
+      "source": "src/rest.cls.php:50"
+    },
+    {
+      "route": "/wp-json/litespeed/v1/tool/check_ip",
+      "methods": ["GET"],
+      "permission": "manage_options or manage_network_options",
+      "source": "src/rest.cls.php:58"
+    },
+    {
+      "route": "/wp-json/litespeed/v1/guest/sync",
+      "methods": ["GET"],
+      "permission": "manage_options or manage_network_options",
+      "source": "src/rest.cls.php:66"
+    }
+  ],
+  "objects": [
+    {
+      "type": "litespeed_cache_store",
+      "storage": "Filesystem wp-content/litespeed (LITESPEED_STATIC_DIR) plus LiteSpeed web-server cache entries",
+      "summary": "Page cache, optimized CSS/JS, CCSS/UCSS, image optimization placeholders and crawler data.",
+      "crud_notes": "There is no supported file-level CRUD. List/inspect via Purge and Crawler APIs; invalidate with purge_all, purge_url, purge_post or purge_posttype. Never delete files directly.",
+      "source": "litespeed-cache.php:67"
+    },
+    {
+      "type": "litespeed_settings",
+      "storage": "wp_options rows litespeed.conf.<id>",
+      "summary": "All plugin configuration; each setting is its own row rather than one serialized array.",
+      "crud_notes": "Read effective values with Conf::conf(). Write with API::save_conf()/Conf::update_confs() so validation, type casting, purge rules and .litespeed_conf file sync run. Raw update_option writes skip all of that.",
+      "source": "src/conf.cls.php:637"
+    }
+  ],
+  "detection": {
+    "active_check": "defined('LSCWP_V') or class_exists('LiteSpeed\\Core'); plugin basename LSCWP_BASENAME = litespeed-cache/litespeed-cache.php",
+    "source": "litespeed-cache.php:38"
+  },
+  "pro_notes": [
+    "There is no separate LiteSpeed Cache Pro plugin. QUIC.cloud-dependent features (UCSS, image optimization, CDN) require an external QUIC.cloud account and service quota; AVIF output is explicitly a paid QUIC.cloud feature (tpl/img_optm/settings.media_webp.tpl.php:31). Cloud quotas/provisioning were not verified in this source analysis."
+  ],
+  "gotchas": [
+    "litespeed.conf.hash is a random secret generated once (src/base.cls.php:873), not a checksum of settings; Conf::update() refuses it (src/conf.cls.php:721). Writing the other options does not require recomputing the hash and you must never overwrite/delete it.",
+    "Raw update_option('litespeed.conf.x', ...) skips type casting, validation, automatic purge and Activation::update_files() sync. Use API::save_conf() or Conf::update_confs().",
+    "Array settings are JSON-encoded in the option row by Conf::_maybe_encode() (src/root.cls.php:668); read through Conf::conf(), which decodes them.",
+    "Many option rows do not exist until first saved. Read with Conf::conf() (applies data/const.default.json defaults) instead of get_option() with a hardcoded default.",
+    "cache, debug, optm-js_defer and img_optm-webp are multi-switch values (0/1/2), not plain booleans; see src/base.cls.php:635.",
+    "TTL options are seconds, not minutes/hours; cache-ttl_pub defaults to 604800 and the UI warns below 30 seconds.",
+    "Multisite uses cache=2 to mean inherit the network setting; shared object-cache flushes require network authority.",
+    "Settings changes can trigger purge-all or per-URL purges inside update_confs(); expect cache warm-up after writes.",
+    "WP-CLI is available: wp litespeed-purge all|url|post_id|... (cli/purge.cls.php:68)."
+  ]
+}

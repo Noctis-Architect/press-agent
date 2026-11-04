@@ -1,0 +1,432 @@
+{
+  "slug": "redirection",
+  "name": "Redirection",
+  "plugin_file": "redirection/redirection.php",
+  "version_analyzed": "5.10.1",
+  "storage_notes": "All settings live in the single option redirection_options (array, merged with defaults at read time). Redirects, groups, redirect logs and 404 logs live in custom tables {prefix}redirection_items, {prefix}redirection_groups, {prefix}redirection_logs and {prefix}redirection_404. The DB schema version is stored inside redirection_options['database'] (target REDIRECTION_DB_VERSION 4.2) and must be >= the plugin constant before items/logs are safe to use. Module settings are nested under redirection_options['modules'].",
+  "settings": [
+    {
+      "key": "redirection_options",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Single settings array; write through red_set_options()/Red_Options::save() which sanitizes, merges defaults and clears the in-memory cache. Read through red_get_options()/Red_Options::get().",
+      "fields": {
+        "auto_target": {
+          "type": "string",
+          "default": "",
+          "summary": "Auto-generate target URL for new redirects.",
+          "source": "vendor/plugins/redirection/models/options.php:268"
+        },
+        "expire_redirect": {
+          "type": "int",
+          "default": 7,
+          "summary": "Days to retain redirect logs; -1 disables expiry, max 60.",
+          "source": "vendor/plugins/redirection/models/options.php:269"
+        },
+        "expire_404": {
+          "type": "int",
+          "default": 7,
+          "summary": "Days to retain 404 logs; -1 disables expiry, max 60.",
+          "source": "vendor/plugins/redirection/models/options.php:270"
+        },
+        "redirect_cache": {
+          "type": "int",
+          "default": 1,
+          "summary": "Redirect cache duration flag; allowed -1, 0, 1, 24, 168.",
+          "source": "vendor/plugins/redirection/models/options.php:275"
+        },
+        "monitor_post": {
+          "type": "int",
+          "default": 0,
+          "summary": "Group ID that receives redirects when post permalinks change; 0 disables.",
+          "source": "vendor/plugins/redirection/models/options.php:265"
+        },
+        "monitor_types": {
+          "type": "array<string>",
+          "default": [],
+          "summary": "Post types monitored for URL changes.",
+          "source": "vendor/plugins/redirection/models/options.php:266"
+        },
+        "associated_redirect": {
+          "type": "string",
+          "default": "",
+          "summary": "Fallback target used by post monitoring.",
+          "source": "vendor/plugins/redirection/models/options.php:267"
+        },
+        "https": {
+          "type": "bool",
+          "default": false,
+          "summary": "Force HTTPS redirect (site option).",
+          "source": "vendor/plugins/redirection/models/options.php:281"
+        },
+        "headers": {
+          "type": "array",
+          "default": [],
+          "summary": "Custom HTTP headers injected by the module.",
+          "source": "vendor/plugins/redirection/models/options.php:282"
+        },
+        "aliases": {
+          "type": "array<string>",
+          "default": [],
+          "summary": "Additional hostnames for the site (max 20).",
+          "source": "vendor/plugins/redirection/models/options.php:286"
+        },
+        "preferred_domain": {
+          "type": "string",
+          "default": "",
+          "summary": "Preferred domain: '', 'www' or 'nowww'.",
+          "source": "vendor/plugins/redirection/models/options.php:285"
+        },
+        "rest_api": {
+          "type": "int",
+          "default": 0,
+          "summary": "REST route style constant; 0 JSON, 1 JSON index, 3 relative.",
+          "source": "vendor/plugins/redirection/models/options.php:280"
+        },
+        "track_hits": {
+          "type": "bool",
+          "default": true,
+          "summary": "Count redirect hits.",
+          "source": "vendor/plugins/redirection/models/options.php:273"
+        }
+      },
+      "source": "vendor/plugins/redirection/models/options.php:49",
+      "safe_to_write": true
+    },
+    {
+      "key": "redirection_options[database]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Installed DB schema version. Internal: do not write manually; upgrade routines set it after creating/altering tables.",
+      "fields": {},
+      "source": "vendor/plugins/redirection/includes/database/schema/class-latest.php:48",
+      "safe_to_write": false
+    },
+    {
+      "key": "redirection_options[modules]",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Per-module settings (module 1 = WordPress redirects, module 2 = 404/logging). Internal nested structure updated by Red_Module::update().",
+      "fields": {},
+      "source": "vendor/plugins/redirection/models/options.php:274",
+      "safe_to_write": false
+    }
+  ],
+  "meta": [],
+  "actions": [
+    {
+      "name": "list_redirects",
+      "summary": "List all redirects (bounded by Red_Item::MAX_REDIRECTS 20000).",
+      "implementation": "Red_Item::get_all()",
+      "params": {},
+      "safety": "read",
+      "source": "vendor/plugins/redirection/models/redirect/redirect.php:516"
+    },
+    {
+      "name": "get_redirect",
+      "summary": "Load one redirect by ID.",
+      "implementation": "Red_Item::get_by_id($id)",
+      "params": {
+        "id": "int"
+      },
+      "safety": "read",
+      "source": "vendor/plugins/redirection/models/redirect/redirect.php:570"
+    },
+    {
+      "name": "find_redirect_for_url",
+      "summary": "Find the redirect matching a URL, including regex/flag matching.",
+      "implementation": "Red_Item::get_for_url($url)",
+      "params": {
+        "url": "string"
+      },
+      "safety": "read",
+      "source": "vendor/plugins/redirection/models/redirect/redirect.php:406"
+    },
+    {
+      "name": "create_redirect",
+      "summary": "Create a redirect after sanitization; requires an existing group. action_data for action_type=url is an array with a url key, e.g. ['url'=>'https://target/'].",
+      "implementation": "Red_Item::create($details)",
+      "params": {
+        "url": "string (required)",
+        "action_type": "string (url|error|nothing|random|pass)",
+        "action_code": "int (301/302/303/304/307/308 or error codes)",
+        "action_data": "array (url target for action_type=url)",
+        "group_id": "int (existing group)",
+        "match_type": "string (default url)",
+        "title": "string",
+        "regex": "0|1"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/redirection/models/redirect/redirect.php:613"
+    },
+    {
+      "name": "update_redirect",
+      "summary": "Update redirect fields; same sanitizer and cache flush as create.",
+      "implementation": "$item->update($details)",
+      "params": {
+        "id": "int",
+        "url": "string",
+        "action_type": "string",
+        "action_code": "int",
+        "action_data": "array",
+        "group_id": "int",
+        "title": "string",
+        "regex": "0|1"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/redirection/models/redirect/redirect.php:662"
+    },
+    {
+      "name": "delete_redirect",
+      "summary": "Delete one redirect and flush its module cache.",
+      "implementation": "$item->delete()",
+      "params": {
+        "id": "int"
+      },
+      "safety": "destructive",
+      "source": "vendor/plugins/redirection/models/redirect/redirect.php:598"
+    },
+    {
+      "name": "set_redirect_enabled",
+      "summary": "Enable or disable one redirect without changing its target.",
+      "implementation": "$item->enable() / $item->disable()",
+      "params": {
+        "id": "int",
+        "enabled": "bool"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/redirection/models/redirect/redirect.php:841"
+    },
+    {
+      "name": "bulk_delete_redirects",
+      "summary": "Delete redirects by filter parameters (or global filters).",
+      "implementation": "Red_Item::delete_all($params)",
+      "params": {
+        "filterBy": "array",
+        "global": "bool"
+      },
+      "safety": "destructive",
+      "source": "vendor/plugins/redirection/models/redirect/redirect.php:1031"
+    },
+    {
+      "name": "create_group",
+      "summary": "Create a redirect group inside a valid module.",
+      "implementation": "Red_Group::create($name, $module_id, $enabled)",
+      "params": {
+        "name": "string",
+        "module_id": "int",
+        "enabled": "bool"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/redirection/models/group.php:235"
+    },
+    {
+      "name": "update_group",
+      "summary": "Rename a group or move it to another module.",
+      "implementation": "$group->update(['name'=>..,'moduleId'=>..])",
+      "params": {
+        "id": "int",
+        "name": "string",
+        "moduleId": "int"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/redirection/models/group.php:266"
+    },
+    {
+      "name": "delete_group",
+      "summary": "Delete a group and every redirect inside it.",
+      "implementation": "$group->delete()",
+      "params": {
+        "id": "int"
+      },
+      "safety": "destructive",
+      "source": "vendor/plugins/redirection/models/group.php:292"
+    },
+    {
+      "name": "lookup_404s",
+      "summary": "Read/filter 404 log rows, including exact URL lookup.",
+      "implementation": "Red_404_Log::get_filtered(['filterBy'=>['url-exact'=>$url], 'per_page'=>N, 'page'=>P])",
+      "params": {
+        "filterBy": "array (url, url-exact, ip, referrer, agent, domain, method, http)",
+        "per_page": "int (5-200)",
+        "page": "int (0-based)"
+      },
+      "safety": "read",
+      "source": "vendor/plugins/redirection/models/log/log.php:310"
+    },
+    {
+      "name": "delete_404_logs",
+      "summary": "Delete 404 rows matching filters, or all rows when no filter is given.",
+      "implementation": "Red_404_Log::delete_all($params)",
+      "params": {
+        "filterBy": "array"
+      },
+      "safety": "destructive",
+      "source": "vendor/plugins/redirection/models/log/log.php:269"
+    },
+    {
+      "name": "flush_redirect_cache",
+      "summary": "Flush the module/redirect cache for a group after direct DB changes.",
+      "implementation": "Red_Module::flush($group_id)",
+      "params": {
+        "group_id": "int"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/redirection/models/module.php:96"
+    },
+    {
+      "name": "create_group",
+      "summary": "Create a redirect group in a module.",
+      "implementation": "Red_Group::create($name,$module_id,$enabled)",
+      "params": {
+        "name": "string",
+        "module_id": "int",
+        "enabled": "bool"
+      },
+      "safety": "write",
+      "source": "models/group.php:235"
+    },
+    {
+      "name": "update_group",
+      "summary": "Rename or move a group.",
+      "implementation": "$group->update(['name'=>..,'moduleId'=>..])",
+      "params": {
+        "id": "int",
+        "name": "string",
+        "module_id": "int"
+      },
+      "safety": "write",
+      "source": "models/group.php:266"
+    },
+    {
+      "name": "delete_group",
+      "summary": "Delete a group and all redirects in it.",
+      "implementation": "$group->delete()",
+      "params": {
+        "id": "int"
+      },
+      "safety": "destructive",
+      "source": "models/group.php:292"
+    },
+    {
+      "name": "lookup_logs",
+      "summary": "Read redirect hit logs with filters.",
+      "implementation": "Red_Redirect_Log::get_filtered($params)",
+      "params": {
+        "url": "string",
+        "per_page": "int",
+        "page": "int"
+      },
+      "safety": "read",
+      "source": "models/log/log.php:310"
+    }
+  ],
+  "rest_routes": [
+    {
+      "route": "/redirection/v1/redirect",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "permission": "Redirection_Capabilities::CAP_REDIRECT_MANAGE (GET) / CAP_REDIRECT_ADD (POST); default capability manage_options.",
+      "source": "vendor/plugins/redirection/includes/api/route/class-redirect.php:30"
+    },
+    {
+      "route": "/redirection/v1/redirect/{id}",
+      "methods": [
+        "POST"
+      ],
+      "permission": "CAP_REDIRECT_ADD.",
+      "source": "vendor/plugins/redirection/includes/api/route/class-redirect.php:50"
+    },
+    {
+      "route": "/redirection/v1/bulk/redirect/{bulk}",
+      "methods": [
+        "POST"
+      ],
+      "permission": "CAP_REDIRECT_MANAGE + CAP_REDIRECT_DELETE for delete.",
+      "source": "vendor/plugins/redirection/includes/api/route/class-redirect.php:83"
+    },
+    {
+      "route": "/redirection/v1/404",
+      "methods": [
+        "GET"
+      ],
+      "permission": "CAP_404_MANAGE.",
+      "source": "vendor/plugins/redirection/includes/api/route/class-error.php:28"
+    },
+    {
+      "route": "/redirection/v1/group",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "permission": "CAP_GROUP_MANAGE or CAP_REDIRECT_MANAGE (GET); CAP_GROUP_ADD (POST).",
+      "source": "vendor/plugins/redirection/includes/api/route/class-group.php:30"
+    },
+    {
+      "route": "/redirection/v1/setting",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "permission": "CAP_OPTION_MANAGE / CAP_SITE_MANAGE; fields filtered by capability.",
+      "source": "vendor/plugins/redirection/includes/api/route/class-settings.php:40"
+    },
+    {
+      "route": "/redirection/v1/log",
+      "methods": [
+        "GET"
+      ],
+      "permission": "CAP_LOG_MANAGE.",
+      "source": "vendor/plugins/redirection/includes/api/route/class-log.php:28"
+    }
+  ],
+  "objects": [
+    {
+      "type": "redirect",
+      "storage": "table",
+      "summary": "A row in {prefix}redirection_items: source URL, match/action type+code, group, status, position, hit counters.",
+      "crud_notes": "List: Red_Item::get_all(); read: Red_Item::get_by_id($id); find by URL: get_for_url(); create: Red_Item::create([...]) (sanitizer validates group/match/action); update: $item->update([...]); enable/disable: $item->enable()/disable(); delete: $item->delete(). All object methods flush module cache.",
+      "source": "vendor/plugins/redirection/includes/database/schema/class-latest.php:223"
+    },
+    {
+      "type": "redirect_group",
+      "storage": "table",
+      "summary": "A row in {prefix}redirection_groups: name, module_id, enabled status, position, tracking flag.",
+      "crud_notes": "List: Red_Group::get_all(); read: Red_Group::get($id); create: Red_Group::create($name,$module_id,$enabled); update: $group->update(['name'=>..,'moduleId'=>..]); delete: $group->delete() also deletes its redirects.",
+      "source": "vendor/plugins/redirection/includes/database/schema/class-latest.php:255"
+    },
+    {
+      "type": "404_log",
+      "storage": "table",
+      "summary": "Rows in {prefix}redirection_404: created, url, domain, agent, referrer, http_code, method, request_data, ip.",
+      "crud_notes": "Read-only for PressAgent: Red_404_Log::get_filtered([...]); exact URL filter is filterBy['url-exact']; delete single: Red_404_Log::delete($id); delete filtered/all: delete_all($params). Never insert rows directly.",
+      "source": "vendor/plugins/redirection/includes/database/schema/class-latest.php:301"
+    },
+    {
+      "type": "redirect_log",
+      "storage": "table",
+      "summary": "Rows in {prefix}redirection_logs: created, url, sent_to, referrer, http_code, redirect_by, redirection_id, ip.",
+      "crud_notes": "Read via Red_Redirect_Log::get_filtered([...]); delete single via inherited Red_Log::delete($id), filtered delete via delete_all($params).",
+      "source": "vendor/plugins/redirection/includes/database/schema/class-latest.php:274"
+    }
+  ],
+  "detection": {
+    "active_check": "defined('REDIRECTION_VERSION') and class_exists('Red_Item'); REDIRECTION_FILE must be defined for a normal load.",
+    "source": "vendor/plugins/redirection/redirection.php:18"
+  },
+  "pro_notes": [
+    "No Pro-only items: the readme explicitly states there is no premium version and all features are free (readme.txt:111). Do not look for a separate Pro add-on."
+  ],
+  "gotchas": [
+    "Check DB schema before reading/writing: Redirection\\Database\\Status::needs_updating() compares redirection_options['database'] with REDIRECTION_DB_VERSION 4.2 (includes/database/class-status.php:137,156; redirection.php:16).",
+    "Use Red_Item::create()/update() rather than SQL: the sanitizer validates group, match_type, action_type and codes, and serializes action_data (models/redirect/redirect-sanitizer.php:69,232,256).",
+    "Red_Item::create() fails if group_id does not exist; fetch a valid group with Red_Group::get_all() first (models/redirect/redirect-sanitizer.php:256).",
+    "For action_type=url supply action_data as ['url'=>'https://target/']; Url_Match::save() extracts the url key (matches/url.php:31).",
+    "Redirect mutations flush module cache through Red_Module::flush(); direct SQL bypasses this and serves stale redirects (models/module.php:96).",
+    "DELETE of a group cascades to all its redirects (models/group.php:292); require explicit confirmation before calling.",
+    "REST permissions default to manage_options via Redirection_Capabilities::CAP_DEFAULT; finer-grained caps exist (redirection-capabilities.php:44,80).",
+    "404 and redirect logs are pruned according to expire_404/expire_redirect (default 7 days) by scheduled cleanup; missing rows may be retention, not deletion."
+  ]
+}

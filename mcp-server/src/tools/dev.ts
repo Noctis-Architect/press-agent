@@ -5,25 +5,9 @@ export function registerDevTools(tools: any[], handlers: Map<string, (args: any)
   // 1. Create Plugin
   tools.push({
     name: "pressagent_create_plugin",
-    description: `Create and scaffold a production-grade WordPress plugin directly into wp-content/plugins/ (God Mode).
+    description: `Create a WordPress plugin in wp-content/plugins/ (God Mode).
 
-🛡️ STRICT WORDPRESS & SECURITY STANDARDS (MANDATORY):
-1. HEADER: Must include standard WordPress plugin header comments:
-   /*
-    * Plugin Name: My Custom Feature
-    * Description: Purpose of plugin
-    * Version: 1.0.0
-    * Author: AI Engineer
-    * License: GPL v2 or later
-    */
-2. SECURITY GUARD: Always prevent direct script access at top of file:
-   defined('ABSPATH') || exit;
-3. DATA SANITIZATION & ESCAPING:
-   - Always sanitize inputs: sanitize_text_field(), absint(), sanitize_email(), wp_unslash().
-   - Always escape outputs: esc_html(), esc_attr(), esc_url().
-   - Use parameterized queries with $wpdb->prepare() for custom SQL.
-4. AUTHORIZATION: Protect admin actions with current_user_can('manage_options') and verify nonces.
-5. PRE-VALIDATION: PressAgent automatically performs syntax validation via 'php -l' before saving. If a syntax error is detected, the operation aborts to protect the site from downtime.`,
+Provide the full PHP source with a plugin header and an ABSPATH guard. Sanitize inputs, escape outputs, use $wpdb->prepare(), and capability-check admin actions. PressAgent runs php -l before writing and aborts on syntax errors. Full standards: use the "wordpress-plugin-architect" prompt.`,
     inputSchema: {
       type: "object",
       properties: {

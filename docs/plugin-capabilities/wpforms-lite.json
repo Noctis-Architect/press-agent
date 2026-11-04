@@ -1,0 +1,198 @@
+{
+  "slug": "wpforms-lite",
+  "name": "WPForms Lite",
+  "plugin_file": "wpforms-lite/wpforms.php",
+  "version_analyzed": "2.0.3.1",
+  "storage_notes": "Forms are CPT wpforms (plus wpforms-template for user templates). Each form's fields and settings are one JSON document in post_content; wpforms_encode() adds wp_slash() around wp_json_encode(), and wpforms_decode() json_decodes then wp_unslash(). post_title/post_excerpt mirror settings.form_title/form_desc. Plugin settings are one option wpforms_settings array. Lite does not store entry content; it stores submission counters in post meta wpforms_entries_count and a rolling option wpforms_entries_count_daily. No form CRUD REST API is registered (CPT is not public and has no show_in_rest).",
+  "settings": [
+    {
+      "key": "wpforms_settings",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Single settings array keyed by field ids. Save merges only the submitted view's fields into the existing array; preserve all other keys.",
+      "fields": {
+        "disable-css": "int 1|2|3 (base+theme / base only / none), default 1",
+        "global-assets": "bool, load assets site-wide",
+        "gdpr": "bool, GDPR enhancements",
+        "delete-spam-entries": "int 7|15|30|90 days, default 90",
+        "hide-announcements": "bool",
+        "hide-admin-bar": "bool",
+        "uninstall-data": "bool, delete all data on uninstall",
+        "validation-required": "string message",
+        "validation-email": "string message",
+        "currency": "string ISO currency code, default USD"
+      },
+      "source": "includes/admin/class-settings.php:168",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpforms_version",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Installed version used by Pro migrations and health checks. Written on install/upgrade.",
+      "fields": {},
+      "source": "includes/class-install.php:179",
+      "safe_to_write": false
+    },
+    {
+      "key": "wpforms_version_lite",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Installed Lite version used by Lite migrations. Written on install/upgrade.",
+      "fields": {},
+      "source": "includes/class-install.php:181",
+      "safe_to_write": false
+    },
+    {
+      "key": "wpforms_entries_count_daily",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Rolling 30-day submission counters per UTC day for Lite reports. Maintained by the plugin; read-only for PressAgent.",
+      "fields": {"days": "map YYYY-MM-DD => count"},
+      "source": "src/Lite/Reports/EntriesWindow.php:21",
+      "safe_to_write": false
+    },
+    {
+      "key": "wpforms_license",
+      "storage": "option",
+      "shape": "array",
+      "summary": "License/type/key array read by access checks. Populated by Pro licensing; unlicensed in Lite. Treat as read-only.",
+      "fields": {"type": "string", "key": "string"},
+      "source": "includes/functions/access.php:75",
+      "safe_to_write": false
+    }
+  ],
+  "meta": [
+    {
+      "key": "wpforms_form_locations",
+      "object_type": "post",
+      "type": "array",
+      "summary": "Locations where a form is embedded (pages/posts/widgets/blocks). Maintained by the Locator.",
+      "source": "src/Forms/Locator.php:31",
+      "safe_to_write": false,
+      "format_notes": "Plugin-managed cache of embed locations; updated on form save/embed changes. Read-only for PressAgent."
+    },
+    {
+      "key": "wpforms_entries_count",
+      "object_type": "post",
+      "type": "int",
+      "summary": "Lifetime submission count per form (Lite stores counters, not entry data).",
+      "source": "lite/wpforms-lite.php:938",
+      "safe_to_write": false,
+      "format_notes": "Incremented by add_post_meta/update_post_meta on submission; read-only."
+    },
+    {
+      "key": "wpforms_entries_count_previous_week",
+      "object_type": "post",
+      "type": "array",
+      "summary": "Weekly counter snapshot used by Lite email summaries.",
+      "source": "src/Lite/Emails/Summaries.php:111",
+      "safe_to_write": false,
+      "format_notes": "Maintained by cron; read-only."
+    }
+  ],
+  "actions": [
+    {
+      "name": "list_forms",
+      "summary": "List forms. get() defaults to post_status=publish; pass post_status=any to include trash/draft.",
+      "implementation": "wpforms()->obj('form')->get('', ['post_status' => 'any'])",
+      "params": {"args": "WP_Query args; default post_status publish"},
+      "safety": "read",
+      "source": "includes/class-form.php:216"
+    },
+    {
+      "name": "get_form",
+      "summary": "Read one form post or decoded form data.",
+      "implementation": "wpforms()->obj('form')->get($id, ['content_only' => true])",
+      "params": {"id": "int", "content_only": "bool to decode post_content"},
+      "safety": "read",
+      "source": "includes/class-form.php:216"
+    },
+    {
+      "name": "create_form",
+      "summary": "Create a minimal form, then update it with full fields/settings. add() sets post_type wpforms, title, and initial form_title/form_desc.",
+      "implementation": "wpforms()->obj('form')->add($title, $args, $data) followed by update($id, $form_data)",
+      "params": {"title": "string", "args": "post args, optionally post_content JSON", "data": "additional data; builder=false adds default notification settings"},
+      "safety": "write",
+      "source": "includes/class-form.php:535"
+    },
+    {
+      "name": "update_form",
+      "summary": "Replace a form's fields/settings JSON; preserves form meta and per-field meta where possible.",
+      "implementation": "wpforms()->obj('form')->update($id, $form_data)",
+      "params": {"id": "int", "form_data": "array with fields, settings, meta, field_id"},
+      "safety": "write",
+      "source": "includes/class-form.php:671"
+    },
+    {
+      "name": "delete_form",
+      "summary": "Permanently delete one or more forms (and any entry tables for those IDs when present).",
+      "implementation": "wpforms()->obj('form')->delete($ids)",
+      "params": {"ids": "int|array"},
+      "safety": "destructive",
+      "source": "includes/class-form.php:480"
+    },
+    {
+      "name": "duplicate_form",
+      "summary": "Duplicate forms and return the new IDs.",
+      "implementation": "wpforms()->obj('form')->duplicate($ids)",
+      "params": {"ids": "int|array"},
+      "safety": "write",
+      "source": "includes/class-form.php:921"
+    },
+    {
+      "name": "update_form_meta",
+      "summary": "Update a key inside the JSON meta object of a form.",
+      "implementation": "wpforms()->obj('form')->update_meta($form_id, $meta_key, $meta_value)",
+      "params": {"form_id": "int", "meta_key": "string", "meta_value": "mixed"},
+      "safety": "write",
+      "source": "includes/class-form.php:1333"
+    },
+    {
+      "name": "save_settings",
+      "summary": "Persist the full settings array; merge first so unrelated keys are not lost.",
+      "implementation": "wpforms_update_settings(array_merge(get_option('wpforms_settings', []), $changes))",
+      "params": {"settings": "full merged settings array"},
+      "safety": "write",
+      "source": "includes/functions/forms.php:181"
+    }
+  ],
+  "rest_routes": [],
+  "objects": [
+    {
+      "type": "wpforms_form",
+      "storage": "CPT wpforms; JSON in post_content (slashed), title/description mirrored in post_title/post_excerpt; JSON keys fields/settings/meta/field_id",
+      "summary": "A form with fields, notification/confirmation settings and internal meta.",
+      "crud_notes": "List/get with wpforms()->obj('form')->get(); create with add() then update(); update replaces the decoded form data and re-encodes it; delete() is permanent. Fields are keyed by numeric id and field_id must exceed the largest id (next_field_id()). Do not write post_content directly.",
+      "source": "includes/class-form.php:29"
+    },
+    {
+      "type": "wpforms_template",
+      "storage": "CPT wpforms-template; same JSON post_content format",
+      "summary": "User-saved form templates shown in the builder.",
+      "crud_notes": "Same Form Handler methods with post_type wpforms-template; list via get('', ['post_type'=>'wpforms-template']). Creating/updating mirrors form data.",
+      "source": "src/Admin/Forms/UserTemplates.php:100"
+    }
+  ],
+  "detection": {
+    "active_check": "defined('WPFORMS_VERSION') or function_exists('wpforms'); plugin basename WPFORMS_PLUGIN_FILE (wpforms-lite/wpforms.php)",
+    "source": "wpforms.php:62"
+  },
+  "pro_notes": [
+    "Entry storage and entry management are Pro-only. Lite explicitly states entries are not stored (lite/wpforms-lite.php:691); its Entries screens render sample data/upsell (lite/wpforms-lite.php:832) and only counters are kept locally (lite/wpforms-lite.php:938). Lite Connect can back up submissions to the cloud, but that was not verified as local entry CRUD.",
+    "Multiple email notifications: Lite keeps only the first notification (includes/class-process.php:1948); additional notifications are a Pro capability.",
+    "Pro license/type data lives in option wpforms_license (includes/functions/access.php:75); Pro addons and per-form access controls are outside this free-source analysis."
+  ],
+  "gotchas": [
+    "There is no form CRUD REST API: the wpforms CPT is registered with public=false, show_ui=false and no show_in_rest (includes/class-form.php:93,110). Manage forms through the PHP API or the builder admin-ajax endpoint.",
+    "Form data is not plain JSON in the DB: wpforms_encode() stores wp_slash(wp_json_encode($data)) (includes/functions/forms.php:108). Raw update_post_meta/post_content writes will be double-unescaped or corrupted; always use Form Handler update()/add().",
+    "get() defaults to post_status=publish (includes/class-form.php:238); pass post_status=any to list trashed/draft forms.",
+    "update() replaces the whole decoded form data and preserves only specific meta/field metadata; send fields, settings, meta and field_id, not a partial fragment (includes/class-form.php:671).",
+    "wpforms_settings is one array: the admin save merges the current view into existing settings (includes/admin/class-settings.php:191); wpforms_update_settings() replaces the option, so merge before calling it.",
+    "Lite stores no entry content, only counters; do not promise entry listing/export on a Lite site. Multiple notifications beyond the first are ignored (includes/class-process.php:1948).",
+    "The CPT has supports title/author/revisions only and capability_type wpforms_form; Lite capability checks collapse to manage_options (src/Access/Capabilities.php:44).",
+    "Field IDs are strings/ints inside fields{}; keep field_id greater than the largest field id or use next_field_id() (includes/class-form.php:1233).",
+    "Form title is stored twice: post_title and settings.form_title (includes/class-form.php:699); keep them consistent.",
+    "Form data slashing can be toggled with the wpforms_enable_form_data_slashing filter / WPFORMS_ENABLE_FORM_DATA_SLASHING constant (includes/functions/forms.php:579); test on unusual installs."
+  ]
+}

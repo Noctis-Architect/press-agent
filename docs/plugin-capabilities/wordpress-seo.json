@@ -1,0 +1,277 @@
+{
+  "slug": "wordpress-seo",
+  "name": "Yoast SEO",
+  "plugin_file": "wordpress-seo/wp-seo.php",
+  "version_analyzed": "28.8",
+  "storage_notes": "Options API. Main option wpseo, templates wpseo_titles, social wpseo_social, multisite wpseo_ms, llms.txt wpseo_llmstxt. Term SEO is NOT term_meta: it lives in the single option wpseo_taxonomy_meta keyed [taxonomy][term_id][wpseo_*]. Post SEO meta is post_meta with prefix _yoast_wpseo_. Runtime SEO data is materialized in custom indexable tables (wp_yoast_indexable*) and must be rebuilt after direct post/term writes. Safe write path for options is WPSEO_Options::set() or update_option() on the full array so the sanitize_option_{option} validator runs; post meta via WPSEO_Meta::set_value(); term meta via WPSEO_Taxonomy_Meta::set_value().",
+  "settings": [
+    {
+      "key": "wpseo_titles",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Homepage SEO title/description and title separator (option group wpseo_titles).",
+      "fields": {
+        "separator": {"type": "string", "default": "sc-dash", "notes": "Separator token. Allowed: sc-dash, sc-ndash, sc-mdash, sc-colon, sc-middot, sc-bull, sc-star, sc-smstar, sc-pipe, sc-tilde, and separators registered via wpseo_separator_options. Validated at inc/options/class-wpseo-option-titles.php:629. Source line :34."},
+        "title-home-wpseo": {"type": "string", "default": "%%sitename%% %%page%% %%sep%% %%sitedesc%%", "notes": "Homepage title template with Yoast replacement variables. inc/options/class-wpseo-option-titles.php:35."},
+        "metadesc-home-wpseo": {"type": "string", "default": "", "notes": "Homepage meta description template. inc/options/class-wpseo-option-titles.php:50."}
+      },
+      "source": "inc/options/class-wpseo-option-titles.php:34",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpseo_titles",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Per-post-type SEO templates. Keys are dynamic and exist after the post type is registered (title-{post_type}, metadesc-{post_type}, noindex-{post_type}, schema-page-type-{post_type}, schema-article-type-{post_type}).",
+      "fields": {
+        "title-post": {"type": "string", "default": "%%title%% %%page%% %%sep%% %%sitename%%", "notes": "Default single-post title. inc/options/class-wpseo-option-titles.php:312."},
+        "metadesc-post": {"type": "string", "default": "", "notes": "Default single-post meta description. inc/options/class-wpseo-option-titles.php:313."},
+        "noindex-post": {"type": "bool", "default": "false", "notes": "Noindex all posts of this type. inc/options/class-wpseo-option-titles.php:314."},
+        "display-metabox-pt-post": {"type": "bool", "default": "true", "notes": "Show the Yoast meta box for this post type. inc/options/class-wpseo-option-titles.php:315."},
+        "schema-page-type-post": {"type": "string", "default": "WebPage", "notes": "Default Schema.org page type. inc/options/class-wpseo-option-titles.php:317."},
+        "schema-article-type-post": {"type": "string", "default": "Article", "notes": "Default article type; non-post types default to None. inc/options/class-wpseo-option-titles.php:318."}
+      },
+      "source": "inc/options/class-wpseo-option-titles.php:312",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpseo_titles",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Per-taxonomy SEO templates. Keys are title-tax-{taxonomy}, metadesc-tax-{taxonomy}, noindex-tax-{taxonomy} (not title-category).",
+      "fields": {
+        "title-tax-category": {"type": "string", "default": "%%term_title%% Archives %%page%% %%sep%% %%sitename%%", "notes": "Default category archive title built from $archives at line 348. inc/options/class-wpseo-option-titles.php:348."},
+        "metadesc-tax-category": {"type": "string", "default": "", "notes": "Default category archive description. inc/options/class-wpseo-option-titles.php:349."},
+        "noindex-tax-category": {"type": "bool", "default": "false", "notes": "Noindex category archives. inc/options/class-wpseo-option-titles.php:352."},
+        "noindex-tax-post_tag": {"type": "bool", "default": "false", "notes": "Noindex tag archives (post_format is true by default). inc/options/class-wpseo-option-titles.php:352."}
+      },
+      "source": "inc/options/class-wpseo-option-titles.php:348",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpseo_titles",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Author/date/attachment archive controls.",
+      "fields": {
+        "noindex-author-wpseo": {"type": "bool", "default": "false", "notes": "Noindex author archives. inc/options/class-wpseo-option-titles.php:56."},
+        "noindex-author-noposts-wpseo": {"type": "bool", "default": "true", "notes": "Noindex authors with no posts. inc/options/class-wpseo-option-titles.php:57."},
+        "noindex-archive-wpseo": {"type": "bool", "default": "true", "notes": "Noindex date archives. inc/options/class-wpseo-option-titles.php:58."},
+        "disable-author": {"type": "bool", "default": "false", "notes": "Disable author archive pages. inc/options/class-wpseo-option-titles.php:60."},
+        "disable-date": {"type": "bool", "default": "false", "notes": "Disable date archive pages. inc/options/class-wpseo-option-titles.php:61."},
+        "disable-attachment": {"type": "bool", "default": "true", "notes": "Redirect attachment pages to the media file. inc/options/class-wpseo-option-titles.php:63."}
+      },
+      "source": "inc/options/class-wpseo-option-titles.php:56",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpseo_titles",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Breadcrumb settings.",
+      "fields": {
+        "breadcrumbs-enable": {"type": "bool", "default": "true", "notes": "Enable breadcrumb output. inc/options/class-wpseo-option-titles.php:69."},
+        "breadcrumbs-sep": {"type": "string", "default": "»", "notes": "Breadcrumb separator. inc/options/class-wpseo-option-titles.php:73."},
+        "breadcrumbs-home": {"type": "string", "default": "", "notes": "Home breadcrumb label. inc/options/class-wpseo-option-titles.php:70."},
+        "breadcrumbs-404crumb": {"type": "string", "default": "", "notes": "404 breadcrumb label. inc/options/class-wpseo-option-titles.php:65."}
+      },
+      "source": "inc/options/class-wpseo-option-titles.php:69",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpseo_titles",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Site representation / Knowledge Graph identity.",
+      "fields": {
+        "website_name": {"type": "string", "default": "", "notes": "Website name used in schema. inc/options/class-wpseo-option-titles.php:75."},
+        "person_name": {"type": "string", "default": "", "notes": "Person name when company_or_person=person. inc/options/class-wpseo-option-titles.php:76."},
+        "company_or_person": {"type": "string", "default": "company", "notes": "Enum company|person. inc/options/class-wpseo-option-titles.php:86."},
+        "company_name": {"type": "string", "default": "", "notes": "Organization name. inc/options/class-wpseo-option-titles.php:84."},
+        "company_logo": {"type": "string", "default": "", "notes": "Organization logo URL. inc/options/class-wpseo-option-titles.php:80."},
+        "company_logo_id": {"type": "int", "default": "0", "notes": "Organization logo attachment ID. inc/options/class-wpseo-option-titles.php:81."}
+      },
+      "source": "inc/options/class-wpseo-option-titles.php:86",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpseo",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Sitemap / IndexNow / internal-link feature switches in the main wpseo option.",
+      "fields": {
+        "enable_xml_sitemap": {"type": "bool", "default": "true", "notes": "Enable Yoast XML sitemaps. inc/options/class-wpseo-option-wpseo.php:59."},
+        "enable_index_now": {"type": "bool", "default": "true", "notes": "Enable IndexNow pings. inc/options/class-wpseo-option-wpseo.php:61."},
+        "enable_text_link_counter": {"type": "bool", "default": "true", "notes": "Enable text link counter. inc/options/class-wpseo-option-wpseo.php:60."},
+        "enable_cornerstone_content": {"type": "bool", "default": "true", "notes": "Enable cornerstone content feature. inc/options/class-wpseo-option-wpseo.php:58."}
+      },
+      "source": "inc/options/class-wpseo-option-wpseo.php:59",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpseo",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Head cleanup / advanced admin switches in wpseo.",
+      "fields": {
+        "disableadvanced_meta": {"type": "bool", "default": "true", "notes": "Hide the advanced settings tab. inc/options/class-wpseo-option-wpseo.php:43."},
+        "enable_headless_rest_endpoints": {"type": "bool", "default": "true", "notes": "Expose Yoast headless REST endpoints. inc/options/class-wpseo-option-wpseo.php:44."},
+        "remove_generator": {"type": "bool", "default": "false", "notes": "Remove the WordPress generator tag. inc/options/class-wpseo-option-wpseo.php:113."},
+        "remove_emoji_scripts": {"type": "bool", "default": "false", "notes": "Remove WordPress emoji scripts. inc/options/class-wpseo-option-wpseo.php:114."}
+      },
+      "source": "inc/options/class-wpseo-option-wpseo.php:43",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpseo",
+      "storage": "option",
+      "shape": "array",
+      "summary": "SEO/readability analysis feature switches in wpseo.",
+      "fields": {
+        "content_analysis_active": {"type": "bool", "default": "true", "notes": "Enable SEO analysis. inc/options/class-wpseo-option-wpseo.php:54."},
+        "keyword_analysis_active": {"type": "bool", "default": "true", "notes": "Enable focus-keyword analysis. inc/options/class-wpseo-option-wpseo.php:55."},
+        "inclusive_language_analysis_active": {"type": "bool", "default": "false", "notes": "Enable inclusive-language analysis where supported. inc/options/class-wpseo-option-wpseo.php:56."},
+        "enable_admin_bar_menu": {"type": "bool", "default": "true", "notes": "Show Yoast in the admin bar. inc/options/class-wpseo-option-wpseo.php:57."}
+      },
+      "source": "inc/options/class-wpseo-option-wpseo.php:54",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpseo",
+      "storage": "option",
+      "shape": "array",
+      "summary": "llms.txt master switch in wpseo (content selection is in wpseo_llmstxt).",
+      "fields": {
+        "enable_llms_txt": {"type": "bool", "default": "false", "notes": "Enable llms.txt generation. inc/options/class-wpseo-option-wpseo.php:152."}
+      },
+      "source": "inc/options/class-wpseo-option-wpseo.php:152",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpseo_social",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Social profile URLs used for sameAs / social markup.",
+      "fields": {
+        "facebook_site": {"type": "string", "default": "", "notes": "Facebook page URL. inc/options/class-wpseo-option-social.php:29."},
+        "twitter_site": {"type": "string", "default": "", "notes": "X/Twitter @handle. inc/options/class-wpseo-option-social.php:43."},
+        "instagram_url": {"type": "string", "default": "", "notes": "inc/options/class-wpseo-option-social.php:30."},
+        "linkedin_url": {"type": "string", "default": "", "notes": "inc/options/class-wpseo-option-social.php:31."},
+        "youtube_url": {"type": "string", "default": "", "notes": "inc/options/class-wpseo-option-social.php:45."},
+        "other_social_urls": {"type": "array", "default": "[]", "notes": "Array of extra profile URLs. inc/options/class-wpseo-option-social.php:47."}
+      },
+      "source": "inc/options/class-wpseo-option-social.php:29",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpseo_social",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Open Graph / X card defaults and feature toggles.",
+      "fields": {
+        "og_default_image": {"type": "string", "default": "", "notes": "Fallback Open Graph image URL. inc/options/class-wpseo-option-social.php:33."},
+        "og_default_image_id": {"type": "string", "default": "", "notes": "Fallback image attachment ID (stored as string). inc/options/class-wpseo-option-social.php:34."},
+        "twitter_card_type": {"type": "string", "default": "summary_large_image", "notes": "Default X card type. inc/options/class-wpseo-option-social.php:44."},
+        "opengraph": {"type": "bool", "default": "true", "notes": "Enable Open Graph metadata; also controls registration of post OG meta fields. inc/options/class-wpseo-option-social.php:39."},
+        "twitter": {"type": "bool", "default": "true", "notes": "Enable X/Twitter metadata; also controls registration of post Twitter meta fields. inc/options/class-wpseo-option-social.php:42."}
+      },
+      "source": "inc/options/class-wpseo-option-social.php:33",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpseo_taxonomy_meta",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Term SEO for all taxonomies, stored as option [taxonomy][term_id][wpseo_*]. Not term_meta.",
+      "fields": {
+        "wpseo_title": {"type": "string", "default": "", "notes": "Term SEO title. inc/options/class-wpseo-taxonomy-meta.php:54. Use WPSEO_Taxonomy_Meta::set_value()."},
+        "wpseo_desc": {"type": "string", "default": "", "notes": "Term meta description. inc/options/class-wpseo-taxonomy-meta.php:55."},
+        "wpseo_noindex": {"type": "string", "default": "default", "notes": "Enum default|index|noindex. inc/options/class-wpseo-taxonomy-meta.php:57."},
+        "wpseo_focuskw": {"type": "string", "default": "", "notes": "Term focus keyword. inc/options/class-wpseo-taxonomy-meta.php:58."},
+        "wpseo_opengraph-title": {"type": "string", "default": "", "notes": "Term OG title. inc/options/class-wpseo-taxonomy-meta.php:68."},
+        "wpseo_twitter-title": {"type": "string", "default": "", "notes": "Term X title. inc/options/class-wpseo-taxonomy-meta.php:72."}
+      },
+      "source": "inc/options/class-wpseo-taxonomy-meta.php:54",
+      "safe_to_write": true
+    },
+    {
+      "key": "wpseo_llmstxt",
+      "storage": "option",
+      "shape": "array",
+      "summary": "llms.txt page selection (used when wpseo.enable_llms_txt is true).",
+      "fields": {
+        "llms_txt_selection_mode": {"type": "string", "default": "auto", "notes": "Selection mode; validated in WPSEO_Option_Llmstxt. inc/options/class-wpseo-option-llmstxt.php:30."},
+        "about_us_page": {"type": "int", "default": "0", "notes": "Page ID. inc/options/class-wpseo-option-llmstxt.php:31."},
+        "contact_page": {"type": "int", "default": "0", "notes": "Page ID. inc/options/class-wpseo-option-llmstxt.php:32."},
+        "terms_page": {"type": "int", "default": "0", "notes": "Page ID. inc/options/class-wpseo-option-llmstxt.php:33."},
+        "privacy_policy_page": {"type": "int", "default": "0", "notes": "Page ID. inc/options/class-wpseo-option-llmstxt.php:34."},
+        "shop_page": {"type": "int", "default": "0", "notes": "Page ID. inc/options/class-wpseo-option-llmstxt.php:35."},
+        "other_included_pages": {"type": "array", "default": "[]", "notes": "Array of page IDs, max 100. inc/options/class-wpseo-option-llmstxt.php:36."}
+      },
+      "source": "inc/options/class-wpseo-option-llmstxt.php:30",
+      "safe_to_write": true
+    }
+  ],
+  "meta": [
+    {"key": "_yoast_wpseo_title", "object_type": "post", "type": "string", "summary": "Custom SEO title template for the post.", "source": "inc/class-wpseo-meta.php:107", "safe_to_write": true, "format_notes": "Plain text; supports Yoast replacement variables such as %%title%% and %%sep%%."},
+    {"key": "_yoast_wpseo_metadesc", "object_type": "post", "type": "string", "summary": "Custom meta description for the post.", "source": "inc/class-wpseo-meta.php:113", "safe_to_write": true, "format_notes": "Plain text; sanitized with sanitize_text_field."},
+    {"key": "_yoast_wpseo_focuskw", "object_type": "post", "type": "string", "summary": "Focus keyphrase used by Yoast analysis.", "source": "inc/class-wpseo-meta.php:101", "safe_to_write": true, "format_notes": "Single string in free; Premium stores multiple keyphrases in _yoast_wpseo_focuskeywords instead."},
+    {"key": "_yoast_wpseo_canonical", "object_type": "post", "type": "string", "summary": "Custom canonical URL.", "source": "inc/class-wpseo-meta.php:177", "safe_to_write": true, "format_notes": "Absolute URL; sanitized by WPSEO_Utils::sanitize_url."},
+    {"key": "_yoast_wpseo_meta-robots-noindex", "object_type": "post", "type": "string", "summary": "Per-post index directive.", "source": "inc/class-wpseo-meta.php:147", "safe_to_write": true, "format_notes": "Enum strings: '0' = post-type default, '1' = noindex, '2' = index."},
+    {"key": "_yoast_wpseo_meta-robots-nofollow", "object_type": "post", "type": "string", "summary": "Per-post follow directive.", "source": "inc/class-wpseo-meta.php:156", "safe_to_write": true, "format_notes": "'0' = follow, '1' = nofollow."},
+    {"key": "_yoast_wpseo_meta-robots-adv", "object_type": "post", "type": "string", "summary": "Advanced robots directives.", "source": "inc/class-wpseo-meta.php:164", "safe_to_write": true, "format_notes": "Comma-separated subset of noimageindex,noarchive,nosnippet; validated by WPSEO_Meta::validate_meta_robots_adv at inc/class-wpseo-meta.php:549."},
+    {"key": "_yoast_wpseo_opengraph-title", "object_type": "post", "type": "string", "summary": "Per-post Open Graph title override.", "source": "inc/class-wpseo-meta.php:267", "safe_to_write": true, "format_notes": "Field is registered only when wpseo_social.opengraph is true (inc/class-wpseo-meta.php:265)."},
+    {"key": "_yoast_wpseo_opengraph-description", "object_type": "post", "type": "string", "summary": "Per-post Open Graph description override.", "source": "inc/class-wpseo-meta.php:267", "safe_to_write": true, "format_notes": "Registered only when wpseo_social.opengraph is true."},
+    {"key": "_yoast_wpseo_opengraph-image", "object_type": "post", "type": "string", "summary": "Per-post Open Graph image URL.", "source": "inc/class-wpseo-meta.php:267", "safe_to_write": true, "format_notes": "URL; companion _yoast_wpseo_opengraph-image-id stores the attachment ID."},
+    {"key": "_yoast_wpseo_twitter-title", "object_type": "post", "type": "string", "summary": "Per-post X/Twitter title override.", "source": "inc/class-wpseo-meta.php:267", "safe_to_write": true, "format_notes": "Registered only when wpseo_social.twitter is true."},
+    {"key": "_yoast_wpseo_twitter-description", "object_type": "post", "type": "string", "summary": "Per-post X/Twitter description override.", "source": "inc/class-wpseo-meta.php:267", "safe_to_write": true, "format_notes": "Registered only when wpseo_social.twitter is true."},
+    {"key": "_yoast_wpseo_twitter-image", "object_type": "post", "type": "string", "summary": "Per-post X/Twitter image URL.", "source": "inc/class-wpseo-meta.php:267", "safe_to_write": true, "format_notes": "URL; companion _yoast_wpseo_twitter-image-id stores the attachment ID."},
+    {"key": "_yoast_wpseo_primary_category", "object_type": "post", "type": "int", "summary": "Primary category term ID for the post.", "source": "inc/class-wpseo-primary-term.php:44", "safe_to_write": true, "format_notes": "Stored as string integer meta. Generalized key is _yoast_wpseo_primary_{taxonomy}; written by WPSEO_Primary_Term::set_primary_term at inc/class-wpseo-primary-term.php:68."},
+    {"key": "_yoast_wpseo_schema_page_type", "object_type": "post", "type": "string", "summary": "Schema.org page type for the post.", "source": "inc/class-wpseo-meta.php:188", "safe_to_write": true, "format_notes": "Must be a key of Yoast\\WP\\SEO\\Config\\Schema_Types::PAGE_TYPES; validated against the field options."},
+    {"key": "_yoast_wpseo_schema_article_type", "object_type": "post", "type": "string", "summary": "Schema.org Article sub-type.", "source": "inc/class-wpseo-meta.php:192", "safe_to_write": true, "format_notes": "Must be a key of Schema_Types::ARTICLE_TYPES (or the wpseo_schema_article_types filter)."},
+    {"key": "_yoast_wpseo_is_cornerstone", "object_type": "post", "type": "string", "summary": "Marks the post as cornerstone content.", "source": "inc/class-wpseo-meta.php:141", "safe_to_write": true, "format_notes": "'1' = cornerstone, '0' = not; 'true' is normalized to '1' at inc/class-wpseo-meta.php:488."},
+    {"key": "wpseo_noindex_author", "object_type": "user", "type": "string", "summary": "Noindex this author's archive.", "source": "src/user-meta/framework/custom-meta/noindex-author.php:45", "safe_to_write": true, "format_notes": "'on' = noindex; empty/absent = index."},
+    {"key": "wpseo_title", "object_type": "user", "type": "string", "summary": "Author archive SEO title template.", "source": "src/user-meta/framework/custom-meta/author-title.php:45", "safe_to_write": true, "format_notes": "Plain text; supports replacement variables."},
+    {"key": "wpseo_metadesc", "object_type": "user", "type": "string", "summary": "Author archive meta description.", "source": "src/user-meta/framework/custom-meta/author-metadesc.php:45", "safe_to_write": true, "format_notes": "Plain text."}
+  ],
+  "actions": [
+    {"name": "update_option_setting", "summary": "Set one Yoast option field with full validation and cache/indexable side effects.", "implementation": "WPSEO_Options::set($key, $value, $option_group)", "params": {"key": {"type": "string", "required": true}, "value": {"type": "mixed", "required": true}, "option_group": {"type": "string", "required": false}}, "safety": "write", "source": "inc/options/class-wpseo-options.php:324"},
+    {"name": "save_post_seo_meta", "summary": "Write one Yoast post meta field with Yoast validation.", "implementation": "WPSEO_Meta::set_value($key, $meta_value, $post_id)", "params": {"key": {"type": "string", "required": true}, "meta_value": {"type": "mixed", "required": true}, "post_id": {"type": "int", "required": true}}, "safety": "write", "source": "inc/class-wpseo-meta.php:721"},
+    {"name": "save_term_seo_meta", "summary": "Write one term SEO value into wpseo_taxonomy_meta with validation.", "implementation": "WPSEO_Taxonomy_Meta::set_value($term_id, $taxonomy, $meta_key, $meta_value)", "params": {"term_id": {"type": "int", "required": true}, "taxonomy": {"type": "string", "required": true}, "meta_key": {"type": "string", "required": true}, "meta_value": {"type": "mixed", "required": true}}, "safety": "write", "source": "inc/options/class-wpseo-taxonomy-meta.php:466"},
+    {"name": "clear_sitemap_cache", "summary": "Queue/invalidate Yoast sitemap transients and files.", "implementation": "WPSEO_Sitemaps_Cache::clear($types); WPSEO_Sitemaps_Cache::clear_queued()", "params": {"types": {"type": "array", "required": false}}, "safety": "write", "source": "inc/sitemaps/class-sitemaps-cache.php:272"},
+    {"name": "invalidate_sitemap_cache_storage", "summary": "Rotate the sitemap cache validator for one type or all types.", "implementation": "WPSEO_Sitemaps_Cache_Validator::invalidate_storage($type = null)", "params": {"type": {"type": "string", "required": false}}, "safety": "write", "source": "inc/sitemaps/class-sitemaps-cache-validator.php:138"},
+    {"name": "index_indexables_wpcli", "summary": "Build missing Yoast indexables via WP-CLI.", "implementation": "wp yoast index [--network] [--interval=<microseconds>]", "params": {"network": {"type": "bool", "required": false}, "interval": {"type": "int", "required": false}}, "safety": "write", "source": "src/commands/index-command.php:147"},
+    {"name": "reindex_indexables_wpcli", "summary": "Truncate Yoast indexable tables and rebuild everything. Destructive: deletes all indexable rows first.", "implementation": "wp yoast index --reindex --skip-confirmation", "params": {"network": {"type": "bool", "required": false}, "interval": {"type": "int", "required": false}}, "safety": "destructive", "source": "src/commands/index-command.php:216"},
+    {"name": "update_post_seo_data_ability", "summary": "Preferred WP 6.9+ write path: updates indexables and post meta for title/description/canonical/robots/social/schema.", "implementation": "wp_get_ability('yoast-seo/update-post-seo-data')->execute($input) (or WP Abilities REST run route)", "params": {"post_id": {"type": "int", "required": false}, "permalink": {"type": "string", "required": false}, "seo_title": {"type": "string", "required": false}, "meta_description": {"type": "string", "required": false}, "canonical": {"type": "string", "required": false}, "noindex": {"type": "bool", "required": false}, "nofollow": {"type": "bool", "required": false}, "open_graph_title": {"type": "string", "required": false}, "twitter_title": {"type": "string", "required": false}}, "safety": "write", "source": "src/abilities/user-interface/abilities/update-post-seo-data-ability.php:88"},
+    {"name": "update_site_representation_ability", "summary": "WP 6.9+ ability to update company/person identity and social profiles.", "implementation": "wp_get_ability('yoast-seo/update-site-representation')->execute($input)", "params": {"company_or_person": {"type": "string", "required": false}, "company_name": {"type": "string", "required": false}, "website_name": {"type": "string", "required": false}, "facebook_site": {"type": "string", "required": false}, "twitter_site": {"type": "string", "required": false}}, "safety": "write", "source": "src/abilities/user-interface/abilities/update-site-representation-ability.php:61"}
+  ],
+  "rest_routes": [
+    {"route": "yoast/v1/configuration/site_representation", "methods": ["POST"], "permission": "current_user_can('wpseo_manage_options')", "source": "src/routes/first-time-configuration-route.php:125"},
+    {"route": "yoast/v1/configuration/social_profiles", "methods": ["POST"], "permission": "current_user_can('wpseo_manage_options')", "source": "src/routes/first-time-configuration-route.php:143"},
+    {"route": "yoast/v1/indexing/prepare", "methods": ["POST"], "permission": "current_user_can('edit_posts')", "source": "src/routes/indexing-route.php:286"},
+    {"route": "yoast/v1/indexing/posts", "methods": ["POST"], "permission": "current_user_can('edit_posts')", "source": "src/routes/indexing-route.php:288"},
+    {"route": "yoast/v1/indexing/terms", "methods": ["POST"], "permission": "current_user_can('edit_posts')", "source": "src/routes/indexing-route.php:291"}
+  ],
+  "detection": {
+    "active_check": "defined('WPSEO_VERSION') (version string); class_exists('WPSEO_Options') / function_exists('YoastSEO') confirm load",
+    "source": "wp-seo-main.php:18"
+  },
+  "pro_notes": [
+    "Yoast SEO Premium is not present in this source. Multiple focus keyphrases (_yoast_wpseo_focuskeywords), redirects, internal-link suggestions, bot blocker, schema aggregation/NLWeb, and AI Generate are documented-only / not verified here.",
+    "The free source registers only one focus keyword per post (_yoast_wpseo_focuskw). Do not assume multiple-keyphrase meta exists.",
+    "Free Schema_Types limits page/article type options; Premium adds more schema types and E-E-A-T signals.",
+    "LLMs.txt files and page selection ARE present in the free source (wpseo_llmstxt + enable_llms_txt); manual 'which pages are included' editing beyond the page-ID fields is not verified."
+  ],
+  "gotchas": [
+    "Yoast Abilities (yoast-seo/*) register only on WordPress 6.9+ (src/conditionals/abilities-api-conditional.php:13); on older WordPress fall back to WPSEO_Options::set() and WPSEO_Meta::set_value().",
+    "Direct update_post_meta() writes bypass indexable rebuilding. After direct meta/term writes, run 'wp yoast index' or call the update-post-seo-data ability, otherwise front-end/schema output can stay stale.",
+    "Term SEO is not term_meta. It is the single option wpseo_taxonomy_meta keyed [taxonomy][term_id]; use WPSEO_Taxonomy_Meta::set_value() to merge/validate.",
+    "Social post meta keys (_yoast_wpseo_opengraph-*, _yoast_wpseo_twitter-*) are only registered as meta when wpseo_social.opengraph/twitter is true (inc/class-wpseo-meta.php:265).",
+    "Per-post-type/per-taxonomy keys are dynamic and appear only after the post type/taxonomy is registered (enrich_defaults at inc/options/class-wpseo-option-titles.php:312/348).",
+    "Never replace the whole wpseo_titles/wpseo_social/wpseo array blindly. WPSEO_Options::set() merges one key and lets the sanitize_option_{option} validator run (inc/options/class-wpseo-option.php:186).",
+    "wpseo.version, myyoast-oauth, and token arrays are internal; do not write them.",
+    "wpseo_titles/wpseo_social updates trigger indexable watchers and cache clears; a single field write can enqueue site-wide reindexing.",
+    "Sitemap cache clear() only queues work; clear_queued() or the shutdown hook performs the invalidation.",
+    "Yoast header requires WordPress 7.0+ (wp-seo.php:21) despite readme 'Requires at least: 7.0'; check actual site version before assuming abilities or endpoints."
+  ]
+}

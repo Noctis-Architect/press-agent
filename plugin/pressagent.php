@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PressAgent
  * Description: The Autonomous AI Ops Bridge for WordPress
- * Version: 1.0.1
+ * Version: 1.1.0
  * Author: PressAgent Team
  * Text Domain: pressagent
  * Requires PHP: 7.4
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'PRESSAGENT_VERSION', '1.0.1' );
+define( 'PRESSAGENT_VERSION', '1.1.0' );
 define( 'PRESSAGENT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PRESSAGENT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -26,6 +26,15 @@ require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-generic-settings.php';
 require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-debug-log-parser.php';
 require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-security-audit.php';
 require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-code-executor.php';
+require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-child-theme-manager.php';
+require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-plugin-manager.php';
+require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-supported-plugin-actions.php';
+require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-plugin-registry.php';
+require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-commerce-manager.php';
+require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-forms-manager.php';
+require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-seo-manager.php';
+require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-performance-manager.php';
+require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-wp-settings-manager.php';
 require_once PRESSAGENT_PLUGIN_DIR . 'includes/class-updater.php';
 
 function pressagent_activate() {

@@ -38,12 +38,7 @@ Use this as the first discovery step to locate target page IDs before inspecting
   // 2. Create Page
   tools.push({
     name: "pressagent_create_page",
-    description: `Create a new WordPress page, optionally with an initial Elementor layout in one call.
-
-🚀 ELEMENTOR WORKFLOW:
-1. To design with Elementor immediately, pass "container" (token mode). PressAgent resolves Kit tokens, saves the layout, purges cache, and returns a screenshot.
-2. To design later, create the page first, then call "pressagent_add_elementor_section" with the returned page ID.
-3. For raw Elementor JSON, create the page then use "pressagent_add_elementor_section" with "section_data".`,
+    description: `Create a WordPress page, optionally with an initial token-mode Elementor container (pressagent resolves Kit tokens, saves, purges and returns a screenshot). Without container, design later with pressagent_add_elementor_section.`,
     inputSchema: {
       type: "object",
       properties: {
@@ -62,33 +57,7 @@ Use this as the first discovery step to locate target page IDs before inspecting
         },
         container: {
           type: "object",
-          description: "Optional initial Flexbox Container to populate the page upon creation.",
-          properties: {
-            id: { type: "string" },
-            direction: { type: "string", enum: FLEX_DIRECTIONS },
-            width: { type: "string", enum: ["boxed", "full"] },
-            boxed_width: { type: "number" },
-            wrap: { type: "string", enum: ["nowrap", "wrap"] },
-            justify_content: { type: "string", enum: FLEX_JUSTIFY },
-            align_items: { type: "string", enum: FLEX_ALIGN },
-            gap: { type: "string", enum: SPACING_TOKENS },
-            padding: { type: "string", enum: SPACING_TOKENS },
-            margin: { type: "string", enum: SPACING_TOKENS },
-            background_color: { type: "string", enum: COLOR_TOKENS },
-            border_radius: { type: "string", enum: BORDER_RADIUS_TOKENS },
-            elements: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  id: { type: "string" },
-                  el_type: { type: "string", enum: ["container", "widget"] },
-                  widget_type: { type: "string", enum: ALLOWED_WIDGET_TYPES },
-                  settings: { type: "object" }
-                }
-              }
-            }
-          }
+          description: `Optional initial token-mode container: {direction, width?, boxed_width?, gap?, padding?, background_color?, elements:[{el_type:"widget"|"container", widget_type?, settings?}]}. Same shape as pressagent_add_elementor_section.container.`
         }
       },
       required: ["title"]

@@ -10,6 +10,14 @@ import { registerDebugLogTools } from "./tools/debug-log.js";
 import { registerSecurityTools } from "./tools/security.js";
 import { registerDevTools } from "./tools/dev.js";
 import { registerScreenshotTools } from "./tools/screenshot.js";
+import { registerThemeTools } from "./tools/theme.js";
+import { registerPluginTools } from "./tools/plugins.js";
+import { registerPluginConfigTools } from "./tools/plugin-config.js";
+import { registerCommerceTools } from "./tools/commerce.js";
+import { registerFormsTools } from "./tools/forms.js";
+import { registerSeoTools } from "./tools/seo.js";
+import { registerPerformanceTools } from "./tools/performance.js";
+import { registerWpSettingsTools } from "./tools/wp-settings.js";
 import { registerPrompts } from "./prompts/index.js";
 
 async function main() {
@@ -26,7 +34,7 @@ async function main() {
   const server = new Server(
     {
       name: "pressagent",
-      version: "1.0.1"
+      version: "1.1.0"
     },
     {
       capabilities: {
@@ -39,14 +47,30 @@ async function main() {
   const tools: any[] = [];
   const handlers = new Map<string, (args: any) => Promise<any>>();
 
-  // Register all tools
-  registerPagesTools(tools, handlers, client);
-  registerElementorTools(tools, handlers, client);
-  registerScreenshotTools(tools, handlers, client);
-  registerSettingsTools(tools, handlers, client);
-  registerDebugLogTools(tools, handlers, client);
-  registerSecurityTools(tools, handlers, client);
-  registerDevTools(tools, handlers, client);
+  // Optional tool profiles keep the fixed tool schema small for token-sensitive clients.
+  // Example: PRESSAGENT_TOOLSETS=pages,elementor,screenshot
+  const enabled = (process.env.PRESSAGENT_TOOLSETS || "all")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  const enabledAll = enabled.includes("all");
+  const toolset = (name: string) => enabledAll || enabled.includes(name);
+
+  if (toolset("pages")) registerPagesTools(tools, handlers, client);
+  if (toolset("elementor")) registerElementorTools(tools, handlers, client);
+  if (toolset("screenshot")) registerScreenshotTools(tools, handlers, client);
+  if (toolset("theme")) registerThemeTools(tools, handlers, client);
+  if (toolset("plugins")) registerPluginTools(tools, handlers, client);
+  if (toolset("plugins") || toolset("plugin-config")) registerPluginConfigTools(tools, handlers, client);
+  if (toolset("commerce")) registerCommerceTools(tools, handlers, client);
+  if (toolset("forms")) registerFormsTools(tools, handlers, client);
+  if (toolset("plugins") || toolset("seo")) registerSeoTools(tools, handlers, client);
+  if (toolset("performance")) registerPerformanceTools(tools, handlers, client);
+  if (toolset("settings")) registerWpSettingsTools(tools, handlers, client);
+  if (toolset("settings")) registerSettingsTools(tools, handlers, client);
+  if (toolset("debug")) registerDebugLogTools(tools, handlers, client);
+  if (toolset("security")) registerSecurityTools(tools, handlers, client);
+  if (toolset("dev")) registerDevTools(tools, handlers, client);
 
   // Register MCP Prompts
   registerPrompts(server);
@@ -66,11 +90,11 @@ async function main() {
     try {
       const result = await handler(args);
       return {
-        content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+        content: [{ type: "text", text: JSON.stringify(result) }]
       };
     } catch (error: any) {
       return {
-        content: [{ type: "text", text: JSON.stringify({ error: error.message }, null, 2) }],
+        content: [{ type: "text", text: JSON.stringify({ error: error.message }) }],
         isError: true
       };
     }

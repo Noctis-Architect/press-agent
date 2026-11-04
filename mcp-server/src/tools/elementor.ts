@@ -1,11 +1,6 @@
 import { WPClient } from "../wp-client.js";
 import { z } from "zod";
-import {
-  normalizeSectionData,
-  WIDGET_REFERENCE_GUIDE,
-  FLEXBOX_RECIPES_GUIDE,
-  WORKFLOW_RULES_GUIDE
-} from "../templates/elementor-widgets.js";
+import { normalizeSectionData } from "../templates/elementor-widgets.js";
 import {
   ALLOWED_WIDGET_TYPES,
   COLOR_TOKENS,
@@ -27,6 +22,45 @@ import {
 } from "./elementor-validator.js";
 import { captureScreenshotInternal } from "./screenshot.js";
 
+function summarizeElementorLayout(elements: any[], maxNodes = 400) {
+  const nodes: any[] = [];
+  let truncated = false;
+
+  const walk = (items: any[], depth: number) => {
+    for (const el of items) {
+      if (nodes.length >= maxNodes) {
+        truncated = true;
+        return;
+      }
+      if (!el || typeof el !== "object") continue;
+      const widgetType = el.widgetType || el.widget_type;
+      const type = el.elType || el.el_type || (widgetType ? "widget" : "container");
+      nodes.push({
+        id: el.id,
+        type,
+        widget_type: widgetType || undefined,
+        depth,
+        children: Array.isArray(el.elements) ? el.elements.length : 0,
+        text: elementorTextPreview(el.settings || {})
+      });
+      if (Array.isArray(el.elements) && el.elements.length) {
+        walk(el.elements, depth + 1);
+      }
+    }
+  };
+
+  walk(elements, 0);
+  return { node_count: nodes.length, truncated, nodes };
+}
+
+function elementorTextPreview(settings: Record<string, any>): string | undefined {
+  const raw = settings.title || settings.title_text || settings.text || settings.editor || settings.description_text;
+  if (typeof raw !== "string") return undefined;
+  const text = raw.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  if (!text) return undefined;
+  return text.length > 90 ? text.slice(0, 87) + "..." : text;
+}
+
 function assertNoForbiddenWidgets(node: any): void {
   if (!node || typeof node !== "object") return;
   if (Array.isArray(node)) {
@@ -46,21 +80,24 @@ export function registerElementorTools(tools: any[], handlers: Map<string, (args
   // 1. Get Elementor Layout
   tools.push({
     name: "pressagent_get_elementor_layout",
-    description: `Retrieve the complete Elementor JSON layout tree and widget settings for a WordPress page, plus the active Kit design tokens.
+    description: `Inspect a page's Elementor layout and available design tokens.
 
-📋 USAGE GUIDELINES FOR AI AGENTS:
-1. Always inspect the layout with this tool BEFORE editing or adding widgets.
-2. Examine the returned tree structure:
-   - Identify whether the page uses modern Flexbox Containers (elType: "container") or legacy Sections (elType: "section").
-   - Locate target widget IDs ("id"), types ("widgetType"), and existing configuration ("settings").
-3. Use the discovered widget IDs when calling "pressagent_update_widget".
-4. Reuse "design_tokens" (colors, spacing, typography, radii) instead of hardcoding raw hex values.`,
+Defaults to a compact node summary (id, type, widget_type, depth, text preview) — enough to locate targets for pressagent_update_widget. Use detail:"full" only when you need raw settings/JSON. Set include_kit:true to include the resolved Kit values.`,
     inputSchema: {
       type: "object",
       properties: {
         page_id: {
           type: "number",
           description: "WordPress post/page ID (e.g. 2, 14, 105)"
+        },
+        detail: {
+          type: "string",
+          enum: ["summary", "full"],
+          description: "summary (default): compact node list; full: complete Elementor JSON including settings."
+        },
+        include_kit: {
+          type: "boolean",
+          description: "Include resolved Kit colors/typography values (default false)."
         }
       },
       required: ["page_id"]
@@ -69,45 +106,50 @@ export function registerElementorTools(tools: any[], handlers: Map<string, (args
 
   handlers.set("pressagent_get_elementor_layout", async (args) => {
     const schema = z.object({
-      page_id: z.number()
+      page_id: z.number(),
+      detail: z.enum(["summary", "full"]).optional().default("summary"),
+      include_kit: z.boolean().optional().default(false)
     });
     const parsed = schema.parse(args);
 
     const [layout, kit] = await Promise.all([
       client.getElementorLayout(parsed.page_id),
-      client.getElementorKit().catch(() => null)
+      parsed.include_kit ? client.getElementorKit().catch(() => null) : Promise.resolve(null)
     ]);
+
+    const elements = Array.isArray(layout) ? layout : (layout as any)?.elements || [];
+    const designTokens = {
+      color_tokens: COLOR_TOKENS,
+      spacing_tokens: SPACING_TOKENS,
+      typography_tokens: TYPOGRAPHY_TOKENS,
+      border_radius_tokens: BORDER_RADIUS_TOKENS
+    };
+
+    if (parsed.detail === "full") {
+      return {
+        page_id: parsed.page_id,
+        detail: "full",
+        elements: layout,
+        ...(parsed.include_kit ? { kit } : {}),
+        design_tokens: designTokens
+      };
+    }
 
     return {
       page_id: parsed.page_id,
-      elements: layout,
-      kit: kit,
-      design_tokens: {
-        color_tokens: COLOR_TOKENS,
-        spacing_tokens: SPACING_TOKENS,
-        typography_tokens: TYPOGRAPHY_TOKENS,
-        border_radius_tokens: BORDER_RADIUS_TOKENS
-      }
+      detail: "summary",
+      ...summarizeElementorLayout(elements),
+      ...(parsed.include_kit ? { kit } : {}),
+      design_tokens: designTokens
     };
   });
 
   // 2. Update Widget
   tools.push({
     name: "pressagent_update_widget",
-    description: `Update settings of an existing native Elementor widget on a WordPress page in-place.
+    description: `Update an existing native Elementor widget in place (settings merge).
 
-📋 USAGE GUIDELINES & BEST PRACTICES:
-1. Call "pressagent_get_elementor_layout" first to obtain the exact widget "id" and inspect current settings.
-2. Only supply the settings keys you want to update (they will be deeply merged).
-3. TWO SETTING MODES:
-   - Token mode (recommended): provide "widget_type" and use design tokens: color: "primary"|"secondary"|"text"|"accent"|..., padding/margin: "none"|"xs"|"sm"|"md"|"lg"|"xl"|"2xl", typography: "primary"|"secondary"|"text"|"accent". PressAgent resolves tokens against the active Kit and writes native Elementor settings.
-   - Raw mode (advanced): omit "widget_type" and pass native Elementor controls directly.
-4. USE NATIVE CONTROLS:
-   - For "heading": { "title": "New Title", "header_size": "h2", "align": "center", "title_color": "#1e293b" }
-   - For "button": { "text": "Contact Us", "link": { "url": "/contact/" }, "align": "center" }
-   - For "text-editor": { "editor": "<p>Refined paragraph copy...</p>" }
-   - For "icon-box": { "title_text": "Feature Name", "description_text": "Details..." }
-5. AUTOMATION: PressAgent purges site cache and returns a desktop screenshot automatically after the update.`,
+Token mode (recommended): pass widget_type + tokens (color, typography, padding, margin, size); resolved against the active Kit. Raw mode: omit widget_type and pass native controls (title_color, link:{url}, editor). Validates, purges cache and returns a desktop screenshot. Get widget IDs from pressagent_get_elementor_layout.`,
     inputSchema: {
       type: "object",
       properties: {
@@ -126,27 +168,7 @@ export function registerElementorTools(tools: any[], handlers: Map<string, (args
         },
         settings: {
           type: "object",
-          description: "Native Elementor setting key-value pairs, or token-mode settings (color, typography, align, size, padding, margin).",
-          properties: {
-            title: { type: "string", description: "Title or heading text" },
-            header_size: { type: "string", enum: HEADER_SIZES },
-            editor: { type: "string", description: "Rich text content for text-editor (no script/style tags)" },
-            align: { type: "string", enum: TEXT_ALIGN },
-            color: { type: "string", enum: COLOR_TOKENS, description: "Color token (primary, secondary, text, accent, muted, white, black)" },
-            typography: { type: "string", enum: TYPOGRAPHY_TOKENS, description: "Typography token (primary, secondary, text, accent)" },
-            background_color: { type: "string", enum: COLOR_TOKENS },
-            text: { type: "string", description: "Button text" },
-            link: { type: "string", description: "URL link for button" },
-            size: { type: "string", enum: BUTTON_SIZES },
-            icon: { type: "string", description: "FontAwesome icon class (e.g. 'fas fa-arrow-left')" },
-            url: { type: "string", description: "Image URL" },
-            alt: { type: "string", description: "Image alt text" },
-            title_text: { type: "string", description: "Icon box title" },
-            description_text: { type: "string", description: "Icon box description" },
-            space: { type: "string", enum: SPACING_TOKENS, description: "Spacer height token" },
-            padding: { type: "string", enum: SPACING_TOKENS },
-            margin: { type: "string", enum: SPACING_TOKENS }
-          }
+          description: `Token mode keys: title, header_size (h1..h6), editor, align (left|center|right|justify), color/background_color (${COLOR_TOKENS.join("|")}), typography (${TYPOGRAPHY_TOKENS.join("|")}), text, link, size (${BUTTON_SIZES.join("|")}), icon, url, alt, title_text, description_text, space/padding/margin (${SPACING_TOKENS.join("|")}). Raw mode: pass native Elementor controls; they are merged.`
         }
       },
       required: ["page_id", "widget_id", "settings"]
@@ -215,31 +237,11 @@ export function registerElementorTools(tools: any[], handlers: Map<string, (args
   // 3. Add / Rebuild Elementor Section or Container
   tools.push({
     name: "pressagent_add_elementor_section",
-    description: `Add a new Elementor Flexbox Container / Section to a page, or completely rebuild the page layout.
+    description: `Add a Flexbox container or rebuild the page layout.
 
-🚨 CRITICAL ARCHITECTURAL RULES (MANDATORY FOR ALL AI AGENTS):
-1. **NO RAW HTML WIDGETS**: Never use widgetType "html" or "shortcode" for standard page content, cards, or hero banners! Admins cannot visually edit raw HTML in Elementor's drag-and-drop editor. Always use native widgets: 'heading', 'text-editor', 'button', 'image', 'icon-box', 'counter', 'accordion', etc.
-2. **SCHEMA CONSTRAINTS**:
-   - Every node must contain: "id" (unique 8-char hex, auto-repaired if omitted), "elType" ("container" or "widget"), "isInner" (boolean), "settings" (object), "elements" (array).
-   - Widgets must contain "widgetType" (e.g. "heading").
-   - Dimensional values (padding, margin, width) must be structured objects: { "unit": "px", "size": 1200 } or { "unit": "px", "top": "20", "right": "20", "bottom": "20", "left": "20", "isLinked": true }.
-3. **HORIZONTAL ROW RECIPE (PREVENTS VERTICAL STACKING BUG)**:
-   - In Elementor, containers default to flex-direction: column!
-   - To align cards horizontally, set the parent container:
-     { "content_width": "boxed", "boxed_width": { "unit": "px", "size": 1280 }, "flex_direction": "row", "flex_wrap": "wrap", "flex_justify_content": "space-between", "flex_gap": { "unit": "px", "size": 24, "column": "24", "row": "24" } }
-   - And set each child card container: { "content_width": "full", "width": { "unit": "%", "size": 31 }, "flex_direction": "column" }.
-4. **TOKEN MODE (RECOMMENDED)**: Instead of raw "section_data", pass "container" with design tokens:
-   { "direction": "row", "width": "boxed", "boxed_width": 1280, "gap": "lg", "padding": "xl", "background_color": "primary", "elements": [ { "el_type": "widget", "widget_type": "heading", "settings": { "title": "Hello", "color": "text" } } ] }
-   PressAgent validates the tree, resolves tokens against the active Kit, and writes native Elementor JSON.
-5. **FULL PAGE REBUILD MODE**:
-   - Token mode: pass { "replace_all": true, "container": <Container> }.
-   - Raw mode: pass { "section_data": { "_replace_all": true, "elements": [ <Container 1>, <Container 2>, ... ] } }.
-6. **POST-WRITE PROTOCOL**:
-   - PressAgent automatically purges cache and returns a screenshot. Inspect it, then capture mobile if needed.
-   - Check "pressagent_read_debug_log" for any PHP issues.
+Token mode (preferred): pass "container" {direction, width, gap, padding, background_color, elements:[native widgets]}; set replace_all:true to rebuild. Raw mode: pass "section_data" (auto-normalized Elementor JSON). Never use html/shortcode widgets; ids are 8-char hex; dimensions are structured objects. Containers default to column — use direction:"row" + wrap:"wrap" for rows.
 
-${WIDGET_REFERENCE_GUIDE}
-${FLEXBOX_RECIPES_GUIDE}`,
+PressAgent validates, resolves Kit tokens, purges cache and returns a desktop screenshot. Recipes: "elementor-page-builder" prompt or pressagent-elementor skill.`,
     inputSchema: {
       type: "object",
       properties: {
@@ -257,35 +259,7 @@ ${FLEXBOX_RECIPES_GUIDE}`,
         },
         container: {
           type: "object",
-          description: "Structured Flexbox Container with native widgets and design tokens.",
-          properties: {
-            id: { type: "string", description: "Optional 8-char hex ID. Auto-generated if omitted." },
-            direction: { type: "string", enum: FLEX_DIRECTIONS, description: "Flex direction: 'column', 'row', 'column-reverse', 'row-reverse'" },
-            width: { type: "string", enum: ["boxed", "full"], description: "Container width: 'boxed' or 'full'" },
-            boxed_width: { type: "number", description: "Max width in px when boxed (e.g. 1140 or 1280)" },
-            wrap: { type: "string", enum: ["nowrap", "wrap"], description: "Flex wrap" },
-            justify_content: { type: "string", enum: FLEX_JUSTIFY },
-            align_items: { type: "string", enum: FLEX_ALIGN },
-            gap: { type: "string", enum: SPACING_TOKENS, description: "Spacing token: none, xs, sm, md, lg, xl, 2xl" },
-            padding: { type: "string", enum: SPACING_TOKENS },
-            margin: { type: "string", enum: SPACING_TOKENS },
-            background_color: { type: "string", enum: COLOR_TOKENS },
-            border_radius: { type: "string", enum: BORDER_RADIUS_TOKENS },
-            elements: {
-              type: "array",
-              description: "Array of child containers or native widgets.",
-              items: {
-                type: "object",
-                properties: {
-                  id: { type: "string" },
-                  el_type: { type: "string", enum: ["container", "widget"] },
-                  widget_type: { type: "string", enum: ALLOWED_WIDGET_TYPES },
-                  settings: { type: "object" }
-                }
-              }
-            }
-          },
-          required: ["direction"]
+          description: `Token-mode container: {id?, direction:"${FLEX_DIRECTIONS.join("|")}", width:"boxed|full", boxed_width?, wrap:"nowrap|wrap", justify_content?, align_items?, gap?, padding?, margin?, background_color?, border_radius?, elements:[...]}. Each child: {el_type:"container"|"widget", widget_type?:${ALLOWED_WIDGET_TYPES.join("|")}, settings:{...}}. Direction is required.`
         }
       },
       required: ["page_id"]

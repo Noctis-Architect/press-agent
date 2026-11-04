@@ -1,0 +1,227 @@
+{
+  "slug": "contact-form-7",
+  "name": "Contact Form 7",
+  "plugin_file": "contact-form-7/wp-contact-form-7.php",
+  "version_analyzed": "6.2.4.1",
+  "storage_notes": "Forms are CPT wpcf7_contact_form. The authoritative form content and settings are post meta _form (string), _mail (array), _mail_2 (array), _messages (array), _additional_settings (string), plus _locale and _hash. post_content stores a flattened, human-readable copy of the properties but is not read back as the source of truth. A single global option wpcf7 is an array of integration/version settings. Config-validator results are cached in _config_validation post meta.",
+  "settings": [
+    {
+      "key": "wpcf7",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Single global option array holding plugin version, bulk-validation state and integration credentials/options. Version is written on load; integration keys appear only after configuration.",
+      "fields": {
+        "version": "string plugin version (load.php:209)",
+        "bulk_validate": "array validator state (load.php:206)",
+        "recaptcha": "array keys/warning flags (modules/recaptcha/service.php:24)",
+        "turnstile": "array site/secret keys (modules/turnstile/service.php:32)",
+        "stripe": "array Stripe settings (modules/stripe/service.php:23)",
+        "sendinblue": "array Sendinblue settings (modules/sendinblue/service.php:22)",
+        "constant-contact": "array Constant Contact settings (modules/constant-contact/constant-contact.php:46)"
+      },
+      "source": "load.php:99",
+      "safe_to_write": false
+    }
+  ],
+  "meta": [
+    {
+      "key": "_form",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Raw form template containing CF7 form tags such as [text* your-name].",
+      "source": "includes/contact-form.php:279",
+      "safe_to_write": true,
+      "format_notes": "Save through WPCF7_ContactForm::save() or wpcf7_save_contact_form(). Sanitized with wpcf7_kses() for users lacking unfiltered_html (includes/contact-form-functions.php:369)."
+    },
+    {
+      "key": "_mail",
+      "object_type": "post",
+      "type": "array",
+      "summary": "Primary mail template.",
+      "source": "includes/contact-form.php:280",
+      "safe_to_write": true,
+      "format_notes": "Keys: active (bool), subject, sender, recipient, body, additional_headers, attachments, use_html (bool), exclude_blank (bool); see includes/contact-form-functions.php:388. Saving through wpcf7_save_contact_form() forces active=true."
+    },
+    {
+      "key": "_mail_2",
+      "object_type": "post",
+      "type": "array",
+      "summary": "Secondary mail template (auto-reply).",
+      "source": "includes/contact-form.php:281",
+      "safe_to_write": true,
+      "format_notes": "Same keys as _mail; active defaults false and must be true to send. wpcf7_sanitize_mail() normalizes line endings of additional_headers."
+    },
+    {
+      "key": "_messages",
+      "object_type": "post",
+      "type": "array",
+      "summary": "Status/validation messages shown to visitors.",
+      "source": "includes/contact-form.php:282",
+      "safe_to_write": true,
+      "format_notes": "Core keys: mail_sent_ok, mail_sent_ng, validation_error, spam, accept_terms, invalid_required, invalid_too_long, invalid_too_short (includes/contact-form-template.php:164). Values are trimmed strings."
+    },
+    {
+      "key": "_additional_settings",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Newline-separated 'name: value' settings lines.",
+      "source": "includes/contact-form.php:283",
+      "safe_to_write": true,
+      "format_notes": "Recognized keys include demo_mode, skip_mail, subscribers_only, do_not_store, acceptance_as_validation, doi and flamingo_* (is_true/pref calls in includes and modules). Not a JSON structure."
+    },
+    {
+      "key": "_locale",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Form locale used for messages and mail templates.",
+      "source": "includes/contact-form.php:217",
+      "safe_to_write": true,
+      "format_notes": "Validated by wpcf7_is_valid_locale(); written on save (includes/contact-form.php:1290)."
+    },
+    {
+      "key": "_hash",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Unique random hash used in shortcode/hash lookups.",
+      "source": "includes/contact-form.php:218",
+      "safe_to_write": false,
+      "format_notes": "Generated once with add_post_meta(..., true) (includes/contact-form.php:1294). Never overwrite."
+    },
+    {
+      "key": "_config_validation",
+      "object_type": "post",
+      "type": "array",
+      "summary": "Cached configuration-validator errors per section.",
+      "source": "includes/config-validator/validator.php:356",
+      "safe_to_write": false,
+      "format_notes": "Written by WPCF7_ConfigValidator::save() (includes/config-validator/validator.php:348); regenerate by validating, do not hand-edit."
+    },
+    {
+      "key": "_old_cf7_unit_id",
+      "object_type": "post",
+      "type": "int",
+      "summary": "Legacy pre-3.0 form unit ID used by the old shortcode format.",
+      "source": "includes/contact-form.php:1358",
+      "safe_to_write": false,
+      "format_notes": "Migration data; read-only."
+    }
+  ],
+  "actions": [
+    {
+      "name": "list_forms",
+      "summary": "List contact forms using WP_Query defaults (post_status any, all forms).",
+      "implementation": "WPCF7_ContactForm::find($args)",
+      "params": {"args": "WP_Query args; post_type forced to wpcf7_contact_form"},
+      "safety": "read",
+      "source": "includes/contact-form.php:79"
+    },
+    {
+      "name": "get_form",
+      "summary": "Load one form object with decoded properties.",
+      "implementation": "wpcf7_contact_form($id)",
+      "params": {"id": "int"},
+      "safety": "read",
+      "source": "includes/contact-form-functions.php:14"
+    },
+    {
+      "name": "save_form",
+      "summary": "Create or update a form; sanitizes the supplied properties and calls save() when context is 'save'.",
+      "implementation": "wpcf7_save_contact_form($data, $context)",
+      "params": {"data": "id, title, locale, form, mail, mail_2, messages, additional_settings", "context": "'save' to persist; other/null = dry run"},
+      "safety": "write",
+      "source": "includes/contact-form-functions.php:297"
+    },
+    {
+      "name": "delete_form",
+      "summary": "Permanently delete the form post and all its meta.",
+      "implementation": "WPCF7_ContactForm::delete()",
+      "params": {"form_id": "int"},
+      "safety": "destructive",
+      "source": "includes/contact-form.php:1333"
+    },
+    {
+      "name": "validate_form",
+      "summary": "Run configuration validation and cache errors in _config_validation.",
+      "implementation": "WPCF7_ConfigValidator::validate() + save()",
+      "params": {"form_id": "int"},
+      "safety": "write",
+      "source": "includes/config-validator/validator.php:348"
+    }
+  ],
+  "rest_routes": [
+    {
+      "route": "/wp-json/contact-form-7/v1/contact-forms",
+      "methods": ["GET"],
+      "permission": "wpcf7_read_contact_forms (maps to edit_posts)",
+      "source": "includes/rest-api.php:22"
+    },
+    {
+      "route": "/wp-json/contact-form-7/v1/contact-forms",
+      "methods": ["POST"],
+      "permission": "wpcf7_edit_contact_forms (maps to publish_pages)",
+      "source": "includes/rest-api.php:39"
+    },
+    {
+      "route": "/wp-json/contact-form-7/v1/contact-forms/{id}",
+      "methods": ["GET"],
+      "permission": "wpcf7_edit_contact_form (maps to publish_pages)",
+      "source": "includes/rest-api.php:56"
+    },
+    {
+      "route": "/wp-json/contact-form-7/v1/contact-forms/{id}",
+      "methods": ["POST", "PUT", "PATCH"],
+      "permission": "wpcf7_edit_contact_form (maps to publish_pages)",
+      "source": "includes/rest-api.php:75"
+    },
+    {
+      "route": "/wp-json/contact-form-7/v1/contact-forms/{id}",
+      "methods": ["DELETE"],
+      "permission": "wpcf7_delete_contact_form (maps to publish_pages)",
+      "source": "includes/rest-api.php:91"
+    },
+    {
+      "route": "/wp-json/contact-form-7/v1/contact-forms/{id}/feedback",
+      "methods": ["POST"],
+      "permission": "public; requires multipart/form-data",
+      "source": "includes/rest-api.php:110"
+    },
+    {
+      "route": "/wp-json/contact-form-7/v1/contact-forms/{id}/feedback/schema",
+      "methods": ["GET"],
+      "permission": "public",
+      "source": "includes/rest-api.php:121"
+    },
+    {
+      "route": "/wp-json/contact-form-7/v1/contact-forms/{id}/refill",
+      "methods": ["GET"],
+      "permission": "public",
+      "source": "includes/rest-api.php:133"
+    }
+  ],
+  "objects": [
+    {
+      "type": "cf7_form",
+      "storage": "CPT wpcf7_contact_form; properties in _form/_mail/_mail_2/_messages/_additional_settings post meta; duplicate flattened copy in post_content",
+      "summary": "A contact form and its mail, message and additional settings.",
+      "crud_notes": "List with WPCF7_ContactForm::find(); read with wpcf7_contact_form($id)/get_properties(); create with wpcf7_save_contact_form(['id'=>-1,...]) or REST POST with context=save; update with id + properties; delete permanently via $form->delete(). Do not write post_content/_form directly unless replicating save() meta writes and hash generation.",
+      "source": "includes/contact-form.php:79"
+    }
+  ],
+  "detection": {
+    "active_check": "defined('WPCF7_VERSION') or class_exists('WPCF7_ContactForm'); plugin basename WPCF7_PLUGIN_BASENAME (contact-form-7/wp-contact-form-7.php)",
+    "source": "wp-contact-form-7.php:17"
+  },
+  "pro_notes": [],
+  "gotchas": [
+    "REST create/update require context=save. The callbacks pass the request's context directly to wpcf7_save_contact_form(); when it is absent/null the function performs a dry run and does not save (includes/rest-api.php:207, includes/contact-form-functions.php:356).",
+    "REST GET responses turn properties.form into an object {content, fields} and additional_settings into {content, settings}; write APIs expect the raw form string and newline settings string (includes/rest-api.php:463).",
+    "post_content is only a flattened copy of the properties (includes/contact-form.php:1265); changing it directly does not update the live form.",
+    "_hash is generated once by add_post_meta with unique=true; preserve it.",
+    "Form capabilities map as follows: read/edit/delete_contact_form(s) -> edit_posts for read and publish_pages for write/delete (includes/capabilities.php:9, wp-contact-form-7.php:49,53).",
+    "Deletion is permanent: wp_delete_post($id, true) (includes/contact-form.php:1338), with no trash step.",
+    "Configuration validation reports config_errors but does not block saving; invalid mail tags/from headers can persist.",
+    "Contact Form 7 core does not store submissions or entries; install Flamingo (separate plugin) or another integration for storage.",
+    "mail.active is forced true when saved through wpcf7_save_contact_form(); mail_2.active defaults false, and additional_headers is normalized line by line.",
+    "Contact Form 7 6.2.4.1 requires WordPress 7.1 and PHP 8.3 (readme.txt); guard feature availability by version."
+  ]
+}

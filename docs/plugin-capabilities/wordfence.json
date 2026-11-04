@@ -1,0 +1,356 @@
+{
+  "slug": "wordfence",
+  "name": "Wordfence Security",
+  "plugin_file": "wordfence/wordfence.php",
+  "version_analyzed": "9.0.2",
+  "storage_notes": "Most configuration is stored in the custom table {prefix}wfConfig via wfConfig::get()/set(); booleans use generic getBool() and integers are stored as strings. Scan issues live in wfIssues; scan state is exposed by wfScanner::shared()->isRunning() and wfScanEngine::isScanRunning(). Do not read/write wfConfig with raw SQL.",
+  "settings": [
+    {
+      "key": "firewallEnabled",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Web application firewall master switch.",
+      "source": "lib/wfConfig.php:84",
+      "safe_to_write": true
+    },
+    {
+      "key": "loginSecurityEnabled",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Login security master switch.",
+      "source": "lib/wfConfig.php:86",
+      "safe_to_write": true
+    },
+    {
+      "key": "alertOn_block",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Email alerts when an IP is blocked.",
+      "source": "lib/wfConfig.php:40",
+      "safe_to_write": true
+    },
+    {
+      "key": "alertOn_loginLockout",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Email alerts on login lockouts.",
+      "source": "lib/wfConfig.php:41",
+      "safe_to_write": true
+    },
+    {
+      "key": "alertOn_scanIssues",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Email alerts for scan issues.",
+      "source": "lib/wfConfig.php:38",
+      "safe_to_write": true
+    },
+    {
+      "key": "autoUpdate",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Wordfence auto-update.",
+      "source": "lib/wfConfig.php:111",
+      "safe_to_write": true
+    },
+    {
+      "key": "liveTrafficEnabled",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Live traffic logging.",
+      "source": "lib/wfConfig.php:50",
+      "safe_to_write": true
+    },
+    {
+      "key": "lowResourceScansEnabled",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Use low-resource scan mode.",
+      "source": "lib/wfConfig.php:57",
+      "safe_to_write": true
+    },
+    {
+      "key": "loginSec_blockAdminReg",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Block registration of administrator accounts.",
+      "source": "lib/wfConfig.php:91",
+      "safe_to_write": true
+    },
+    {
+      "key": "loginSec_disableAuthorScan",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Block author enumeration.",
+      "source": "lib/wfConfig.php:92",
+      "safe_to_write": true
+    },
+    {
+      "key": "loginSec_disableApplicationPasswords",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Disable WordPress application passwords.",
+      "source": "lib/wfConfig.php:93",
+      "safe_to_write": true
+    },
+    {
+      "key": "loginSec_lockInvalidUsers",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Lock out invalid usernames.",
+      "source": "lib/wfConfig.php:89",
+      "safe_to_write": true
+    },
+    {
+      "key": "scan_include_extra",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Extra paths to include in scans.",
+      "source": "lib/wfConfig.php:136",
+      "safe_to_write": true
+    },
+    {
+      "key": "alertEmails",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Comma-separated alert email addresses.",
+      "source": "lib/wfConfig.php:137",
+      "safe_to_write": true
+    },
+    {
+      "key": "whitelisted",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Comma-separated IP whitelist.",
+      "source": "lib/wfConfig.php:146",
+      "safe_to_write": true
+    },
+    {
+      "key": "loginSec_maxFailures",
+      "storage": "custom_table",
+      "shape": "int",
+      "summary": "Failed login threshold.",
+      "source": "lib/wfConfig.php:158",
+      "safe_to_write": true
+    },
+    {
+      "key": "loginSec_countFailMins",
+      "storage": "custom_table",
+      "shape": "int",
+      "summary": "Failure counting window in minutes.",
+      "source": "lib/wfConfig.php:157",
+      "safe_to_write": true
+    },
+    {
+      "key": "loginSec_lockoutMins",
+      "storage": "custom_table",
+      "shape": "int",
+      "summary": "Lockout duration in minutes.",
+      "source": "lib/wfConfig.php:158",
+      "safe_to_write": true
+    },
+    {
+      "key": "maxMem",
+      "storage": "custom_table",
+      "shape": "int",
+      "summary": "Maximum scan memory in MB.",
+      "source": "lib/wfConfig.php:142",
+      "safe_to_write": true
+    },
+    {
+      "key": "scan_maxIssues",
+      "storage": "custom_table",
+      "shape": "int",
+      "summary": "Maximum number of stored scan issues.",
+      "source": "lib/wfConfig.php:144",
+      "safe_to_write": true
+    },
+    {
+      "key": "howGetIPs",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Visitor IP detection mode.",
+      "source": "lib/wfConfig.php:155",
+      "safe_to_write": true
+    },
+    {
+      "key": "scanType",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Scan type (standard/quick/custom).",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "schedMode",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Automatic/custom scan scheduling mode.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "schedStartHour",
+      "storage": "custom_table",
+      "shape": "int",
+      "summary": "Scheduled scan start hour (-1 automatic).",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "manualScanType",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Manual scan schedule.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "scan_maxDuration",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Maximum scan duration.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "scan_exclude",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Paths excluded from scans.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "alertOn_severityLevel",
+      "storage": "custom_table",
+      "shape": "int",
+      "summary": "Alert severity threshold.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "email_summary_interval",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Email summary interval.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "liveTraf_ignoreUsers",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Live traffic ignored users.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "liveTraf_ignoreIPs",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Live traffic ignored IPs.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "liveTraf_ignoreUA",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Live traffic ignored user agents.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "loginSec_strongPasswds",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Strong password policy (pubs/admins/all).",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "loginSec_breachPasswds",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Breached password policy.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "loginSec_userBlacklist",
+      "storage": "custom_table",
+      "shape": "string",
+      "summary": "Blocked usernames/emails.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "autoBlockScanners",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Automatically block scanners.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "allowHTTPSCaching",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Allow caching of HTTPS requests.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    },
+    {
+      "key": "loginSec_enableSeparateTwoFactor",
+      "storage": "custom_table",
+      "shape": "bool",
+      "summary": "Separate two-factor settings.",
+      "source": "lib/wfConfig.php",
+      "safe_to_write": true
+    }
+  ],
+  "meta": [],
+  "actions": [
+    {
+      "name": "scan_status",
+      "summary": "Read scan running state and new issue count.",
+      "implementation": "wfScanEngine::isScanRunning(false); wfIssues::getIssueCount()",
+      "params": {},
+      "safety": "read",
+      "source": "lib/wfScanEngine.php:93, lib/wfIssues.php:665"
+    },
+    {
+      "name": "start_scan",
+      "summary": "Start a Wordfence scan (may run in background).",
+      "implementation": "wfScanEngine::startScan()",
+      "params": {},
+      "safety": "write",
+      "source": "lib/wfScanEngine.php:2482"
+    },
+    {
+      "name": "get_issues",
+      "summary": "List latest scan issues with severity and short message.",
+      "implementation": "wfIssues::getIssues(0, $limit)",
+      "params": {
+        "limit": "int"
+      },
+      "safety": "read",
+      "source": "lib/wfIssues.php:600"
+    }
+  ],
+  "rest_routes": [],
+  "detection": {
+    "active_check": "defined('WORDFENCE_VERSION') or class_exists('wordfence')",
+    "source": "wordfence.php:41"
+  },
+  "pro_notes": [
+    "Country blocking, real-time IP blocklist, premium support and some scan categories are Premium features; do not expose settings that only exist in the paid plugin."
+  ],
+  "gotchas": [
+    "Config is in the wfConfig table, not wp_options; use wfConfig::get()/set(). Booleans use getBool(), integers are stored as strings.",
+    "wfConfig::set() refuses arrays; use set_ser()/setJSON() for structured values (not exposed by this registry).",
+    "startScan() can fork or run in the background; poll scan_status instead of expecting an immediate result.",
+    "Changing firewall settings may require the WAF config to be synchronized; verify frontend access after writes."
+  ]
+}

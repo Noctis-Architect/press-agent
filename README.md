@@ -7,7 +7,7 @@
 </p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.1-green.svg)](https://github.com/Noctis-Architect/press-agent)
+[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](https://github.com/Noctis-Architect/press-agent)
 [![WordPress](https://img.shields.io/badge/WordPress-5.8%2B-blue.svg)](https://wordpress.org)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://php.net)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3%2B-blue.svg)](https://www.typescriptlang.org)
@@ -59,6 +59,30 @@
 ### ⚡ 7. Developer / God Mode Scaffolding (Staging Only)
 - **Plugin Scaffolding:** Allows AI agents to generate and scaffold custom WordPress plugins (`pressagent_create_plugin`) on development and staging sites.
 - **Strictly Isolated:** Requires the `code:execute` scope, disabled by default in production.
+
+### 🧩 8. Plugin Intelligence Hub (12 verified integrations)
+- **Validated, not guessed:** Every option/meta/action is declared in a per-plugin registry and verified against the plugin source (`docs/plugin-capabilities/*.json`). Unknown keys are rejected with the allowed list.
+- **Supported free plugins:** Yoast SEO, Rank Math SEO, Wordfence, AIOS, Elementor, LiteSpeed Cache, Contact Form 7, WPForms Lite, WooCommerce, Redirection, WP Mail SMTP, Really Simple Security.
+- **SEO bridge:** `pressagent_seo` normalizes titles, descriptions, focus keywords, canonical, robots, Open Graph, X/Twitter, schema and primary category across Yoast and Rank Math, including term SEO (Yoast's term storage is an option, not term meta).
+- **Lifecycle:** inventory, install from the official WordPress.org directory, activate/deactivate and update. Premium plugins are never sideloaded; a valid license is required.
+
+### 🏗️ 9. Child Theme & Appearance Modes
+- **User-selected mode:** `elementor`, `child-theme`, or `hybrid` (recommended with Elementor). The mode is stored per site and returned with guidance so the agent knows which layer owns layout.
+- **Safe scaffolding:** create and activate a child theme, add `assets/css/pressagent.css`, and install an idempotent enqueue block into `functions.php`.
+- **Safe editing:** list/read/write only the active child theme, with path-traversal protection, automatic backups, `php -l` for PHP, and one-call restore.
+- **Hybrid playbook:** Elementor owns pages/header/footer; the child theme owns global tokens, CSS and hooks; WooCommerce overrides live in the child theme.
+
+### 🪶 10. Token-Efficient by Design
+- **Compact schemas:** 26 tools cost ~5.9k fixed tokens (measured), with profiles bringing that much lower.
+- **Tool profiles:** set `PRESSAGENT_TOOLSETS=pages,elementor,screenshot,theme` (or any subset) to load only what a session needs.
+- **Summary-first reads:** `pressagent_get_elementor_layout` returns a compact node summary by default; request `detail:"full"` or `include_kit:true` only when required.
+- **On-demand knowledge:** long guides live in MCP prompts and skills; tools return compact JSON without pretty-print padding. Use `node scripts/token-report.mjs` to measure.
+
+### ⚡ 11. Speed Audit & Core Settings
+- **Server audit:** PHP/memory/OPcache, object cache, page cache, autoload size, revisions, transients, debug.log, Elementor/LiteSpeed state, active plugin matches and prioritized issues with `fix_id`.
+- **Page audit:** same-origin fetch measures response time, HTML size, scripts/styles, render-blocking assets, image dimensions/alt/lazy, Elementor CSS, Google Fonts, compression and cache headers.
+- **Safe fixes:** enable LiteSpeed cache/minify/lazy/browser cache, switch Elementor CSS to external, enable element caching and optimization experiments, purge caches, delete expired transients. Revision deletion and database cleanup (orphaned meta/term relationships, trashed comments) require explicit confirmation.
+- **WordPress core settings:** validated get/set/rollback for general, reading, discussion, media, permalinks and privacy groups, with snapshots; `siteurl`/`home` require confirmation and permalink changes flush rewrite rules.
 
 ---
 
@@ -114,6 +138,14 @@
 | | `pressagent_update_widget` | Update settings/content of a specific Elementor widget by its ID | `elementor:write` |
 | | `pressagent_add_elementor_section` | Add new containers/sections or replace entire layout with native widgets | `elementor:write` |
 | **Visual Inspection** | `pressagent_capture_screenshot` | Capture headless browser screenshots (Desktop/Tablet/Mobile) with SSRF guard | `pages:read` |
+| **Appearance** | `pressagent_theme` | Child theme status, create/switch, mode (`elementor`/`child-theme`/`hybrid`), safe file read/write, backups, restore | `theme:read` / `theme:write` |
+| **Plugin Lifecycle** | `pressagent_plugins` | Inventory, install from WordPress.org, activate/deactivate, update | `plugins:read` / `plugins:write` |
+| **Plugin Config** | `pressagent_plugin` | Catalog, read, validated partial write with snapshots, restore, declared maintenance actions | `settings:read/write` + `plugins:write` |
+| **SEO** | `pressagent_seo` | Yoast / Rank Math metadata for posts and terms (title, description, robots, social, schema) | `seo:read` / `seo:write` |
+| **Forms** | `pressagent_forms` | Contact Form 7 full CRUD, WPForms Lite read-only | `forms:read` / `forms:write` |
+| **Commerce** | `pressagent_commerce` | WooCommerce products and orders via official WC CRUD APIs (HPOS-safe) | `commerce:read` / `commerce:write` |
+| **Performance** | `pressagent_performance` | Server/page speed audit and safe fixes (LiteSpeed, Elementor, caches, revisions, transients) | `settings:read/write` |
+| **WP Core Settings** | `pressagent_wp_settings` | Validated general/reading/discussion/media/permalinks/privacy settings with snapshots and rollback | `settings:read/write` |
 | **Settings & Cache** | `pressagent_read_option` | Read allow-listed WordPress or plugin options | `settings:read` |
 | | `pressagent_write_option` | Safely update allow-listed options with automatic pre-snapshots | `settings:write` |
 | | `pressagent_purge_cache` | Clear site caches (WP Rocket, LiteSpeed Cache, Elementor files) | `settings:write` |
@@ -122,6 +154,41 @@
 | | `pressagent_diagnose_error` | Get structured AI-guided diagnostics and resolution steps for an error | `debug:read` |
 | **Security & Audits** | `pressagent_security_summary` | Inspect WordPress version, PHP version, writable permissions, and plugins | `security:read` |
 | **Dev / Scaffolding** | `pressagent_create_plugin` | Scaffold and generate custom WordPress plugins (Staging only) | `code:execute` |
+| | `pressagent_delete_plugin`, `pressagent_toggle_plugin`, `pressagent_run_snippet` | God Mode plugin cleanup, toggling and diagnostics | `code:execute` |
+
+---
+
+## 🧩 Supported Plugin Matrix (verified free versions)
+
+| Plugin | Version analyzed | Exposed capabilities |
+|---|---|---|
+| **Yoast SEO** | 28.8 | Global titles/social/sitemap options; post, term and user SEO meta; indexable rebuild via the Yoast ability when available |
+| **Rank Math SEO** | 1.0.281 | Titles/general/sitemap options via `Option_Center::save_settings`; post/term SEO meta and robots arrays; module toggles; redirections and 404 monitor settings/logs |
+| **Wordfence** | 9.0.2 | Firewall/login/scan/live-traffic settings via `wfConfig`; scan status, start scan, latest issues |
+| **AIOS** | 5.5.1 | Login lockout, firewall, 404, CAPTCHA, rename-login and hardening settings; 6G firewall rules; `.htaccess` rebuild |
+| **Elementor** | 4.3.6 | Global settings/experiments plus the existing layout/widget tools |
+| **LiteSpeed Cache** | 7.9.3 | Cache/optimization settings via `API::save_conf`; purge all/url/post/posttype |
+| **Contact Form 7** | 6.2.4.1 | Forms list/get/create/update/delete, mail/messages, config validation |
+| **WPForms Lite** | 2.0.3.1 | Global settings and read-only forms (Lite stores no entries) |
+| **WooCommerce** | 11.2.1 | Store settings, simple product CRUD, order list/get/status/notes (HPOS-safe) |
+| **Redirection** | 5.10.1 | Settings, redirect CRUD/toggle, groups, 404 lookup, cache flush |
+| **WP Mail SMTP** | 4.10.3 | Mailer/SMTP/From settings (password write-only), test email, debug events |
+| **Really Simple Security** | 9.8.4 | Hardening, login protection, firewall and notification settings; rule rebuild |
+
+> **Premium policy:** PressAgent never downloads nulled or unlicensed copies. Free plugins come from the official WordPress.org API; Pro features are supported only when the site already has a valid license, and are documented rather than bundled.
+
+---
+
+## 🪶 Token Efficiency
+
+| Mechanism | Effect |
+|---|---|
+| `PRESSAGENT_TOOLSETS` | Register only the toolsets a session needs (e.g. `pages,elementor,screenshot`) |
+| Summary-first layout reads | Node summary by default; `detail:"full"` / `include_kit:true` only on demand |
+| Compact JSON responses | No indentation padding in MCP tool output |
+| Registry catalogs | `pressagent_plugin catalog` returns exact supported keys instead of dumping options |
+| Skills + prompts | Long guides are loaded only when needed; duplicated guide text was removed from schemas |
+| Measurement | `node scripts/token-report.mjs [toolset,...]` reports fixed schema tokens per tool |
 
 ---
 
@@ -142,7 +209,7 @@ Security is at the foundation of PressAgent:
 
 ### 📦 Pre-Packaged Downloads (Direct Release ZIPs)
 
-If you prefer ready-to-use packages without building from source or cloning the repository, download the compiled assets from the [GitHub Releases (v1.0.1)](https://github.com/Noctis-Architect/press-agent/releases/tag/v1.0.1):
+If you prefer ready-to-use packages without building from source or cloning the repository, download the compiled assets from the [GitHub Releases (v1.0.1)](https://github.com/Noctis-Architect/press-agent/releases/tag/v1.0.1). The v1.1.0 plugin/theme/SEO features are available from source until the next release assets are published:
 
 | Package | Download Link | Description | How to Install |
 | :--- | :--- | :--- | :--- |
@@ -275,7 +342,14 @@ Use the resulting public HTTPS URL in `PRESSAGENT_WP_URL`.
 | `pages:write` | Content | Create, update status, and delete pages |
 | `elementor:read` | Builder | Read Elementor layout JSON trees and widget settings |
 | `elementor:write` | Builder | Add sections/containers, update widgets, and rebuild designs |
+| `theme:read` | Appearance | Inspect active/parent theme, child files and appearance mode |
+| `theme:write` | Appearance | Create/switch child theme, write files with backup and PHP lint |
 | `appearance:css` | Design | Manage custom CSS styles and page templates |
+| `plugins:read` | Plugins | List installed plugins, versions and update status |
+| `plugins:write` | Plugins | Install from WordPress.org, activate/deactivate/update, run declared plugin actions |
+| `seo:read` / `seo:write` | SEO | Read/update Yoast or Rank Math metadata on posts and terms |
+| `commerce:read` / `commerce:write` | Commerce | Read/manage WooCommerce products, orders and store settings |
+| `forms:read` / `forms:write` | Forms | Read/manage Contact Form 7 forms; read WPForms |
 | `settings:read` | Settings | Read allowlisted options for core and plugins |
 | `settings:write` | Settings | Update allowlisted options (creates Action Guard snapshot) |
 | `cache:purge` | Cache | Invalidate and purge cache for WP Rocket, LiteSpeed, and Elementor |
@@ -284,6 +358,8 @@ Use the resulting public HTTPS URL in `PRESSAGENT_WP_URL`.
 | `security:read` | Security | Inspect site health, plugin versions, and configuration status |
 | `code:execute` | Developer | God Mode: execute code and scaffold plugins (staging only) |
 | `*` or `god_mode` | Full Admin | Unrestricted access across all PressAgent endpoints |
+
+> Tokens issued before v1.1.0 do not carry the new `theme:*`, `plugins:*`, `seo:*`, `commerce:*` or `forms:*` scopes. Reissue a token (Quick Setup or custom scopes) after updating the plugin.
 
 ---
 
@@ -295,8 +371,20 @@ PressAgent includes comprehensive syntax checks and unit tests:
 # Verify PHP plugin syntax
 find plugin/ -name "*.php" -exec php -l {} \;
 
+# Plugin registry smoke tests (WordPress stubs, no site required)
+php tests/php/registry-smoke.php
+php tests/php/wp-settings-smoke.php
+php tests/php/performance-smoke.php
+
 # Build TypeScript MCP server
 cd mcp-server && npm run build
+
+# Measure fixed MCP schema tokens (all tools or a profile)
+node scripts/token-report.mjs
+node scripts/token-report.mjs pages,elementor,screenshot,theme
+
+# Refresh local plugin sources used for capability verification
+python3 scripts/fetch_plugin_sources.py
 ```
 
 ---
@@ -307,8 +395,10 @@ cd mcp-server && npm run build
 - [x] **Phase 2: Elementor Native Engine** — Native widget generation (no raw HTML), container hierarchy, Elementor internal save path, CSS cache purging.
 - [x] **Phase 3: Visual Inspection** — Headless browser screenshotting, multi-viewport previews (Desktop/Tablet/Mobile), SSRF protection.
 - [x] **Phase 4: Diagnostics & Self-Healing** — Regex-based debug log parsing, log traversal guards, AI diagnostic remediation.
-- [ ] **Phase 5: WooCommerce Deep Integration** — Direct manipulation of WooCommerce product tabs, custom attributes, variation pricing, and checkout builders.
-- [ ] **Phase 6: Gutenberg Block Support** — Native block template generation and block pattern transformation alongside Elementor.
+- [x] **Phase 5: Plugin Intelligence Hub** — Verified integrations for SEO, security, cache, forms, commerce, redirects and SMTP, with validated registries and snapshots.
+- [x] **Phase 6: Child Theme & Appearance Modes** — Elementor/child-theme/hybrid modes, safe scaffolding and file editing with backups and PHP lint.
+- [ ] **Phase 7: WooCommerce Deep Integration** — Variation-level pricing, attributes, tabs and checkout customization.
+- [ ] **Phase 8: Gutenberg Block Support** — Native block template generation and block pattern transformation alongside Elementor.
 
 ---
 
@@ -391,6 +481,30 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 - **ساخت سریع افزونه‌ها:** ایجنت هوش مصنوعی می‌تواند ساختار پلاگین‌های جدید وردپرسی را اسکلت‌بندی و تولید کند (`pressagent_create_plugin`).
 - **محدود به محیط استیجینگ:** این ابزار تحت Scope اختصاصی `code:execute` قرار داشته و در محیط‌های پروداکشن به طور پیش‌فرض غیرفعال است.
 
+### 🧩 ۸. مرکز هوشمند پلاگین‌ها (۱۲ یکپارچه‌سازی تأییدشده)
+- **دقیق، نه حدسی:** هر option/meta/action در یک رجیستری per-plugin تعریف شده و با سورس پلاگین اعتبارسنجی شده است (`docs/plugin-capabilities/*.json`). کلید ناشناخته با لیست مجاز رد می‌شود.
+- **پلاگین‌های رایگان پشتیبانی‌شده:** Yoast SEO، Rank Math، Wordfence، AIOS، Elementor، LiteSpeed Cache، Contact Form 7، WPForms Lite، WooCommerce، Redirection، WP Mail SMTP و Really Simple Security.
+- **پل سئو:** `pressagent_seo` فیلدهای title، description، focus keyword، canonical، robots، Open Graph، X/Twitter، schema و primary category را بین Yoast و Rank Math نرمال می‌کند؛ شامل سئوی ترم‌ها (ذخیره‌سازی ترم Yoast در option است، نه term meta).
+- **چرخه نصب:** فهرست، نصب از مخزن رسمی WordPress.org، فعال/غیرفعال و آپدیت. نسخه Pro هرگز sideload نمی‌شود و نیاز به لایسنس معتبر دارد.
+
+### 🏗️ ۹. چایلد تم و حالت‌های ظاهری
+- **انتخاب کاربر:** `elementor`، `child-theme` یا `hybrid` (پیشنهادی همراه المنتور). حالت در سایت ذخیره می‌شود و راهنمای آن به ایجنت برمی‌گردد.
+- **ساخت امن:** ساخت و فعال‌سازی چایلد، ایجاد `assets/css/pressagent.css` و افزودن بلوک enqueue idempotent به `functions.php`.
+- **ویرایش امن:** فقط چایلد فعال قابل خواندن/نوشتن است؛ محافظت path traversal، بکاپ خودکار، `php -l` برای PHP و بازگردانی یک‌مرحله‌ای.
+- **سناریوی هیبرید:** المنتور مالک برگه/هدر/فوتر؛ چایلد مالک توکن‌ها، CSS سراسری و هوک‌ها؛ override ووکامرس در چایلد.
+
+### 🪶 ۱۰. بهینه برای مصرف توکن
+- **اسکیمای فشرده:** ۲۶ ابزار حدود ۵٬۹ هزار توکن ثابت مصرف می‌کنند (اندازه‌گیری‌شده)؛ با پروفایل ابزار بسیار کمتر می‌شود.
+- **پروفایل ابزار:** با `PRESSAGENT_TOOLSETS=pages,elementor,screenshot,theme` فقط ابزارهای لازم بارگذاری می‌شوند.
+- **خواندن خلاصه‌محور:** `pressagent_get_elementor_layout` به‌صورت پیش‌فرض خلاصه گره‌ها را برمی‌گرداند؛ `detail:"full"` یا `include_kit:true` فقط در صورت نیاز.
+- **دانش هنگام نیاز:** راهنماهای بلند در promptها و skillها هستند؛ خروجی JSON فشرده است. با `node scripts/token-report.mjs` اندازه را بسنجید.
+
+### ⚡ ۱۱. آنالیز سرعت و تنظیمات هسته
+- **آنالیز سرور:** PHP/حافظه/OPcache، object cache، page cache، حجم autoload، ریبایژن‌ها، transientها، debug.log، وضعیت المنتور/لایت‌اسپید، پلاگین‌های فعال و issueهای اولویت‌دار با `fix_id`.
+- **آنالیز صفحه:** دریافت same-origin و اندازه‌گیری زمان پاسخ، حجم HTML، تعداد script/style، منابع render-blocking، تصاویر بدون ابعاد/alt/lazy، CSS المنتور، فونت خارجی، فشرده‌سازی و هدر کش.
+- **رفع امن:** روشن کردن کش/فشرده‌سازی/lazy/کش مرورگر لایت‌اسپید، CSS خارجی المنتور، کش المنتور و experimentهای بهینه‌سازی، purge کش، حذف transient منقضی. حذف ریبایژن و پاکسازی دیتابیس (متای یتیم، رابطه ترم یتیم، کامنت trash) نیازمند تایید صریح است.
+- **تنظیمات هسته وردپرس:** get/set/rollback اعتبارسنجی‌شده برای گروه‌های general، reading، discussion، media، permalinks و privacy با اسنپ‌شات؛ `siteurl`/`home` نیازمند تایید و تغییر permalink به‌صورت خودکار rewrite را flush می‌کند.
+
 ---
 
 ## 🏗️ معماری ارتباطی
@@ -445,6 +559,14 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 | | `pressagent_update_widget` | ویرایش محتوا و تنظیمات استایل یک ابزارک خاص بر اساس شناسه آن | `elementor:write` |
 | | `pressagent_add_elementor_section` | افزودن بخش/کانتینر جدید یا بازسازی کامل طراحی با ویجت‌های بومی | `elementor:write` |
 | **بازرسی بصری** | `pressagent_capture_screenshot` | ثبت اسکرین‌شات از دید کاربر با مرورگر بدون سر (دسکتاپ/تبلت/موبایل) | `pages:read` |
+| **ظاهر و چایلد** | `pressagent_theme` | وضعیت قالب، ساخت/سوییچ چایلد، حالت ظاهری، ویرایش امن فایل، بکاپ و بازگردانی | `theme:read` / `theme:write` |
+| **چرخه پلاگین** | `pressagent_plugins` | فهرست، نصب از WordPress.org، فعال/غیرفعال و آپدیت | `plugins:read` / `plugins:write` |
+| **تنظیمات پلاگین** | `pressagent_plugin` | کاتالوگ، خواندن، نوشتن جزئی معتبر با اسنپ‌شات، بازگردانی و اکشن‌های تعریف‌شده | `settings:read/write` + `plugins:write` |
+| **سئو** | `pressagent_seo` | متای Yoast / Rank Math برای برگه و ترم (عنوان، توضیح، robots، شبکه‌های اجتماعی، schema) | `seo:read` / `seo:write` |
+| **فرم‌ها** | `pressagent_forms` | CF7 کامل، WPForms Lite فقط خواندن | `forms:read` / `forms:write` |
+| **فروشگاه** | `pressagent_commerce` | محصولات و سفارش‌های WooCommerce با APIهای رسمی (سازگار با HPOS) | `commerce:read` / `commerce:write` |
+| **عملکرد** | `pressagent_performance` | آنالیز سرعت سرور/صفحه و رفع امن (لایت‌اسپید، المنتور، کش، ریبایژن، transient) | `settings:read/write` |
+| **تنظیمات وردپرس** | `pressagent_wp_settings` | تنظیمات general/reading/discussion/media/permalinks/privacy با اعتبارسنجی، اسنپ‌شات و rollback | `settings:read/write` |
 | **تنظیمات و کش** | `pressagent_read_option` | خواندن مقادیر آپشن‌های مجاز موجود در لیست سفید | `settings:read` |
 | | `pressagent_write_option` | ذخیره مقدار جدید در آپشن‌های مجاز با ثبت خودکار اسنپ‌شات پشتیبان | `settings:write` |
 | | `pressagent_purge_cache` | تخلیه کامل کش‌های سایت (راکت، لایت‌اسپید، فایل‌های CSS المنتور) | `settings:write` |
@@ -453,6 +575,40 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 | | `pressagent_diagnose_error` | تحلیل خطا و ارائه راهکار گام‌به‌گام برای حل مشکل تداخل یا کرش | `debug:read` |
 | **امنیت و وضعیت** | `pressagent_security_summary` | خلاصه وضعیت امنیت سایت شامل نسخه PHP، نسخه وردپرس و دسترسی فایل‌ها | `security:read` |
 | **توسعه و پلاگین** | `pressagent_create_plugin` | اسکلت‌بندی و ایجاد پلاگین‌های جدید سفارشی (مخصوص محیط استیجینگ) | `code:execute` |
+
+---
+
+## 🧩 ماتریس پلاگین‌های پشتیبانی‌شده (نسخه‌های رایگان تأییدشده)
+
+| پلاگین | نسخه تحلیل‌شده | قابلیت‌های در دسترس |
+|---|---|---|
+| **Yoast SEO** | 28.8 | تنظیمات سراسری عنوان/شبکه‌های اجتماعی/سایت‌مپ؛ متای برگه، ترم و کاربر؛ بازسازی indexable با ability در صورت وجود |
+| **Rank Math SEO** | 1.0.281 | تنظیمات titles/general/sitemap؛ متای برگه/ترم و robots؛ ماژول‌ها؛ ریدایرکت‌ها و تنظیمات/لاگ 404 |
+| **Wordfence** | 9.0.2 | فایروال/لاگین/اسکن/ترافیک زنده با `wfConfig`؛ وضعیت اسکن، شروع اسکن، آخرین مشکلات |
+| **AIOS** | 5.5.1 | قفل لاگین، فایروال، 404، CAPTCHA، تغییر مسیر لاگین و سخت‌سازی؛ قوانین 6G؛ بازسازی `.htaccess` |
+| **Elementor** | 4.3.6 | تنظیمات سراسری و experimentها به‌همراه ابزارهای چیدمان |
+| **LiteSpeed Cache** | 7.9.3 | تنظیمات کش/بهینه‌سازی با `API::save_conf`؛ purge all/url/post/posttype |
+| **Contact Form 7** | 6.2.4.1 | فهرست/خواندن/ساخت/ویرایش/حذف فرم، mail/messages و اعتبارسنجی پیکربندی |
+| **WPForms Lite** | 2.0.3.1 | تنظیمات سراسری و فرم‌های فقط‌خواندنی (Lite ورودی ذخیره نمی‌کند) |
+| **WooCommerce** | 11.2.1 | تنظیمات فروشگاه، محصول ساده، سفارش‌ها/وضعیت/یادداشت (سازگار HPOS) |
+| **Redirection** | 5.10.1 | تنظیمات، CRUD/فعال‌سازی ریدایرکت، گروه‌ها، 404 و flush کش |
+| **WP Mail SMTP** | 4.10.3 | تنظیمات mailer/SMTP/From (رمز فقط نوشتنی)، ایمیل تست و رویدادهای دیباگ |
+| **Really Simple Security** | 9.8.4 | سخت‌سازی، محافظت لاگین، فایروال و اعلان‌ها؛ بازسازی قوانین |
+
+> **سیاست نسخه Pro:** PressAgent هرگز نسخه نال‌شده یا بدون لایسنس دانلود نمی‌کند. نسخه‌های رایگان از API رسمی WordPress.org می‌آیند؛ قابلیت‌های Pro فقط اگر سایت لایسنس معتبر داشته باشد پشتیبانی می‌شوند و در MCP بسته‌بندی نمی‌شوند.
+
+---
+
+## 🪶 بهینه‌سازی توکن
+
+| مکانیزم | اثر |
+|---|---|
+| `PRESSAGENT_TOOLSETS` | فقط ابزارهای لازم یک جلسه ثبت می‌شوند (مثلاً `pages,elementor,screenshot`) |
+| خواندن خلاصه‌محور layout | خلاصه گره‌ها به‌صورت پیش‌فرض؛ `detail:"full"` یا `include_kit:true` فقط در نیاز |
+| JSON فشرده | خروجی MCP بدون فاصله و تورفتگی اضافه |
+| کاتالوگ رجیستری | `pressagent_plugin catalog` فقط کلیدهای مجاز را برمی‌گرداند |
+| Skill و Prompt | راهنماهای بلند فقط هنگام نیاز بارگذاری می‌شوند |
+| اندازه‌گیری | `node scripts/token-report.mjs [toolset,...]` |
 
 ---
 
@@ -471,7 +627,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ### 📦 دانلود بسته‌های آماده (فایل‌های زیپ ریلیز)
 
-اگر نمی‌خواهید سورس پروژه را با Git کلون کنید یا سرور MCP را خودتان بیلد نمایید، بسته‌های آماده و کامپایل‌شده را مستقیماً از [صفحه ریلیزهای گیت‌هاب (v1.0.1)](https://github.com/Noctis-Architect/press-agent/releases/tag/v1.0.1) دانلود کنید:
+اگر نمی‌خواهید سورس پروژه را با Git کلون کنید یا سرور MCP را خودتان بیلد نمایید، بسته‌های آماده و کامپایل‌شده را مستقیماً از [صفحه ریلیزهای گیت‌هاب (v1.0.1)](https://github.com/Noctis-Architect/press-agent/releases/tag/v1.0.1) دانلود کنید. قابلیت‌های پلاگین/چایلد/سئوی نسخه ۱.۱.۰ تا انتشار ریلیز بعدی از سورس در دسترس هستند:
 
 | بسته | لینک دانلود مستقیم | توضیحات | روش راه‌اندازی |
 | :--- | :--- | :--- | :--- |
@@ -592,7 +748,14 @@ npm run build
 | `pages:write` | محتوا | ساخت برگه جدید، ویرایش وضعیت و حذف برگه‌ها |
 | `elementor:read` | طراحی | دریافت ساختار JSON کانتینرها و تنظیمات ابزارک‌های المنتور |
 | `elementor:write` | طراحی | افزودن سکشن، تغییر طراحی ابزارک‌ها و بازسازی صفحات با ویجت‌های بومی |
+| `theme:read` | ظاهر | مشاهده قالب فعال/والد، فایل‌های چایلد و حالت ظاهری |
+| `theme:write` | ظاهر | ساخت/سوییچ چایلد و ویرایش امن فایل‌ها با بکاپ و lint |
 | `appearance:css` | قالب | مدیریت قالب برگه و اعمال استایل‌های CSS اختصاصی |
+| `plugins:read` | افزونه‌ها | مشاهده نسخه، وضعیت فعال و آپدیت‌های در دسترس |
+| `plugins:write` | افزونه‌ها | نصب از WordPress.org، فعال/غیرفعال/آپدیت و اجرای اکشن‌های تعریف‌شده |
+| `seo:read` / `seo:write` | سئو | خواندن/ویرایش متای Yoast یا Rank Math روی برگه و ترم |
+| `commerce:read` / `commerce:write` | فروشگاه | خواندن/مدیریت محصولات، سفارش‌ها و تنظیمات ووکامرس |
+| `forms:read` / `forms:write` | فرم‌ها | خواندن/مدیریت فرم‌های CF7 و خواندن WPForms |
 | `settings:read` | تنظیمات | خواندن آپشن‌های مجاز هسته و افزونه‌ها از دیتابیس |
 | `settings:write` | تنظیمات | ذخیره مقادیر جدید در آپشن‌های مجاز با ایجاد اسنپ‌شات خودکار |
 | `cache:purge` | بهینه‌سازی | پاکسازی و تخلیه کش راکت، لایت‌اسپید و کش المنتور |
@@ -602,6 +765,8 @@ npm run build
 | `code:execute` | گاد مود | ساخت و اسکلت‌بندی افزونه‌های جدید (مخصوص محیط استیجینگ) |
 | `*` یا `god_mode` | دسترسی کل | دسترسی نامحدود به تمامی اندپوینت‌های سیستم |
 
+> توکن‌هایی که قبل از نسخه ۱.۱.۰ صادر شده‌اند Scopeهای جدید (`theme:*`، `plugins:*`، `seo:*`، `commerce:*`، `forms:*`) را ندارند. پس از به‌روزرسانی افزونه، یک توکن جدید صادر کنید.
+
 ---
 
 ## 🛣️ نقشه راه توسعه (Roadmap)
@@ -610,8 +775,10 @@ npm run build
 - [x] **فاز ۲: موتور بومی المنتور** — ساخت ویجت‌های کامپوننتی استاندارد (بدون کد خام HTML)، کانتینرهای فلکس‌باکس، ذخیره‌سازی از طریق متد داخلی المنتور، پاکسازی خودکار کش‌های CSS.
 - [x] **فاز ۳: سیستم تست و بازرسی بصری** — مرورگر بدون سر برای اسکرین‌شات از ظاهر سایت، بررسی در ابعاد دسکتاپ/تبلت/موبایل، فیلتر ایمنی در برابر SSRF.
 - [x] **فاز ۴: خودترمیمی و آنالیز خطاها** — استخراج ساختاریافته لاگ‌های PHP، مهار دسترسی غیرمجاز به فایل‌ها، راهکارهای پیشنهادی هوش مصنوعی.
-- [ ] **فاز ۵: یکپارچه‌سازی ووکامرس** — امکان طراحی و مدیریت تب‌های محصول، ویژگی‌های پیشرفته، قیمت‌گذاری متغیر و سفارشی‌سازی صفحات تسویه‌حساب با هوش مصنوعی.
-- [ ] **فاز ۶: پشتیبانی از بلوک‌های گوتنبرگ** — ساخت تمپلیت‌ها و الگوهای بومی بلوک‌های وردپرس در کنار المنتور.
+- [x] **فاز ۵: مرکز هوشمند پلاگین‌ها** — یکپارچه‌سازی تأییدشده سئو، امنیت، کش، فرم‌ها، فروشگاه، ریدایرکت و SMTP با رجیستری معتبر و اسنپ‌شات.
+- [x] **فاز ۶: چایلد تم و حالت‌های ظاهری** — حالت‌های المنتور/چایلد/هیبرید، ساخت امن و ویرایش فایل با بکاپ و lint.
+- [ ] **فاز ۷: یکپارچه‌سازی عمیق ووکامرس** — قیمت‌گذاری variation، ویژگی‌ها، تب‌ها و سفارشی‌سازی تسویه‌حساب.
+- [ ] **فاز ۸: پشتیبانی از بلوک‌های گوتنبرگ** — ساخت تمپلیت‌ها و الگوهای بومی بلوک‌های وردپرس در کنار المنتور.
 
 ---
 

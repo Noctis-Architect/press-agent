@@ -1,0 +1,589 @@
+{
+  "slug": "woocommerce",
+  "name": "WooCommerce",
+  "plugin_file": "woocommerce/woocommerce.php",
+  "version_analyzed": "11.2.1 (readme stable tag 11.2.0)",
+  "storage_notes": "Settings are individual options named woocommerce_* (plus woocommerce_email_* and page-ID options); payment gateway settings are one array option per gateway named woocommerce_{gateway_id}_settings. Products, variations, coupons and legacy orders are CPTs (product, product_variation, shop_coupon, shop_order) with data in post meta plus the wc_product_meta_lookup table. Orders may instead live in HPOS tables wc_orders, wc_order_addresses, wc_order_operational_data and wc_orders_meta when woocommerce_custom_orders_table_enabled=yes. Shipping zones use woocommerce_shipping_zones / _zone_locations / _zone_methods tables; tax rates use woocommerce_tax_rates. Product/variation/coupon data is post meta; order data is posts+post meta or HPOS tables. Always use wc_get_products()/wc_get_orders() and WC_* CRUD so the active data store is honoured.",
+  "settings": [
+    {
+      "key": "woocommerce_currency",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Store currency code (ISO 4217, e.g. USD, EUR). Read via get_woocommerce_currency().",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-general.php:331",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_currency_pos",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Currency symbol position: left, right, left_space, right_space.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-general.php:342",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_price_num_decimals",
+      "storage": "option",
+      "shape": "int",
+      "summary": "Number of decimal places shown in prices (default 2).",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-general.php:378",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_default_country",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Store base country/state in COUNTRY:STATE form (e.g. US:CA). Used for tax and shipping defaults.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-general.php:164",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_store_address",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Store address line 1; siblings are woocommerce_store_address_2, woocommerce_store_city and woocommerce_store_postcode.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-general.php:137",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_store_city",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Store city.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-general.php:155",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_store_postcode",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Store postal/ZIP code.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-general.php:173",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_calc_taxes",
+      "storage": "option",
+      "shape": "string",
+      "summary": "yes/no master switch for tax calculation; rates live in the woocommerce_tax_rates table.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-general.php:287",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_prices_include_tax",
+      "storage": "option",
+      "shape": "string",
+      "summary": "yes/no whether entered prices are gross (tax inclusive). Read via wc_prices_include_tax().",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/views/settings-tax.php:24",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_enable_coupons",
+      "storage": "option",
+      "shape": "string",
+      "summary": "yes/no master coupon switch.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-general.php:296",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_manage_stock",
+      "storage": "option",
+      "shape": "string",
+      "summary": "yes/no global stock-management switch; per-product _manage_stock still controls each product.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-products.php:256",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_weight_unit",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Store weight unit: kg, g, lbs or oz.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-products.php:134",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_dimension_unit",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Store dimension unit: m, cm, mm, in or yd.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-products.php:151",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_enable_guest_checkout",
+      "storage": "option",
+      "shape": "string",
+      "summary": "yes/no allow checkout without an account.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-accounts.php:66",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_cart_page_id",
+      "storage": "option",
+      "shape": "int",
+      "summary": "Page ID for the cart page; siblings woocommerce_checkout_page_id, woocommerce_myaccount_page_id and woocommerce_terms_page_id.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-advanced.php:93",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_checkout_page_id",
+      "storage": "option",
+      "shape": "int",
+      "summary": "Page ID for checkout; the settings UI forces it to differ from cart/my-account pages.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-advanced.php:113",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_myaccount_page_id",
+      "storage": "option",
+      "shape": "int",
+      "summary": "Page ID for My Account.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-advanced.php:133",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_email_from_name",
+      "storage": "option",
+      "shape": "string",
+      "summary": "From name used by transactional emails.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-emails.php:131",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_email_from_address",
+      "storage": "option",
+      "shape": "string",
+      "summary": "From email address used by transactional emails (validated as email).",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-emails.php:143",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_allow_tracking",
+      "storage": "option",
+      "shape": "string",
+      "summary": "yes/no WooCommerce usage tracking consent.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/includes/admin/settings/class-wc-settings-advanced.php:371",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_{gateway_id}_settings",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Per-gateway settings array, e.g. woocommerce_bacs_settings, woocommerce_cod_settings, woocommerce_paypal_settings. Contains enabled (yes/no) plus gateway-specific keys; some gateways store API secrets here.",
+      "fields": {
+        "enabled": {
+          "type": "string",
+          "summary": "yes/no gateway availability."
+        }
+      },
+      "source": "vendor/plugins/woocommerce/includes/abstracts/abstract-wc-settings-api.php:106",
+      "safe_to_write": true
+    },
+    {
+      "key": "woocommerce_custom_orders_table_enabled",
+      "storage": "option",
+      "shape": "string",
+      "summary": "HPOS authoritative-storage switch (yes/no). Do not flip directly: orders must be synced and HPOS tables created first.",
+      "fields": {},
+      "source": "vendor/plugins/woocommerce/src/Internal/DataStores/Orders/CustomOrdersTableController.php:37",
+      "safe_to_write": false
+    }
+  ],
+  "meta": [
+    {
+      "key": "_sku",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Product/variation SKU. Must be globally unique; use wc_get_product_id_by_sku() for lookup.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:37",
+      "safe_to_write": true,
+      "format_notes": "Plain string; write through set_sku() so uniqueness/lookup-table checks run."
+    },
+    {
+      "key": "_regular_price",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Regular price, unformatted decimal string in store currency.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:40",
+      "safe_to_write": true,
+      "format_notes": "Use set_regular_price(); empty string clears it. _price is derived and must not be written."
+    },
+    {
+      "key": "_sale_price",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Active sale price; empty means no sale.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:41",
+      "safe_to_write": true,
+      "format_notes": "Use set_sale_price(); pair with _sale_price_dates_from/_to if scheduled."
+    },
+    {
+      "key": "_price",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Computed active price used by sorting/filtering.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:39",
+      "safe_to_write": false,
+      "format_notes": "Derived by WC on save; direct writes desynchronise the lookup table."
+    },
+    {
+      "key": "_sale_price_dates_from",
+      "object_type": "post",
+      "type": "int",
+      "summary": "Sale start as Unix timestamp; _sale_price_dates_to is the end.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:42",
+      "safe_to_write": true,
+      "format_notes": "Write via set_date_on_sale_from()/set_date_on_sale_to() (WC_DateTime); empty clears."
+    },
+    {
+      "key": "_manage_stock",
+      "object_type": "post",
+      "type": "string",
+      "summary": "yes/no per-product stock management flag.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:47",
+      "safe_to_write": true,
+      "format_notes": "Use set_manage_stock(bool)."
+    },
+    {
+      "key": "_stock",
+      "object_type": "post",
+      "type": "int",
+      "summary": "Stock quantity when stock management is enabled.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:48",
+      "safe_to_write": true,
+      "format_notes": "Use set_stock_quantity(); WC applies wc_stock_amount() and fires stock hooks."
+    },
+    {
+      "key": "_stock_status",
+      "object_type": "post",
+      "type": "string",
+      "summary": "instock, outofstock or onbackorder.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:49",
+      "safe_to_write": true,
+      "format_notes": "Use set_stock_status(); invalid values fall back to instock."
+    },
+    {
+      "key": "_backorders",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Backorder policy: no, notify or yes.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:50",
+      "safe_to_write": true,
+      "format_notes": "Use set_backorders()."
+    },
+    {
+      "key": "_low_stock_amount",
+      "object_type": "post",
+      "type": "int",
+      "summary": "Per-product low-stock threshold; empty inherits the global setting.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:51",
+      "safe_to_write": true,
+      "format_notes": "Use set_low_stock_amount()."
+    },
+    {
+      "key": "_weight",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Product weight in woocommerce_weight_unit; _length/_width/_height are the dimensions.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:53",
+      "safe_to_write": true,
+      "format_notes": "Numeric string or empty; use set_weight()/set_length()/set_width()/set_height()."
+    },
+    {
+      "key": "_thumbnail_id",
+      "object_type": "post",
+      "type": "int",
+      "summary": "Featured image attachment ID; _product_image_gallery is a comma-separated list of gallery attachment IDs.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:72",
+      "safe_to_write": true,
+      "format_notes": "Use set_image_id()/set_gallery_image_ids(array)."
+    },
+    {
+      "key": "_tax_status",
+      "object_type": "post",
+      "type": "string",
+      "summary": "taxable, shipping or none; _tax_class is the slug ('' = standard).",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:45",
+      "safe_to_write": true,
+      "format_notes": "Use set_tax_status()/set_tax_class()."
+    },
+    {
+      "key": "_virtual",
+      "object_type": "post",
+      "type": "string",
+      "summary": "yes/no virtual flag; _downloadable is the sibling downloadable flag.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:62",
+      "safe_to_write": true,
+      "format_notes": "Use set_virtual(bool)/set_downloadable(bool)."
+    },
+    {
+      "key": "_product_attributes",
+      "object_type": "post",
+      "type": "serialized array",
+      "summary": "Product attribute definitions (name/options/position/visible/variation flags).",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:61",
+      "safe_to_write": false,
+      "format_notes": "Complex serialized structure; use WC_Product::set_attributes() with WC_Product_Attribute objects."
+    },
+    {
+      "key": "total_sales",
+      "object_type": "post",
+      "type": "int",
+      "summary": "Lifetime sales counter maintained by WC.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-product-data-store-cpt.php:44",
+      "safe_to_write": false,
+      "format_notes": "Derived; direct edits break reports and the lookup table."
+    }
+  ],
+  "actions": [
+    {
+      "name": "create_simple_product",
+      "summary": "Create a simple product using the public CRUD API.",
+      "implementation": "$p = new WC_Product_Simple(); $p->set_name(); $p->set_regular_price(); $p->set_sku(); $p->set_status(); $p->save();",
+      "params": {
+        "name": "string",
+        "regular_price": "string",
+        "sku": "string",
+        "status": "string (publish|draft|private)"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/woocommerce/includes/class-wc-product-simple.php:17"
+    },
+    {
+      "name": "update_product_price_and_stock",
+      "summary": "Change price, sale price, stock quantity/status and backorders through setters, then save.",
+      "implementation": "wc_get_product($id); set_regular_price(); set_sale_price(); set_stock_quantity(); set_stock_status(); save();",
+      "params": {
+        "product_id": "int",
+        "regular_price": "string",
+        "sale_price": "string",
+        "stock_quantity": "int",
+        "stock_status": "string"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/woocommerce/includes/abstracts/abstract-wc-product.php:936"
+    },
+    {
+      "name": "delete_product",
+      "summary": "Trash or force-delete a product via WC_Product::delete().",
+      "implementation": "wc_get_product($id)->delete($force_delete)",
+      "params": {
+        "product_id": "int",
+        "force_delete": "bool"
+      },
+      "safety": "destructive",
+      "source": "vendor/plugins/woocommerce/includes/abstracts/abstract-wc-product.php:1616"
+    },
+    {
+      "name": "create_order",
+      "summary": "Create a new order, add line items, recalculate totals and save.",
+      "implementation": "wc_create_order(['customer_id'=>..]); $order->add_product($product,$qty); $order->calculate_totals(); $order->save();",
+      "params": {
+        "customer_id": "int",
+        "status": "string",
+        "products": "array of {product_id, qty}"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/woocommerce/includes/wc-core-functions.php:89"
+    },
+    {
+      "name": "update_order_status",
+      "summary": "Change order status immediately, optionally adding a note; fires status-transition hooks and customer emails.",
+      "implementation": "$order->update_status('completed', 'note')",
+      "params": {
+        "order_id": "int",
+        "status": "string (no wc- prefix required)",
+        "note": "string"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/woocommerce/includes/class-wc-order.php:402"
+    },
+    {
+      "name": "add_order_note",
+      "summary": "Append an internal or customer-visible order note.",
+      "implementation": "$order->add_order_note($note, $is_customer_note, $added_by_user)",
+      "params": {
+        "order_id": "int",
+        "note": "string",
+        "is_customer_note": "bool"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/woocommerce/includes/class-wc-order.php:2080"
+    },
+    {
+      "name": "clear_product_transients",
+      "summary": "Delete cached product data after out-of-band product/meta changes.",
+      "implementation": "wc_delete_product_transients($product_id)",
+      "params": {
+        "product_id": "int"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/woocommerce/includes/wc-product-functions.php:130"
+    },
+    {
+      "name": "clear_order_transients",
+      "summary": "Delete cached order/customer order data after out-of-band order changes.",
+      "implementation": "wc_delete_shop_order_transients($order)",
+      "params": {
+        "order_id": "int"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/woocommerce/includes/wc-order-functions.php:502"
+    },
+    {
+      "name": "rebuild_product_lookup_tables",
+      "summary": "Repopulate wc_product_meta_lookup for products (heavy; normally automatic on save).",
+      "implementation": "wc_update_product_lookup_tables()",
+      "params": {},
+      "safety": "write",
+      "source": "vendor/plugins/woocommerce/includes/wc-product-functions.php:2171"
+    },
+    {
+      "name": "sync_variable_product",
+      "summary": "Re-sync a variable product's min/max prices and stock status from its variations.",
+      "implementation": "WC_Product_Variable::sync($product, true)",
+      "params": {
+        "product_id": "int"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/woocommerce/includes/class-wc-product-variable.php:710"
+    }
+  ],
+  "rest_routes": [
+    {
+      "route": "/wc/v3/products",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "permission": "wc_rest_check_post_permissions('product', 'read'|'create'); product edit/publish caps (shop managers/admins).",
+      "source": "vendor/plugins/woocommerce/includes/rest-api/Controllers/Version2/class-wc-rest-products-v2-controller.php:137"
+    },
+    {
+      "route": "/wc/v3/products/{id}",
+      "methods": [
+        "GET",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ],
+      "permission": "wc_rest_check_post_permissions('product', 'read'|'edit'|'delete', $id).",
+      "source": "vendor/plugins/woocommerce/includes/rest-api/Controllers/Version2/class-wc-rest-products-v2-controller.php:163"
+    },
+    {
+      "route": "/wc/v3/products/batch",
+      "methods": [
+        "POST"
+      ],
+      "permission": "batch edit caps via wc_rest_check_post_permissions('product', 'batch').",
+      "source": "vendor/plugins/woocommerce/includes/rest-api/Controllers/Version2/class-wc-rest-products-v2-controller.php:217"
+    },
+    {
+      "route": "/wc/v3/orders",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "permission": "wc_rest_check_post_permissions('shop_order', 'read'|'create'); HPOS-aware order caps.",
+      "source": "vendor/plugins/woocommerce/includes/rest-api/Controllers/Version2/class-wc-rest-orders-v2-controller.php:71"
+    },
+    {
+      "route": "/wc/v3/orders/{id}",
+      "methods": [
+        "GET",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ],
+      "permission": "wc_rest_check_post_permissions('shop_order', 'read'|'edit'|'delete', $id).",
+      "source": "vendor/plugins/woocommerce/includes/rest-api/Controllers/Version2/class-wc-rest-orders-v2-controller.php:91"
+    },
+    {
+      "route": "/wc/v3/orders/batch",
+      "methods": [
+        "POST"
+      ],
+      "permission": "wc_rest_check_post_permissions('shop_order', 'batch').",
+      "source": "vendor/plugins/woocommerce/includes/rest-api/Controllers/Version2/class-wc-rest-orders-v2-controller.php:131"
+    },
+    {
+      "route": "/wc/v3/settings/{group_id}",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT"
+      ],
+      "permission": "manage_woocommerce (WC_REST_Settings_Controller update_items_permissions_check).",
+      "source": "vendor/plugins/woocommerce/includes/rest-api/Controllers/Version2/class-wc-rest-setting-options-v2-controller.php:41"
+    }
+  ],
+  "objects": [
+    {
+      "type": "product",
+      "storage": "CPT",
+      "summary": "Simple, variable, grouped and external products plus product_variation children; data in post meta and wc_product_meta_lookup.",
+      "crud_notes": "List: wc_get_products(['status'=>'publish','limit'=>..,'paginate'=>true]). Read: wc_get_product($id). Create: new WC_Product_Simple()/WC_Product_Variable(), setters, save(). Update: setters + save(). Delete: $product->delete($force). Find by SKU: wc_get_product_id_by_sku(). Never write _price or bypass save().",
+      "source": "vendor/plugins/woocommerce/includes/class-wc-post-types.php:367"
+    },
+    {
+      "type": "order",
+      "storage": "CPT or HPOS table",
+      "summary": "Orders and refunds; stored as shop_order posts (legacy) or wc_orders + address/operational/meta tables (HPOS).",
+      "crud_notes": "List: wc_get_orders(['status'=>'wc-processing','limit'=>..,'paginate'=>true]); HPOS-safe. Read: wc_get_order($id). Create: wc_create_order(), add_product(), calculate_totals(), save(). Update status: update_status(). Add note: add_order_note(). Use only WC_Order APIs so both storage modes work.",
+      "source": "vendor/plugins/woocommerce/includes/rest-api/Controllers/Version2/class-wc-rest-orders-v2-controller.php:44"
+    },
+    {
+      "type": "coupon",
+      "storage": "CPT",
+      "summary": "shop_coupon posts with amount/type/usage/expiry data in post meta.",
+      "crud_notes": "Read: new WC_Coupon($code_or_id). Set code, discount_type, amount, date_expires and restrictions via setters, then save(). List via wc_get_coupons()/WP_Query on shop_coupon if available; WP_Query on post_type shop_coupon is the fallback.",
+      "source": "vendor/plugins/woocommerce/includes/class-wc-post-types.php:501"
+    },
+    {
+      "type": "shipping_zone",
+      "storage": "table",
+      "summary": "Shipping zones, their locations and method instances in woocommerce_shipping_zones/_zone_locations/_zone_methods.",
+      "crud_notes": "List: WC_Shipping_Zones::get_zones()/get_shipping_zones(). Read: new WC_Shipping_Zone($id). Create/update: setters + save(). Add method: add_shipping_method($type); remove: delete_shipping_method($instance_id). Cache group 'shipping_zones' is invalidated by the data store.",
+      "source": "vendor/plugins/woocommerce/includes/data-stores/class-wc-shipping-zone-data-store.php:25"
+    }
+  ],
+  "detection": {
+    "active_check": "class_exists('WooCommerce') and defined('WC_VERSION'); WC()->version / WC_VERSION gives the version (11.2.1).",
+    "source": "vendor/plugins/woocommerce/includes/class-woocommerce.php:63"
+  },
+  "pro_notes": [
+    "WooCommerce core is free; paid extensions such as Subscriptions, Bookings, Memberships, WooPayments and marketplace gateways are separate plugins and are not present in this source (readme.txt:25,33). Do not assume their objects/settings exist.",
+    "No WooCommerce-branded Pro-only core settings were found; extension settings must be verified per extension."
+  ],
+  "gotchas": [
+    "Call wc_get_product() only after woocommerce_init, woocommerce_after_register_taxonomy and woocommerce_after_register_post_type; wc_get_order() after woocommerce_after_register_post_type (includes/wc-product-functions.php:71, includes/wc-order-functions.php:89).",
+    "Use WC_Admin_Settings::save_fields() (includes/admin/class-wc-admin-settings.php:936) or replicate its sanitize callbacks before update_option(); direct update_option() bypasses validation and page-ID conflict checks.",
+    "Do not write _price or total_sales directly. Product save refreshes wc_product_meta_lookup only for changed lookup props (includes/data-stores/class-wc-product-data-store-cpt.php:964-969) and invalidates product cache groups (same file:1206-1209).",
+    "Out-of-band DB/meta edits require wc_delete_product_transients() or wc_delete_shop_order_transients(); for bulk product meta changes run wc_update_product_lookup_tables().",
+    "HPOS: woocommerce_custom_orders_table_enabled must only be changed through WooCommerce after sync; checking it directly is safe (CustomOrdersTableController.php:230). HPOS tables: wc_orders, wc_order_addresses, wc_order_operational_data, wc_orders_meta (OrdersTableDataStore.php:192-228).",
+    "Order status strings passed to update_status() need no wc- prefix; internal stored values include wc- (src/Enums/OrderInternalStatus.php:17-59). Status changes can send customer emails.",
+    "Variable product price/stock changes should be followed by WC_Product_Variable::sync($product, true) (includes/class-wc-product-variable.php:710).",
+    "WooCommerce's own REST API is available under wc/v3, but PressAgent should call the PHP CRUD APIs above directly; the REST layer adds auth/nonce and schema overhead.",
+    "Guard writes on current_user_can('manage_woocommerce') or the relevant product/order caps; shop_manager has narrower permissions."
+  ]
+}

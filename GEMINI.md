@@ -27,4 +27,16 @@
 - `elementor-visual-inspector`: چرخه اعتبارسنجی بصری با اسکرین‌شات.
 - `elementor-native-widgets`: انتخاب بهینه ویجت‌های بومی متناسب با نیاز کاربر.
 - `elementor-schema-reference`: مرجع اسکیما و ساختار داخلی JSON گره‌های المنتور.
+- `pressagent-child-theme`: انتخاب حالت ظاهری (المنتور/چایلد/هیبرید)، ساخت و ویرایش امن چایلد تم.
+- `pressagent-plugins`: مدیریت دقیق SEO، امنیت، کش، فرم‌ها، ووکامرس، ریدایرکت و SMTP.
+- `pressagent-performance`: آنالیز سرعت سرور/صفحه، رفع امن کش و بهینه‌سازی، و تنظیمات هسته وردپرس.
 - سایر اسکیل‌های مهندسی: `wordpress-pro`, `php-pro`, `mcp-developer`, `playwright-expert`, `secure-code-guardian`, `security-reviewer`, `test-master`.
+
+## ابزارهای جدید نسخه ۱.۱
+- `pressagent_theme`: وضعیت/ساخت/سوییچ چایلد و ویرایش امن فایل‌ها.
+- `pressagent_plugins` و `pressagent_plugin`: چرخه پلاگین و تنظیمات معتبرسازي‌شده.
+- `pressagent_seo`: متای Yoast / Rank Math برای برگه و ترم.
+- `pressagent_forms`: فرم‌های CF7 و WPForms.
+- `pressagent_commerce`: محصولات و سفارش‌های ووکامرس.
+- `pressagent_performance`: آنالیز سرعت و رفع امن مشکلات کش/فشرده‌سازی.
+- `pressagent_wp_settings`: تنظیمات هسته وردپرس با اعتبارسنجی و rollback.

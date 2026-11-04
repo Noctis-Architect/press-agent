@@ -1,0 +1,446 @@
+{
+  "slug": "really-simple-ssl",
+  "name": "Really Simple Security",
+  "plugin_file": "really-simple-ssl/rlrsssl-really-simple-ssl.php",
+  "version_analyzed": "9.8.4",
+  "storage_notes": "All feature settings are one array option rsssl_options. On multisite with the plugin network-activated, the same key is read/written with get_site_option()/update_site_option(); otherwise get_option()/update_option(). Checkbox values are stored as int 0/1, hidden fields as sanitized titles, multiselects as arrays. Field definitions (allowed IDs, types, defaults) come from settings/config/fields/*.php and are exposed by rsssl_fields(). Separate options hold runtime flags: rsssl_current_version, rsssl_previous_version, rsssl_activation, rsssl_show_onboarding, rsssl_ssl_detection_overridden, rsssl_flush_caches, rsssl_activation_timestamp and rsssl_email_verification_status. 2FA per-user state is user meta, not an option.",
+  "settings": [
+    {
+      "key": "rsssl_options",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Complete settings array. Do not overwrite wholesale: keys are defined by fields and writes should go through rsssl_update_option().",
+      "fields": {
+        "ssl_enabled": {
+          "type": "bool (stored 0/1)",
+          "summary": "Master SSL switch, normally set by activate_ssl().",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/general.php:10"
+        },
+        "site_has_ssl": {
+          "type": "bool (stored 0/1)",
+          "summary": "Result of SSL detection; can be overridden by option rsssl_ssl_detection_overridden.",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/general.php:19"
+        },
+        "redirect": {
+          "type": "string",
+          "summary": "Redirect method: none, wp_redirect or htaccess.",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/encryption.php:9"
+        },
+        "mixed_content_fixer": {
+          "type": "bool (stored 0/1)",
+          "summary": "Rewrite insecure front-end URLs to HTTPS.",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/encryption.php:42"
+        },
+        "login_protection_enabled": {
+          "type": "bool (stored 0/1)",
+          "summary": "Enable Two-Factor Authentication (email method in free).",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/two-fa.php:10"
+        },
+        "two_fa_forced_roles": {
+          "type": "array<string>",
+          "summary": "Roles forced to configure 2FA.",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/two-fa.php:23"
+        },
+        "enable_limited_login_attempts": {
+          "type": "bool (stored 0/1)",
+          "summary": "Enable login-attempt limiting.",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/limit-login-attempts.php:9"
+        },
+        "limit_login_attempts_amount": {
+          "type": "string",
+          "summary": "Allowed failed attempts: 3, 5, 10 or 15 (default 5).",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/limit-login-attempts.php:23"
+        },
+        "limit_login_attempts_locked_out_duration": {
+          "type": "string",
+          "summary": "Lockout minutes: 15/30/60/240/1440/10080/43200/86400 (default 30).",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/limit-login-attempts.php:70"
+        },
+        "enable_firewall": {
+          "type": "bool (stored 0/1)",
+          "summary": "Enable the firewall rules/advanced-cache loader.",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/firewall.php:10"
+        },
+        "404_blocking_threshold": {
+          "type": "string",
+          "summary": "404 lockout threshold: disabled, lax, normal or strict (default lax).",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/firewall.php:98"
+        },
+        "enable_vulnerability_scanner": {
+          "type": "bool (stored 0/1)",
+          "summary": "Enable vulnerability scanning.",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/vulnerability-detection.php:11"
+        },
+        "disable_xmlrpc": {
+          "type": "bool (stored 0/1)",
+          "summary": "Disable XML-RPC (may be blocked when XML-RPC-dependent plugins are detected).",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/hardening-basic.php:141"
+        },
+        "disable_file_editing": {
+          "type": "bool (stored 0/1)",
+          "summary": "Disable the built-in theme/plugin file editors.",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/hardening-basic.php:28"
+        },
+        "hsts": {
+          "type": "bool (stored 0/1)",
+          "summary": "Send Strict-Transport-Security; requires SSL and writable wp-content.",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/security-headers.php:82"
+        },
+        "notifications_email_address": {
+          "type": "string (email)",
+          "summary": "Recipient for security notification and test emails.",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/general.php:76"
+        },
+        "delete_data_on_uninstall": {
+          "type": "bool (stored 0/1)",
+          "summary": "Delete plugin data when the plugin is uninstalled.",
+          "source": "vendor/plugins/really-simple-ssl/settings/config/fields/general.php:68"
+        }
+      },
+      "source": "vendor/plugins/really-simple-ssl/settings/config/config.php:14",
+      "safe_to_write": false
+    },
+    {
+      "key": "rsssl_options[ssl_enabled]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Master SSL switch. Use RSSSL()->admin->activate_ssl() instead of writing directly; activation also sets redirect/mixed-content and site URLs.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/general.php:10",
+      "safe_to_write": false
+    },
+    {
+      "key": "rsssl_options[site_has_ssl]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Detected/overridden SSL availability. Written by detection; direct writes can mislead activation checks.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/general.php:19",
+      "safe_to_write": false
+    },
+    {
+      "key": "rsssl_options[redirect]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "HTTPS redirect method: none, wp_redirect or htaccess. htaccess writes server config and can lock out a misconfigured site.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/encryption.php:9",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[mixed_content_fixer]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Enable front-end mixed-content rewriting; default true.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/encryption.php:42",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[login_protection_enabled]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Enable 2FA login protection; free implementation supports the email provider.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/two-fa.php:10",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[two_fa_forced_roles]",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Roles forced to enroll in 2FA (validated against rsssl_get_roles()).",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/two-fa.php:23",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[enable_limited_login_attempts]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Enable login-attempt limiting.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/limit-login-attempts.php:9",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[limit_login_attempts_amount]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Failed-attempt threshold: 3, 5, 10 or 15; default 5.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/limit-login-attempts.php:23",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[limit_login_attempts_locked_out_duration]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Lockout duration in minutes; default 30.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/limit-login-attempts.php:70",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[enable_firewall]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Enable firewall rule generation/loader; writes .htaccess/advanced-cache files.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/firewall.php:10",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[404_blocking_threshold]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "404 lockout threshold: disabled, lax, normal, strict; default lax. Disabled automatically when homepage has 404 resources.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/firewall.php:98",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[enable_vulnerability_scanner]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Enable the vulnerability scanner.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/vulnerability-detection.php:11",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[disable_xmlrpc]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Disable XML-RPC; enablement can be forced back to 0 by a block-reason callback when dependent plugins exist.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/hardening-basic.php:141",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[disable_file_editing]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Disable built-in file editors.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/hardening-basic.php:28",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[hsts]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Enable HSTS; requires SSL and writable wp-content, and is high-impact for browsers.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/security-headers.php:82",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[notifications_email_address]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Notification recipient; sanitize_email on write.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/general.php:76",
+      "safe_to_write": true
+    },
+    {
+      "key": "rsssl_options[delete_data_on_uninstall]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Delete all plugin data on uninstall.",
+      "fields": {},
+      "source": "vendor/plugins/really-simple-ssl/settings/config/fields/general.php:68",
+      "safe_to_write": true
+    }
+  ],
+  "meta": [
+    {
+      "key": "rsssl_two_fa_status_email",
+      "object_type": "user",
+      "type": "string",
+      "summary": "Per-user email 2FA status: active, open or disabled. Read with Rsssl_Two_Factor_Settings::get_user_status('email',$user_id).",
+      "source": "vendor/plugins/really-simple-ssl/security/wordpress/two-fa/class-rsssl-two-factor-settings.php:377",
+      "safe_to_write": false,
+      "format_notes": "Do not write directly; use the provider/enrollment flows. Direct changes can lock users out (status values set at providers/class-rsssl-two-factor-email.php:245,567)."
+    },
+    {
+      "key": "rsssl_two_fa_status_totp",
+      "object_type": "user",
+      "type": "string",
+      "summary": "Per-user TOTP status; TOTP provider is a Pro-flagged feature in free.",
+      "source": "vendor/plugins/really-simple-ssl/security/wordpress/two-fa/models/class-rsssl-two-factor-user-factory.php:126",
+      "safe_to_write": false,
+      "format_notes": "Read-only; no TOTP enrollment should be attempted from free."
+    },
+    {
+      "key": "rsssl_two_fa_last_login",
+      "object_type": "user",
+      "type": "string (mysql datetime)",
+      "summary": "Timestamp of last 2FA login; used for reminder/grace calculations.",
+      "source": "vendor/plugins/really-simple-ssl/security/wordpress/two-fa/class-rsssl-two-factor-settings.php:530",
+      "safe_to_write": false,
+      "format_notes": "Maintained by authentication code; do not edit."
+    }
+  ],
+  "actions": [
+    {
+      "name": "update_setting",
+      "summary": "Update one configured setting by field ID. Rejects unknown fields, sanitizes by field type, saves network option when applicable, clears notice cache and fires rsssl_after_save_field.",
+      "implementation": "rsssl_update_option($name, $value)",
+      "params": {
+        "name": "string (must exist in rsssl_fields())",
+        "value": "mixed"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/really-simple-ssl/settings/settings.php:747"
+    },
+    {
+      "name": "activate_ssl",
+      "summary": "Run SSL activation: requires detected SSL or rsssl_ssl_detection_overridden/WP-CLI; sets redirect=wp_redirect, mixed_content_fixer=true, ssl_enabled=true, updates siteurl/home to https, flushes rewrite/caches.",
+      "implementation": "RSSSL()->admin->activate_ssl($data)",
+      "params": {
+        "data": "array (is_rest_request optional)"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/really-simple-ssl/class-admin.php:524"
+    },
+    {
+      "name": "deactivate_ssl",
+      "summary": "Disable SSL features and clean up rules for the site/network.",
+      "implementation": "RSSSL()->admin->deactivate()",
+      "params": {},
+      "safety": "destructive",
+      "source": "vendor/plugins/really-simple-ssl/class-admin.php:1030"
+    },
+    {
+      "name": "rebuild_rules",
+      "summary": "Rebuild managed advanced-headers then .htaccess rules.",
+      "implementation": "do_action('rsssl_update_rules')",
+      "params": {},
+      "safety": "write",
+      "source": "vendor/plugins/really-simple-ssl/security/functions.php:363"
+    },
+    {
+      "name": "rebuild_htaccess",
+      "summary": "Request a managed .htaccess rebuild only.",
+      "implementation": "do_action('rsssl_update_htaccess')",
+      "params": {},
+      "safety": "write",
+      "source": "vendor/plugins/really-simple-ssl/security/functions.php:370"
+    },
+    {
+      "name": "rebuild_advanced_headers",
+      "summary": "Request an advanced-headers/firewall file rebuild only.",
+      "implementation": "do_action('rsssl_update_advanced_headers')",
+      "params": {},
+      "safety": "write",
+      "source": "vendor/plugins/really-simple-ssl/security/functions.php:395"
+    },
+    {
+      "name": "clear_test_caches",
+      "summary": "Clear cached security test results for a cache_id.",
+      "implementation": "rsssl_clear_test_caches(['cache_id'=>$id])",
+      "params": {
+        "cache_id": "string"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/really-simple-ssl/settings/settings.php:417"
+    },
+    {
+      "name": "run_fix",
+      "summary": "Run a registered fix by fix_id via the rsssl_run_fix filter.",
+      "implementation": "rsssl_fix(['fix_id'=>$id])",
+      "params": {
+        "fix_id": "string"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/really-simple-ssl/settings/settings.php:434"
+    },
+    {
+      "name": "send_test_mail",
+      "summary": "Send the notification test email to the configured notifications_email_address.",
+      "implementation": "(new rsssl_mailer())->send_test_mail()",
+      "params": {},
+      "safety": "write",
+      "source": "vendor/plugins/really-simple-ssl/mailer/class-mail.php:57"
+    },
+    {
+      "name": "activate_recommended_features",
+      "summary": "Enable the plugin's recommended set: vulnerability scanner, recommended hardening, email login protection, mixed-content fixer; Pro-only extras only when rsssl_pro is defined.",
+      "implementation": "RSSSL()->admin->activate_recommended_features()",
+      "params": {},
+      "safety": "write",
+      "source": "vendor/plugins/really-simple-ssl/class-admin.php:3077"
+    }
+  ],
+  "rest_routes": [
+    {
+      "route": "/really-simple-security/v1/fields/get",
+      "methods": [
+        "GET"
+      ],
+      "permission": "rsssl_user_can_manage() (capability manage_security).",
+      "source": "vendor/plugins/really-simple-ssl/settings/settings.php:290"
+    },
+    {
+      "route": "/really-simple-security/v1/fields/set",
+      "methods": [
+        "POST"
+      ],
+      "permission": "manage_security + nonce rsssl_nonce; only configured field IDs accepted.",
+      "source": "vendor/plugins/really-simple-ssl/settings/settings.php:298"
+    },
+    {
+      "route": "/really-simple-security/v1/tests/{test}",
+      "methods": [
+        "GET"
+      ],
+      "permission": "manage_security + nonce rsssl_nonce.",
+      "source": "vendor/plugins/really-simple-ssl/settings/settings.php:306"
+    },
+    {
+      "route": "/really-simple-security/v1/do_action/{action}",
+      "methods": [
+        "POST"
+      ],
+      "permission": "manage_security + nonce rsssl_nonce.",
+      "source": "vendor/plugins/really-simple-ssl/settings/settings.php:314"
+    }
+  ],
+  "objects": [
+    {
+      "type": "security_settings",
+      "storage": "option",
+      "summary": "The rsssl_options array (site option on network-activated multisite) with all feature flags.",
+      "crud_notes": "Read fields via rsssl_get_option($id) or rsssl_fields(true); update one field via rsssl_update_option($id,$value). Do not read/write get_option('rsssl_options') directly on multisite; use rsssl_is_networkwide_active() to select site option (functions.php:17-23,316).",
+      "source": "vendor/plugins/really-simple-ssl/settings/config/config.php:14"
+    },
+    {
+      "type": "two_factor_user",
+      "storage": "user_meta",
+      "summary": "Per-user 2FA state in rsssl_two_fa_status_email/_totp/_passkey plus rsssl_two_fa_last_login.",
+      "crud_notes": "List active email-2FA users with get_users(['meta_key'=>'rsssl_two_fa_status_email','meta_value'=>'active']) (security/wordpress/two-fa/class-rsssl-two-factor.php:270). Read one with Rsssl_Two_Factor_Settings::get_user_status($method,$user_id) (class-rsssl-two-factor-settings.php:377). Treat write as unsafe; use enrollment/reset flows.",
+      "source": "vendor/plugins/really-simple-ssl/security/wordpress/two-fa/class-rsssl-two-factor-settings.php:377"
+    }
+  ],
+  "detection": {
+    "active_check": "defined('rsssl_file') and defined('rsssl_version') (or class_exists('REALLY_SIMPLE_SSL')); version constant rsssl_version = 9.8.4.",
+    "source": "vendor/plugins/really-simple-ssl/rlrsssl-really-simple-ssl.php:122"
+  },
+  "pro_notes": [
+    "Fields explicitly flagged premium in this free tree: enable_passkey_login (settings/config/fields/two-fa.php:48,52) and two_fa_enabled_roles_totp (settings/config/fields/two-fa.php:133,138). Free 2FA uses the email provider (security/wordpress/two-fa/providers/class-rsssl-two-factor-email.php:33).",
+    "activate_recommended_features() only enables the extended set (limit-login, firewall, event log, advanced headers) when the Pro constant rsssl_pro is defined (class-admin.php:3095-3105); treat those as Pro-documented, not guaranteed by the free UI."
+  ],
+  "gotchas": [
+    "rsssl_update_option() requires current_user_can('manage_security') and silently no-ops for unknown field IDs (settings/settings.php:747-763; main file:252-267). Administrators receive manage_security on activation (main file:242-249); WP-CLI bypasses the cap.",
+    "On multisite network activation, rsssl_options is a site option; direct get_option()/update_option() targets the wrong row. Use rsssl_is_networkwide_active() and the helpers (functions.php:17-23,316).",
+    "Checkbox values are ints 0/1 after sanitization, while rsssl_get_option() converts 1 to true (settings/settings.php:846-851; functions.php:39-41).",
+    "Some saves are vetoed back to 0 by rsssl_prevent_enabling_blocked_security_features() when prerequisites fail (email verification, SSL, XML-RPC dependencies, firewall loader); re-read after writing (security/sync-settings.php:201-231).",
+    "Saving fields fires rsssl_after_saved_fields, which schedules .htaccess rebuilds and firewall installs; expect file writes/cache flushes (security/functions.php:986; security/firewall-manager.php:83).",
+    "activate_ssl() only succeeds when SSL is detected or rsssl_ssl_detection_overridden/WP-CLI is true; it updates siteurl/home to https and flushes rewrite/caches (class-admin.php:552-577,992).",
+    "HSTS and 404 blocking require SSL/writable wp-content and are high-impact; 404 blocking is disabled when the homepage itself returns 404 resources (security/functions.php:2245).",
+    "Email-dependent fields are gated by option rsssl_email_verification_status=completed (security/functions.php:2224-2231).",
+    "REST writes require both manage_security and nonce rsssl_nonce; direct PHP calls avoid nonce but should be capability-checked (settings/settings.php:640-658)."
+  ]
+}

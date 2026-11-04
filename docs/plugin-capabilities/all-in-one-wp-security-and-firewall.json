@@ -1,0 +1,401 @@
+{
+  "slug": "all-in-one-wp-security-and-firewall",
+  "name": "All-In-One Security (AIOS)",
+  "plugin_file": "all-in-one-wp-security-and-firewall/wp-security.php",
+  "version_analyzed": "5.5.1",
+  "storage_notes": "All user settings are one option array aio_wp_security_configs, read/written by AIOWPSecurity_Config (get_value/set_value/save_config). Checkbox values are the strings '1' or ''. Some features additionally require managed .htaccess rules; after config changes AIOS rebuilds them through AIOWPSecurity_Utility_Htaccess::write_to_htaccess(). The 6G firewall rules live in a separate firewall config and are not covered here.",
+  "settings": [
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_login_lockdown]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Login lockout master switch ('1' on, ''/0 off).",
+      "source": "classes/wp-security-configure-settings.php:37",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_max_login_attempts]",
+      "storage": "option",
+      "shape": "int",
+      "summary": "Failed attempts before lockout (default 3).",
+      "source": "classes/wp-security-configure-settings.php:39",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_retry_time_period]",
+      "storage": "option",
+      "shape": "int",
+      "summary": "Retry window in minutes (default 5).",
+      "source": "classes/wp-security-configure-settings.php:40",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_lockout_time_length]",
+      "storage": "option",
+      "shape": "int",
+      "summary": "Lockout length in minutes (default 5).",
+      "source": "classes/wp-security-configure-settings.php:41",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_whitelisting]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "IP whitelist master switch.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_allowed_ip_addresses]",
+      "storage": "option",
+      "shape": "textarea",
+      "summary": "Allowed IP addresses.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_blacklisting]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "IP blacklist master switch.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_banned_ip_addresses]",
+      "storage": "option",
+      "shape": "textarea",
+      "summary": "Banned IP addresses.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_basic_firewall]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Basic firewall rules.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_pingback_firewall]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Pingback firewall.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_disable_xmlrpc_pingback_methods]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Disable XML-RPC pingback methods.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_block_debug_log_file_access]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Block access to debug.log.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_disable_index_views]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Disable directory listing.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_disable_trace_and_track]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Disable TRACE/TRACK methods.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_forbid_proxy_comments]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Forbid proxy comments.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_deny_bad_query_strings]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Deny bad query strings.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_advanced_char_string_filter]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Advanced character filter.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_5g_firewall]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "5G firewall.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_404_logging]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "404 event logging.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_404_IP_lockout]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "404-based IP lockout.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_rename_login_page]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Rename the login page.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_login_page_slug]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Custom login slug.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_brute_force_attack_prevention]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Cookie-based brute-force prevention.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_login_captcha]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Login CAPTCHA.",
+      "source": "classes/wp-security-configure-settings.php:906",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_registration_page_captcha]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Registration CAPTCHA.",
+      "source": "classes/wp-security-configure-settings.php:906",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_comment_captcha]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Comment CAPTCHA.",
+      "source": "classes/wp-security-configure-settings.php:906",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_autoblock_spam_ip]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Auto-block spam IPs.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_forced_logout]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Force logout after inactivity.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_invalid_username_lockdown]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Lock out invalid usernames.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_email_notify]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Email notifications.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_email_address]",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Notification email addresses.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_disable_file_editing]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Disable built-in file editing.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_login_honeypot]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Login honeypot.",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    },
+    {
+      "key": "aios_firewall_config",
+      "storage": "firewall_config_file",
+      "shape": "array",
+      "summary": "Separate 6G firewall config file managed by AIOS_Firewall_Resource::CONFIG. Values are read/written through AIOWPS\\Firewall\\Config get_contents()/set_contents().",
+      "fields": {
+        "aiowps_6g_block_request": {
+          "type": "bool",
+          "source": "classes/wp-security-onboarding.php:844"
+        },
+        "aiowps_6g_block_query": {
+          "type": "bool",
+          "source": "classes/wp-security-onboarding.php:843"
+        },
+        "aiowps_6g_block_referrers": {
+          "type": "bool",
+          "source": "classes/wp-security-onboarding.php:845"
+        },
+        "aiowps_6g_block_agents": {
+          "type": "bool",
+          "source": "classes/wp-security-onboarding.php:846"
+        },
+        "aiowps_6g_block_request_methods": {
+          "type": "array",
+          "source": "classes/wp-security-onboarding.php:842"
+        },
+        "aiowps_enable_pingback_firewall": {
+          "type": "bool",
+          "source": "classes/wp-security-onboarding.php:833"
+        },
+        "aiowps_forbid_proxy_comments": {
+          "type": "bool",
+          "source": "classes/wp-security-configure-settings.php:760"
+        },
+        "aiowps_deny_bad_query_strings": {
+          "type": "bool",
+          "source": "classes/wp-security-configure-settings.php:760"
+        },
+        "aiowps_advanced_char_string_filter": {
+          "type": "bool",
+          "source": "classes/wp-security-configure-settings.php:760"
+        },
+        "aiowps_ban_post_blank_headers": {
+          "type": "bool",
+          "source": "classes/wp-security-configure-settings.php:760"
+        },
+        "aiowps_block_fake_googlebots": {
+          "type": "bool",
+          "source": "classes/wp-security-configure-settings.php:760"
+        },
+        "aiowps_enable_blacklisting": {
+          "type": "bool",
+          "source": "classes/wp-security-utility.php:1455"
+        },
+        "aiowps_blacklist_ips": {
+          "type": "array",
+          "source": "classes/wp-security-utility.php:1455"
+        },
+        "aiowps_blacklist_user_agents": {
+          "type": "array",
+          "source": "classes/wp-security-utility.php:1455"
+        },
+        "aiowps_googlebot_ip_ranges": {
+          "type": "array",
+          "source": "classes/wp-security-utility.php:1455"
+        },
+        "aiowps_bingbot_ip_ranges": {
+          "type": "array",
+          "source": "classes/wp-security-utility.php:1455"
+        }
+      },
+      "source": "classes/wp-security-firewall-resource.php:16",
+      "safe_to_write": true
+    },
+    {
+      "key": "aio_wp_security_configs[aiowps_enable_6g_firewall]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "6G firewall master switch in the main config ('1' on, ''/0 off).",
+      "source": "classes/wp-security-configure-settings.php:817",
+      "safe_to_write": true
+    }
+  ],
+  "meta": [],
+  "actions": [
+    {
+      "name": "rebuild_htaccess",
+      "summary": "Rewrite the AIOS-managed .htaccess rules from current config.",
+      "implementation": "AIOWPSecurity_Utility_Htaccess::write_to_htaccess()",
+      "params": {},
+      "safety": "write",
+      "source": "classes/wp-security-utility-htaccess.php:157"
+    },
+    {
+      "name": "save_config",
+      "summary": "Persist the config array, reload it in memory and rewrite .htaccess.",
+      "implementation": "update_option('aio_wp_security_configs', $configs) + write_to_htaccess()",
+      "params": {
+        "configs": "object"
+      },
+      "safety": "write",
+      "source": "classes/wp-security-config.php:76, classes/wp-security-configure-settings.php:817"
+    },
+    {
+      "name": "list_audit_events",
+      "summary": "Read AIOS audit log events newest first.",
+      "implementation": "$wpdb query on {prefix}aiowps_audit_log",
+      "params": {
+        "limit": "int",
+        "offset": "int"
+      },
+      "safety": "read",
+      "source": "classes/wp-security-installer.php:198"
+    }
+  ],
+  "rest_routes": [],
+  "detection": {
+    "active_check": "defined('AIO_WP_SECURITY_VERSION')",
+    "source": "wp-security-core.php:129"
+  },
+  "pro_notes": [
+    "AIOS is free; some advanced firewall rule categories and the 6G firewall config are separate resources, not part of aio_wp_security_configs. They are not exposed by this registry."
+  ],
+  "gotchas": [
+    "Checkbox values are strings '1'/''; PHP booleans can be written but AIOS checks loose equality, so keep '1'/'' for fidelity.",
+    "Changing firewall/login settings can rewrite .htaccess; verify the site is still reachable and the rules were written.",
+    "The 6G firewall and allow-list rules are stored in a separate firewall config/table; do not expect them in aio_wp_security_configs.",
+    "Unknown field IDs are rejected by PressAgent's registry; AIOS settings not listed here must be changed in its admin UI."
+  ]
+}

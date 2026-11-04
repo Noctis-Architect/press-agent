@@ -1,0 +1,406 @@
+{
+  "slug": "seo-by-rank-math",
+  "name": "Rank Math SEO",
+  "plugin_file": "seo-by-rank-math/rank-math.php",
+  "version_analyzed": "1.0.281",
+  "storage_notes": "Settings are CMB2/React option groups named rank-math-options-{general,titles,sitemap,instant-indexing}, saved through RankMath\\Admin\\Option_Center::save_settings() which sanitizes by field type, compares changed fields and triggers rewrite/htaccess side effects. SEO metadata lives in post/term/user meta with the rank_math_* prefix; robots is an array of directive strings. Nothing is stored in a custom SEO table for post meta.",
+  "settings": [
+    {
+      "key": "rank-math-options-titles",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Global, homepage, post-type, taxonomy, author and social title/meta templates. Dynamic keys exist per registered post type/taxonomy (pt_{post_type}_*, tax_{taxonomy}_*).",
+      "fields": {
+        "homepage_title": {
+          "type": "string",
+          "default": "%sitename% %page% %sep% %sitedesc%",
+          "source": "includes/settings/titles/homepage.php:36"
+        },
+        "homepage_description": {
+          "type": "textarea_small",
+          "default": "",
+          "source": "includes/settings/titles/homepage.php:49"
+        },
+        "title_separator": {
+          "type": "string",
+          "default": "-",
+          "source": "includes/settings/titles/global.php:49"
+        },
+        "robots_global": {
+          "type": "array",
+          "default": [
+            "index"
+          ],
+          "source": "includes/settings/titles/global.php:15"
+        },
+        "advanced_robots_global": {
+          "type": "array",
+          "source": "includes/settings/titles/global.php:28"
+        },
+        "open_graph_image": {
+          "type": "url",
+          "source": "includes/settings/titles/global.php:84"
+        },
+        "twitter_card_type": {
+          "type": "string",
+          "default": "summary_large_image",
+          "source": "includes/settings/titles/global.php:95"
+        },
+        "pt_page_title": {
+          "type": "string",
+          "default": "%title% %page% %sep% %sitename%",
+          "source": "includes/settings/titles/post-types.php:62"
+        },
+        "pt_page_description": {
+          "type": "textarea_small",
+          "default": "%excerpt%",
+          "source": "includes/settings/titles/post-types.php:77"
+        }
+      },
+      "source": "includes/admin/class-option-center.php:374",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank-math-options-general",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Links, breadcrumbs, webmaster verification and RSS settings.",
+      "fields": {
+        "nofollow_external_links": {
+          "type": "toggle",
+          "source": "includes/settings/general/links.php:57"
+        },
+        "nofollow_image_links": {
+          "type": "toggle",
+          "source": "includes/settings/general/links.php:68"
+        },
+        "new_window_external_links": {
+          "type": "toggle",
+          "source": "includes/settings/general/links.php:107"
+        },
+        "strip_category_base": {
+          "type": "toggle",
+          "source": "includes/settings/general/links.php:16"
+        },
+        "google_verify": {
+          "type": "string",
+          "source": "includes/settings/general/webmaster.php:15"
+        },
+        "bing_verify": {
+          "type": "string",
+          "source": "includes/settings/general/webmaster.php:27"
+        },
+        "rss_before_content": {
+          "type": "string",
+          "source": "includes/settings/general/others.php:114"
+        },
+        "rss_after_content": {
+          "type": "string",
+          "source": "includes/settings/general/others.php:123"
+        }
+      },
+      "source": "includes/admin/class-option-center.php:374",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank-math-options-sitemap",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Sitemap page size, image inclusion, exclusions and HTML sitemap options.",
+      "fields": {
+        "items_per_page": {
+          "type": "number",
+          "source": "includes/modules/sitemap/settings/general.php:28"
+        },
+        "include_images": {
+          "type": "toggle",
+          "source": "includes/modules/sitemap/settings/general.php:40"
+        },
+        "include_featured_image": {
+          "type": "toggle",
+          "source": "includes/modules/sitemap/settings/general.php:50"
+        },
+        "exclude_posts": {
+          "type": "text",
+          "source": "includes/modules/sitemap/settings/general.php:61"
+        },
+        "exclude_terms": {
+          "type": "text",
+          "source": "includes/modules/sitemap/settings/general.php:71"
+        },
+        "html_sitemap": {
+          "type": "toggle",
+          "source": "includes/modules/sitemap/settings/html-sitemap.php:15"
+        }
+      },
+      "source": "includes/admin/class-option-center.php:374",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank-math-options-general[404/redirections]",
+      "storage": "option",
+      "shape": "array",
+      "summary": "404 monitor and redirections module settings.",
+      "fields": {
+        "404_monitor_mode": {
+          "type": "radio_inline",
+          "notes": "simple|advanced",
+          "source": "includes/modules/404-monitor/views/options.php:27"
+        },
+        "404_monitor_limit": {
+          "type": "number",
+          "source": "includes/modules/404-monitor/views/options.php:41"
+        },
+        "404_monitor_exclude": {
+          "type": "array",
+          "source": "includes/modules/404-monitor/views/options.php:52"
+        },
+        "404_monitor_ignore_query_parameters": {
+          "type": "toggle",
+          "source": "includes/modules/404-monitor/views/options.php:83"
+        },
+        "redirections_debug": {
+          "type": "toggle",
+          "source": "includes/modules/redirections/views/options.php:15"
+        },
+        "redirections_fallback": {
+          "type": "select",
+          "source": "includes/modules/redirections/views/options.php:25"
+        },
+        "redirections_custom_url": {
+          "type": "text",
+          "source": "includes/modules/redirections/views/options.php:40"
+        },
+        "redirections_header_code": {
+          "type": "select",
+          "source": "includes/modules/redirections/views/options.php:49"
+        },
+        "redirections_post_redirect": {
+          "type": "toggle",
+          "source": "includes/modules/redirections/views/options.php:59"
+        }
+      },
+      "source": "includes/admin/class-option-center.php:374",
+      "safe_to_write": true
+    }
+  ],
+  "meta": [
+    {
+      "key": "rank_math_title",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Custom SEO title. Stored for posts, terms and users.",
+      "source": "includes/modules/database-tools/class-update-score.php:181",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank_math_description",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Custom meta description.",
+      "source": "includes/admin/class-post-columns.php:132",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank_math_focus_keyword",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Focus keyword(s), comma separated.",
+      "source": "includes/admin/class-post-filters.php:117",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank_math_canonical_url",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Custom canonical URL.",
+      "source": "includes/rest/class-sanitize.php:67",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank_math_robots",
+      "object_type": "post",
+      "type": "array<string>",
+      "summary": "Robots directives such as index, noindex, follow, nofollow, noarchive, nosnippet, noimageindex.",
+      "source": "includes/admin/metabox/class-screen.php:302",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank_math_advanced_robots",
+      "object_type": "post",
+      "type": "array",
+      "summary": "Advanced robots values (max-snippet, max-image-preview, max-video-preview).",
+      "source": "includes/admin/metabox/class-screen.php:302",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank_math_facebook_title",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Open Graph title override.",
+      "source": "includes/rest/class-sanitize.php:50",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank_math_facebook_description",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Open Graph description override.",
+      "source": "includes/rest/class-sanitize.php:50",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank_math_facebook_image",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Open Graph image URL.",
+      "source": "includes/admin/metabox/class-metabox.php:315",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank_math_twitter_title",
+      "object_type": "post",
+      "type": "string",
+      "summary": "X/Twitter title override.",
+      "source": "includes/rest/class-sanitize.php:50",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank_math_twitter_description",
+      "object_type": "post",
+      "type": "string",
+      "summary": "X/Twitter description override.",
+      "source": "includes/rest/class-sanitize.php:50",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank_math_twitter_image",
+      "object_type": "post",
+      "type": "string",
+      "summary": "X/Twitter image URL.",
+      "source": "includes/admin/metabox/class-screen.php:267",
+      "safe_to_write": true
+    },
+    {
+      "key": "rank_math_primary_{taxonomy}",
+      "object_type": "post",
+      "type": "int",
+      "summary": "Primary term ID, e.g. rank_math_primary_category.",
+      "source": "includes/admin/metabox/class-metabox.php:466",
+      "safe_to_write": true
+    }
+  ],
+  "actions": [
+    {
+      "name": "save_settings",
+      "summary": "Canonical settings save: sanitizes by field type, saves only changed fields and triggers rewrite/htaccess side effects.",
+      "implementation": "RankMath\\Admin\\Option_Center::save_settings($type, $settings, $field_types, $updated, $is_reset)",
+      "params": {
+        "type": "general|titles|sitemap",
+        "settings": "object"
+      },
+      "safety": "write",
+      "source": "includes/admin/class-option-center.php:374"
+    },
+    {
+      "name": "list_modules",
+      "summary": "List active Rank Math modules.",
+      "implementation": "get_option('rank_math_modules') + rank_math()->manager->modules",
+      "params": {},
+      "safety": "read",
+      "source": "includes/class-helper.php:182"
+    },
+    {
+      "name": "set_module",
+      "summary": "Enable/disable a module through Helper::update_modules(), creating required tables.",
+      "implementation": "RankMath\\Helper::update_modules([$module => 'on'|'off'])",
+      "params": {
+        "module": "string",
+        "enabled": "bool"
+      },
+      "safety": "write",
+      "source": "includes/class-helper.php:196"
+    },
+    {
+      "name": "list_redirections",
+      "summary": "List Rank Math redirections.",
+      "implementation": "RankMath\\Redirections\\DB::get_redirections($args)",
+      "params": {
+        "limit": "int",
+        "paged": "int",
+        "search": "string"
+      },
+      "safety": "read",
+      "source": "includes/modules/redirections/class-db.php:90"
+    },
+    {
+      "name": "create_redirection",
+      "summary": "Create a redirection via the Redirection object, including loop check.",
+      "implementation": "RankMath\\Redirections\\Redirection::from([...])->save()",
+      "params": {
+        "source": "string",
+        "target": "url",
+        "header_code": "int"
+      },
+      "safety": "write",
+      "source": "includes/modules/redirections/class-redirection.php:199"
+    },
+    {
+      "name": "update_redirection",
+      "summary": "Update target/status while preserving sources.",
+      "implementation": "Redirection::from([...])->save()",
+      "params": {
+        "id": "int",
+        "target": "url",
+        "header_code": "int",
+        "status": "string"
+      },
+      "safety": "write",
+      "source": "includes/modules/redirections/class-redirection.php:199"
+    },
+    {
+      "name": "delete_redirection",
+      "summary": "Delete a redirection.",
+      "implementation": "RankMath\\Redirections\\DB::delete($id)",
+      "params": {
+        "id": "int"
+      },
+      "safety": "destructive",
+      "source": "includes/modules/redirections/class-db.php:492"
+    },
+    {
+      "name": "list_404_errors",
+      "summary": "List rows from the rank_math_404_logs table.",
+      "implementation": "$wpdb query on {prefix}rank_math_404_logs",
+      "params": {
+        "limit": "int",
+        "offset": "int"
+      },
+      "safety": "read",
+      "source": "includes/modules/404-monitor/class-table.php:149"
+    }
+  ],
+  "rest_routes": [
+    {
+      "route": "/wp-json/rankmath/v1/updateSettings",
+      "methods": [
+        "POST"
+      ],
+      "permission": "manage_options",
+      "source": "includes/rest/class-admin.php:46"
+    }
+  ],
+  "detection": {
+    "active_check": "defined('RANK_MATH_VERSION') or class_exists('RankMath')",
+    "source": "rank-math.php:248"
+  },
+  "pro_notes": [
+    "Content AI, Analytics, instant indexing, role manager and schema templates beyond the free set are Pro modules; do not assume their options exist."
+  ],
+  "gotchas": [
+    "Write settings through Option_Center::save_settings(), not update_option(), so field sanitization and rewrite/htaccess side effects run.",
+    "rank_math_robots is an array; noindex/nofollow are entries, not boolean flags.",
+    "Per-post-type keys are dynamic (pt_{post_type}_title) and only exist after the post type is registered.",
+    "Meta writes use the rank_math_* prefix for posts, terms and users; there is no separate term option."
+  ]
+}

@@ -1,0 +1,344 @@
+{
+  "slug": "elementor",
+  "name": "Elementor Website Builder",
+  "plugin_file": "elementor/elementor.php",
+  "version_analyzed": "4.3.6",
+  "storage_notes": "Global settings are individual wp_options prefixed elementor_ (field id + prefix rule in includes/settings/settings.php:165 and includes/settings/settings-page.php:264). The active Kit id is option elementor_active_kit. A Kit is an elementor_library post with _elementor_template_type=kit; Kit design settings live in _elementor_page_settings post meta. Per-page builder JSON lives in _elementor_data as a JSON string. Experiments are one option per feature named elementor_experiment-<name>. Generated CSS/assets live under wp-content/uploads/elementor and in meta _elementor_css, _elementor_page_assets and _elementor_element_cache.",
+  "settings": [
+    {
+      "key": "elementor_active_kit",
+      "storage": "option",
+      "shape": "int",
+      "summary": "Post ID of the active Kit document. Kit post type is elementor_library and _elementor_template_type is kit.",
+      "fields": {"post_type": "elementor_library", "template_type": "kit"},
+      "source": "core/kits/manager.php:22",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_cpt_support",
+      "storage": "option",
+      "shape": "array",
+      "summary": "Post type slugs that Elementor may edit. Default is page and post; slug values are added as post type support 'elementor'.",
+      "fields": {"default": ["page", "post"]},
+      "source": "includes/plugin.php:760",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_css_print_method",
+      "storage": "option",
+      "shape": "string",
+      "summary": "CSS output mode: external file or internal embedding. Registered setting suffix css_print_method; changing it clears generated CSS.",
+      "fields": {"external": "external CSS file", "internal": "inline in head"},
+      "source": "includes/settings/settings.php:307",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_unfiltered_files_upload",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Enables unfiltered uploads (SVG, JSON and other risky types). There is no separate elementor_allow_svg option in 4.3.6; SVG uploads depend on this switch plus SVG sanitization.",
+      "fields": {"": "disabled", "1": "enabled"},
+      "source": "includes/settings/settings.php:247",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_experiment-{name}",
+      "storage": "option",
+      "shape": "string",
+      "summary": "One option per experiment. Read state with Elementor\\Plugin::$instance->experiments->is_feature_active(name); valid values are active, inactive and default. Built-in names include container, e_font_icon_svg, additional_custom_breakpoints, e_optimized_markup, e_optimized_css_files.",
+      "fields": {"prefix": "elementor_experiment-", "values": ["active", "inactive", "default"], "container_default": "new-site active, otherwise inactive"},
+      "source": "core/experiments/manager.php:36",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_element_cache_ttl",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Element cache TTL in hours. Empty or non-numeric falls back to 24; the literal disable turns element caching off. Changing it clears the Elementor cache.",
+      "fields": {"default": "24", "disable": "disable"},
+      "source": "core/base/document.php:1964",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_disable_color_schemes",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Disables Elementor default colors so theme colors are inherited. Stored as yes when enabled and empty/absent when disabled; change clears CSS.",
+      "fields": {"": "default colors enabled", "yes": "disabled"},
+      "source": "includes/settings/settings.php:174",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_disable_typography_schemes",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Disables Elementor default fonts so theme fonts are inherited. Stored as yes when enabled and empty/absent when disabled; change clears CSS.",
+      "fields": {"": "default fonts enabled", "yes": "disabled"},
+      "source": "includes/settings/settings.php:182",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_google_font",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Loads Google Fonts from Google when 1; set 0 to stop Google Fonts loading.",
+      "fields": {"1": "enabled", "0": "disabled"},
+      "source": "includes/fonts.php:1872",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_font_display",
+      "storage": "option",
+      "shape": "string",
+      "summary": "CSS font-display value used for Google Fonts.",
+      "fields": {"auto": "default", "block": "block", "swap": "swap", "fallback": "fallback", "optional": "optional"},
+      "source": "includes/fonts.php:1881",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_local_google_fonts",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Serves Google Fonts locally. Change clears generated CSS; local font metadata is cached in option _elementor_local_google_fonts.",
+      "fields": {"1": "enabled", "0": "disabled"},
+      "source": "includes/settings/settings.php:365",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_optimized_image_loading",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Adds fetchpriority/lazy loading optimizations. Option may be absent until saved; the settings field default is 1.",
+      "fields": {"1": "enabled", "0": "disabled"},
+      "source": "includes/settings/settings.php:324",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_optimized_gutenberg_loading",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Dequeues unused Gutenberg editor assets. Option may be absent until saved; the settings field default is 1.",
+      "fields": {"1": "enabled", "0": "disabled"},
+      "source": "includes/settings/settings.php:341",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_lazy_load_background_images",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Lazy-loads background images except the first. Option may be absent until saved; the settings field default is 1.",
+      "fields": {"1": "enabled", "0": "disabled"},
+      "source": "includes/settings/settings.php:353",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_google_maps_api_key",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Google Maps Embed API key used by the Google Maps widget.",
+      "fields": {},
+      "source": "includes/settings/settings.php:212",
+      "safe_to_write": true
+    },
+    {
+      "key": "elementor_editor_break_lines",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Editor loader compatibility switch; empty is disabled and 1 is enabled.",
+      "fields": {"": "disabled", "1": "enabled"},
+      "source": "includes/settings/settings.php:235",
+      "safe_to_write": true
+    }
+  ],
+  "meta": [
+    {
+      "key": "_elementor_data",
+      "object_type": "post",
+      "type": "string (JSON)",
+      "summary": "Elementor element tree JSON for a page or template. Saved slashed; read returns the JSON string.",
+      "source": "core/base/document.php:44",
+      "safe_to_write": true,
+      "format_notes": "Encode with wp_json_encode then wp_slash before update_post_meta/update_metadata. Clear Elementor cache afterwards. REST meta schema exposes this as a string, not an array."
+    },
+    {
+      "key": "_elementor_page_settings",
+      "object_type": "post",
+      "type": "array",
+      "summary": "Page-level settings. On the active Kit this holds global colors, typography, layout, site identity and custom CSS.",
+      "source": "core/base/document.php:43",
+      "safe_to_write": true,
+      "format_notes": "Kit keys include system_colors, custom_colors, system_typography, custom_typography, container_width, space_between_widgets, page_title_selector, viewport_<breakpoint>, site_name, site_description, site_logo, custom_css. A direct meta write replaces the whole array; merge first. Save with wp_slash and clear cache."
+    },
+    {
+      "key": "_elementor_edit_mode",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Marks a post as built with Elementor.",
+      "source": "core/base/document.php:46",
+      "safe_to_write": true,
+      "format_notes": "Value is builder. Required for Elementor editing and REST meta registration context."
+    },
+    {
+      "key": "_elementor_template_type",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Document type for elementor_library posts. Free installations use page, section, container and kit; theme-builder types are Pro.",
+      "source": "core/base/document.php:42",
+      "safe_to_write": true,
+      "format_notes": "Must match a registered document type. For a Kit, value is kit. The elementor_library_type taxonomy mirrors this value (includes/template-library/sources/local.php:45)."
+    },
+    {
+      "key": "_elementor_version",
+      "object_type": "post",
+      "type": "string",
+      "summary": "Elementor version that saved the document; used for upgrade checks.",
+      "source": "core/base/document.php:1446",
+      "safe_to_write": false,
+      "format_notes": "Written by Document::save_version(). Do not fabricate."
+    },
+    {
+      "key": "_elementor_css",
+      "object_type": "post",
+      "type": "array",
+      "summary": "Generated per-post CSS file metadata.",
+      "source": "core/files/css/post.php:30",
+      "safe_to_write": false,
+      "format_notes": "Generated cache; delete via clear_cache() rather than editing."
+    },
+    {
+      "key": "_elementor_element_cache",
+      "object_type": "post",
+      "type": "array",
+      "summary": "Rendered element cache with timeout/value.",
+      "source": "core/base/document.php:48",
+      "safe_to_write": false,
+      "format_notes": "Generated cache; Document::delete_cache() or files_manager->clear_cache() removes it."
+    },
+    {
+      "key": "_elementor_page_assets",
+      "object_type": "post",
+      "type": "array",
+      "summary": "Per-page asset dependency cache.",
+      "source": "core/base/elements-iteration-actions/assets.php:13",
+      "safe_to_write": false,
+      "format_notes": "Generated cache."
+    },
+    {
+      "key": "_elementor_conditions",
+      "object_type": "post",
+      "type": "array",
+      "summary": "Display conditions for floating elements in free; Theme Builder conditions are Pro.",
+      "source": "modules/floating-buttons/module.php:275",
+      "safe_to_write": false,
+      "format_notes": "Example include/general. REST registration of this meta happens only when Elementor Pro is present (modules/wp-rest/classes/elementor-post-meta.php:26)."
+    }
+  ],
+  "actions": [
+    {
+      "name": "get_active_kit_id",
+      "summary": "Read the active Kit post ID.",
+      "implementation": "Elementor\\Plugin::$instance->kits_manager->get_active_id()",
+      "params": {},
+      "safety": "read",
+      "source": "core/kits/manager.php:30"
+    },
+    {
+      "name": "update_kit_settings",
+      "summary": "Merge supplied keys into the active Kit settings and save; Kit::save clears the Elementor cache. A bare Document::save(['settings'=>...]) replaces the whole settings array.",
+      "implementation": "$kit = Elementor\\Plugin::$instance->kits_manager->get_active_kit(); $kit->save(['settings' => array_replace_recursive($kit->get_settings(), $settings)])",
+      "params": {"settings": "object"},
+      "safety": "write",
+      "source": "core/kits/documents/kit.php:81"
+    },
+    {
+      "name": "clear_cache",
+      "summary": "Delete generated CSS files and all Elementor CSS/element/assets meta, then fire elementor/core/files/clear_cache.",
+      "implementation": "Elementor\\Plugin::$instance->files_manager->clear_cache()",
+      "params": {},
+      "safety": "destructive",
+      "source": "core/files/manager.php:123"
+    },
+    {
+      "name": "set_experiment_state",
+      "summary": "Write elementor_experiment-<name> and clear the Elementor cache. In admin requests the registered update hook also validates dependencies and clears cache.",
+      "implementation": "update_option('elementor_experiment-' . $name, $state) + Plugin::$instance->files_manager->clear_cache()",
+      "params": {"name": "string", "state": "active|inactive|default"},
+      "safety": "write",
+      "source": "core/experiments/manager.php:796"
+    }
+  ],
+  "rest_routes": [
+    {
+      "route": "/wp-json/elementor/v1/settings/{key}",
+      "methods": ["GET"],
+      "permission": "manage_options; key must start with elementor",
+      "source": "modules/wp-rest/classes/elementor-settings.php:12"
+    },
+    {
+      "route": "/wp-json/elementor/v1/settings/{key}",
+      "methods": ["POST"],
+      "permission": "manage_options; key must start with elementor and value must be provided",
+      "source": "modules/wp-rest/classes/elementor-settings.php:50"
+    },
+    {
+      "route": "/wp-json/elementor/v1/post",
+      "methods": ["GET"],
+      "permission": "edit_posts; excludes elementor_library and other forbidden post types",
+      "source": "modules/wp-rest/module.php:30"
+    },
+    {
+      "route": "/wp-json/elementor/v1/term",
+      "methods": ["GET"],
+      "permission": "edit_posts",
+      "source": "modules/wp-rest/module.php:31"
+    },
+    {
+      "route": "/wp-json/elementor/v1/user",
+      "methods": ["GET"],
+      "permission": "list_users",
+      "source": "modules/wp-rest/module.php:32"
+    }
+  ],
+  "objects": [
+    {
+      "type": "elementor_kit",
+      "storage": "CPT elementor_library with _elementor_template_type=kit; active ID in option elementor_active_kit",
+      "summary": "Global design system document holding colors, typography, layout, site identity and custom CSS.",
+      "crud_notes": "Read ID from elementor_active_kit, then get_post_meta(id, '_elementor_page_settings', true). Create with Kits Manager create()/create_default_kit(); update through Kit::save(['settings'=>...]) or update_settings(); never edit _elementor_data for a Kit (Kit has no elements). Clear cache after direct meta writes.",
+      "source": "core/kits/manager.php:129"
+    },
+    {
+      "type": "elementor_template",
+      "storage": "CPT elementor_library; taxonomy elementor_library_type; meta _elementor_template_type and _elementor_data",
+      "summary": "Reusable page/section/container templates and Kit documents.",
+      "crud_notes": "List with WP_Query post_type=elementor_library. Create a library post, set _elementor_edit_mode=builder, _elementor_template_type, _elementor_data and the elementor_library_type term. Free does not include header/footer/single/archive theme-builder types.",
+      "source": "includes/template-library/sources/local.php:40"
+    },
+    {
+      "type": "elementor_document",
+      "storage": "Any post type with Elementor support; meta _elementor_data, _elementor_page_settings, _elementor_edit_mode",
+      "summary": "A page/post built with Elementor.",
+      "crud_notes": "Confirm post type is in elementor_cpt_support. Read _elementor_data JSON; update through Document::save(['elements'=>..., 'settings'=>...]) or write slashed JSON meta then clear cache. REST meta is available only for post types supporting elementor.",
+      "source": "core/base/document.php:1140"
+    }
+  ],
+  "detection": {
+    "active_check": "defined('ELEMENTOR_VERSION') or class_exists('\\Elementor\\Plugin'); plugin basename ELEMENTOR_PLUGIN_BASE (elementor/elementor.php)",
+    "source": "elementor.php:31"
+  },
+  "pro_notes": [
+    "Theme Builder (header, footer, single, archive and their display conditions) is a Pro feature; free 4.3.6 only ships a Theme Builder promotion (modules/promotions/theme-builder-promotion.php:13) and registers _elementor_conditions in REST only when Utils::has_pro() is true (modules/wp-rest/classes/elementor-post-meta.php:26).",
+    "Pro-only document types and widgets are not included in this analysis; do not assume theme-builder document types exist on a free site."
+  ],
+  "gotchas": [
+    "After writing _elementor_data, _elementor_page_settings or Kit settings, call files_manager->clear_cache(); otherwise external CSS and element cache are stale.",
+    "Elementor stores _elementor_data as a slashed JSON string, not as an array; direct meta writes must use wp_slash(wp_json_encode($data)).",
+    "The elementor/v1/settings/{key} POST route writes any option whose name starts with elementor with no type validation and does not itself clear cache; prefer typed settings or Document/Kit APIs.",
+    "The elementor/v1/post query route explicitly excludes elementor_library, so templates and Kits cannot be listed through it.",
+    "A Kit is an elementor_library post, not a separate post type; find it by elementor_active_kit and verify _elementor_template_type=kit.",
+    "Experiment options are per-feature; container defaults active only on new sites and may be inactive on upgraded sites. Read the actual option/state instead of assuming.",
+    "elementor_library post types are excluded from cpt_support by design; theme-builder locations are Pro, not a free fallback.",
+    "Editing the Kit site_name or site_description also updates the blogname/blogdescription options when saved through the Kit tab (core/kits/documents/tabs/settings-site-identity.php:144).",
+    "The unfiltered uploads switch enables SVG/JSON and is a security risk; Elementor still sanitizes SVG, but this should not be enabled casually."
+  ]
+}

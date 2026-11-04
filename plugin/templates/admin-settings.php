@@ -28,7 +28,7 @@ if ( isset( $_POST['pressagent_rollback_snapshot'] ) && check_admin_referer( 'pr
 
 // Handle quick default token generation
 if ( isset( $_POST['pressagent_quick_setup'] ) && check_admin_referer( 'pressagent_quick_setup_nonce' ) ) {
-    $default_scopes = array( 'pages:read', 'pages:write', 'elementor:read', 'elementor:write', 'settings:read', 'settings:write', 'cache:purge', 'debug:read', 'debug:write', 'security:read' );
+    $default_scopes = array( 'pages:read', 'pages:write', 'elementor:read', 'elementor:write', 'theme:read', 'theme:write', 'settings:read', 'settings:write', 'plugins:read', 'plugins:write', 'seo:read', 'seo:write', 'commerce:read', 'commerce:write', 'forms:read', 'forms:write', 'cache:purge', 'debug:read', 'debug:write', 'security:read' );
     $new_token = PressAgent_Auth::generate_token( 'Default Standard Token (' . current_time( 'Y-m-d H:i' ) . ')', $default_scopes, get_current_user_id() );
     $alert_message_en = 'Standard access token generated successfully. IDE connection configurations are now active.';
     $alert_message_fa = 'کلید دسترسی استاندارد با موفقیت ایجاد شد و کدهای اتصال IDE فعال شدند.';
@@ -109,7 +109,29 @@ if ( isset( $_POST['pressagent_toggle_god_mode'] ) && check_admin_referer( 'pres
     $alert_type = ( 'yes' === $new_god ) ? 'warning' : 'success';
 }
 
+// Handle appearance mode selection
+$appearance_modes = array( 'elementor', 'child-theme', 'hybrid' );
+if ( isset( $_POST['pressagent_save_appearance_mode'] ) && check_admin_referer( 'pressagent_appearance_mode_nonce' ) ) {
+    $requested_mode = sanitize_key( $_POST['appearance_mode'] ?? '' );
+    if ( in_array( $requested_mode, $appearance_modes, true ) ) {
+        update_option( PressAgent_Child_Theme_Manager::MODE_OPTION, $requested_mode, false );
+        $alert_message_en = 'Appearance mode saved: ' . $requested_mode . '. The agent will follow this mode.';
+        $alert_message_fa = 'حالت ظاهری ذخیره شد: ' . $requested_mode . '. ایجنت از این حالت پیروی می‌کند.';
+        $alert_type = 'success';
+    } else {
+        $alert_message_en = 'Invalid appearance mode.';
+        $alert_message_fa = 'حالت ظاهری نامعتبر است.';
+        $alert_type = 'error';
+    }
+}
+
 $god_mode_active = class_exists( 'PressAgent_Code_Executor' ) ? PressAgent_Code_Executor::is_enabled() : false;
+$appearance_mode = get_option( PressAgent_Child_Theme_Manager::MODE_OPTION, '' );
+if ( ! in_array( $appearance_mode, $appearance_modes, true ) ) {
+    $appearance_mode = class_exists( '\Elementor\Plugin' ) ? 'hybrid' : 'child-theme';
+}
+$appearance_theme  = wp_get_theme();
+$appearance_parent = $appearance_theme->parent();
 
 $update_info = class_exists( 'PressAgent_Updater' ) ? PressAgent_Updater::check_update( false ) : array();
 $has_update = ! empty( $update_info['has_update'] );
@@ -857,6 +879,10 @@ $has_active_token = ! empty( $active_token );
             <span class="pa-fa">محافظت و بازگردانی</span>
             <span class="pa-tab-badge"><?php echo $total_snapshots; ?></span>
         </button>
+        <button type="button" class="pa-tab-link" onclick="switchTab('appearance', this)">
+            <span class="pa-en">Appearance</span>
+            <span class="pa-fa">ظاهر سایت</span>
+        </button>
         <button type="button" class="pa-tab-link" onclick="switchTab('allowlist', this)">
             <span class="pa-en">Settings Allowlist</span>
             <span class="pa-fa">لیست سفید تنظیمات</span>
@@ -1318,6 +1344,26 @@ $has_active_token = ! empty( $active_token );
                                 </span>
                             </div>
                         </label>
+                        <label class="pa-scope-card is-checked" onclick="toggleCard(this)">
+                            <input type="checkbox" name="token_scopes[]" value="theme:read" class="cb-read" checked>
+                            <div>
+                                <span class="pa-scope-name">theme:read</span>
+                                <span class="pa-scope-desc">
+                                    <span class="pa-en">Inspect active/parent theme, child files and appearance mode</span>
+                                    <span class="pa-fa">مشاهده قالب فعال، فایل‌های چایلد و حالت ظاهری سایت</span>
+                                </span>
+                            </div>
+                        </label>
+                        <label class="pa-scope-card is-checked" onclick="toggleCard(this)">
+                            <input type="checkbox" name="token_scopes[]" value="theme:write" class="cb-write" checked>
+                            <div>
+                                <span class="pa-scope-name">theme:write</span>
+                                <span class="pa-scope-desc">
+                                    <span class="pa-en">Create/switch child theme, write files with backup and PHP lint</span>
+                                    <span class="pa-fa">ساخت/تغییر چایلد تم و ویرایش امن فایل‌ها با بکاپ و بررسی سینتکس</span>
+                                </span>
+                            </div>
+                        </label>
                     </div>
                 </div>
 
@@ -1358,14 +1404,104 @@ $has_active_token = ! empty( $active_token );
                                 </span>
                             </div>
                         </label>
+                        <label class="pa-scope-card is-checked" onclick="toggleCard(this)">
+                            <input type="checkbox" name="token_scopes[]" value="plugins:read" class="cb-read" checked>
+                            <div>
+                                <span class="pa-scope-name">plugins:read</span>
+                                <span class="pa-scope-desc">
+                                    <span class="pa-en">List installed plugins, versions and update status</span>
+                                    <span class="pa-fa">مشاهده افزونه‌های نصب‌شده، نسخه و وضعیت آپدیت</span>
+                                </span>
+                            </div>
+                        </label>
+                        <label class="pa-scope-card is-checked" onclick="toggleCard(this)">
+                            <input type="checkbox" name="token_scopes[]" value="plugins:write" class="cb-write" checked>
+                            <div>
+                                <span class="pa-scope-name">plugins:write</span>
+                                <span class="pa-scope-desc">
+                                    <span class="pa-en">Install (WordPress.org), activate, deactivate and update plugins</span>
+                                    <span class="pa-fa">نصب از مخزن رسمی، فعال/غیرفعال و آپدیت افزونه‌ها</span>
+                                </span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Scope Category 4: SEO, Forms & Commerce -->
+                <div class="pa-scopes-section">
+                    <div class="pa-scopes-section-title">
+                        <span class="pa-en">4. SEO, Forms &amp; Commerce</span>
+                        <span class="pa-fa">۴. سئو، فرم‌ها و فروشگاه</span>
+                    </div>
+                    <div class="pa-scopes-grid">
+                        <label class="pa-scope-card is-checked" onclick="toggleCard(this)">
+                            <input type="checkbox" name="token_scopes[]" value="seo:read" class="cb-read" checked>
+                            <div>
+                                <span class="pa-scope-name">seo:read</span>
+                                <span class="pa-scope-desc">
+                                    <span class="pa-en">Read Yoast / Rank Math titles, descriptions, robots and social meta</span>
+                                    <span class="pa-fa">خواندن متای سئوی یواست و رنک‌مث</span>
+                                </span>
+                            </div>
+                        </label>
+                        <label class="pa-scope-card is-checked" onclick="toggleCard(this)">
+                            <input type="checkbox" name="token_scopes[]" value="seo:write" class="cb-write" checked>
+                            <div>
+                                <span class="pa-scope-name">seo:write</span>
+                                <span class="pa-scope-desc">
+                                    <span class="pa-en">Update SEO metadata on posts, pages and terms</span>
+                                    <span class="pa-fa">ویرایش متای سئوی نوشته‌ها، برگه‌ها و ترم‌ها</span>
+                                </span>
+                            </div>
+                        </label>
+                        <label class="pa-scope-card is-checked" onclick="toggleCard(this)">
+                            <input type="checkbox" name="token_scopes[]" value="commerce:read" class="cb-read" checked>
+                            <div>
+                                <span class="pa-scope-name">commerce:read</span>
+                                <span class="pa-scope-desc">
+                                    <span class="pa-en">Read WooCommerce products, orders and store settings</span>
+                                    <span class="pa-fa">خواندن محصولات، سفارش‌ها و تنظیمات ووکامرس</span>
+                                </span>
+                            </div>
+                        </label>
+                        <label class="pa-scope-card is-checked" onclick="toggleCard(this)">
+                            <input type="checkbox" name="token_scopes[]" value="commerce:write" class="cb-write" checked>
+                            <div>
+                                <span class="pa-scope-name">commerce:write</span>
+                                <span class="pa-scope-desc">
+                                    <span class="pa-en">Update product price/stock/status and order statuses</span>
+                                    <span class="pa-fa">ویرایش قیمت/موجودی/وضعیت محصول و سفارش</span>
+                                </span>
+                            </div>
+                        </label>
+                        <label class="pa-scope-card is-checked" onclick="toggleCard(this)">
+                            <input type="checkbox" name="token_scopes[]" value="forms:read" class="cb-read" checked>
+                            <div>
+                                <span class="pa-scope-name">forms:read</span>
+                                <span class="pa-scope-desc">
+                                    <span class="pa-en">Read Contact Form 7 / WPForms forms and configuration</span>
+                                    <span class="pa-fa">خواندن فرم‌های CF7 و WPForms</span>
+                                </span>
+                            </div>
+                        </label>
+                        <label class="pa-scope-card is-checked" onclick="toggleCard(this)">
+                            <input type="checkbox" name="token_scopes[]" value="forms:write" class="cb-write" checked>
+                            <div>
+                                <span class="pa-scope-name">forms:write</span>
+                                <span class="pa-scope-desc">
+                                    <span class="pa-en">Create and update Contact Form 7 forms and messages</span>
+                                    <span class="pa-fa">ساخت و ویرایش فرم‌ها و پیام‌های CF7</span>
+                                </span>
+                            </div>
+                        </label>
                     </div>
                 </div>
 
                 <!-- Scope Category 4: Diagnostics & Security -->
                 <div class="pa-scopes-section">
                     <div class="pa-scopes-section-title">
-                        <span class="pa-en">4. Diagnostics, Security &amp; Developer</span>
-                        <span class="pa-fa">۴. عیب‌یابی، امنیت و حالت توسعه</span>
+                        <span class="pa-en">5. Diagnostics, Security &amp; Developer</span>
+                        <span class="pa-fa">۵. عیب‌یابی، امنیت و حالت توسعه</span>
                     </div>
                     <div class="pa-scopes-grid">
                         <label class="pa-scope-card is-checked" onclick="toggleCard(this)">
@@ -1593,6 +1729,67 @@ $has_active_token = ! empty( $active_token );
     </div>
 
     <!-- ==================== TAB 4: SETTINGS ALLOWLIST ==================== -->
+    <!-- ==================== APPEARANCE MODE ==================== -->
+    <div id="tab-appearance" class="pa-tab-pane">
+        <div class="pa-card">
+            <div class="pa-card-header">
+                <div>
+                    <div class="pa-card-title">
+                        <span class="pa-en">Appearance Mode</span>
+                        <span class="pa-fa">حالت ظاهری سایت</span>
+                    </div>
+                    <div class="pa-card-subtitle">
+                        <span class="pa-en">Choose which layer owns the site design. The AI agent reads this mode before editing.</span>
+                        <span class="pa-fa">انتخاب کنید طراحی سایت توسط کدام لایه مدیریت شود. ایجنت پیش از ویرایش این حالت را می‌خواند.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding: 20px; display: grid; gap: 18px;">
+                <div style="display:flex; flex-wrap:wrap; gap:24px; font-size:13px;">
+                    <div>
+                        <strong><span class="pa-en">Active theme:</span><span class="pa-fa">قالب فعال:</span></strong>
+                        <?php echo esc_html( $appearance_theme->get( 'Name' ) ); ?>
+                        (<?php echo esc_html( $appearance_theme->get( 'Version' ) ); ?>)
+                    </div>
+                    <div>
+                        <strong><span class="pa-en">Child theme:</span><span class="pa-fa">چایلد تم:</span></strong>
+                        <?php echo $appearance_parent ? esc_html( 'Yes — parent: ' . $appearance_parent->get( 'Name' ) ) : esc_html( 'No' ); ?>
+                    </div>
+                    <div>
+                        <strong><span class="pa-en">Elementor:</span><span class="pa-fa">المنتور:</span></strong>
+                        <?php echo class_exists( '\Elementor\Plugin' ) ? 'Active' : 'Inactive'; ?>
+                    </div>
+                </div>
+
+                <form method="post">
+                    <?php wp_nonce_field( 'pressagent_appearance_mode_nonce' ); ?>
+                    <input type="hidden" name="pressagent_save_appearance_mode" value="1">
+                    <label for="pa_appearance_mode" style="display:block; font-size:12px; font-weight:600; margin-bottom:8px;">
+                        <span class="pa-en">Site design layer</span>
+                        <span class="pa-fa">لایه طراحی سایت</span>
+                    </label>
+                    <select name="appearance_mode" id="pa_appearance_mode" class="pa-input" style="max-width:420px;">
+                        <option value="elementor" <?php selected( $appearance_mode, 'elementor' ); ?>>Elementor — layout in Elementor, child theme only for hooks/CSS</option>
+                        <option value="child-theme" <?php selected( $appearance_mode, 'child-theme' ); ?>>Child theme — PHP templates + CSS own the layout</option>
+                        <option value="hybrid" <?php selected( $appearance_mode, 'hybrid' ); ?>>Hybrid — Elementor pages/header/footer + child theme tokens/CSS/hooks</option>
+                    </select>
+                    <div style="margin-top:16px;">
+                        <button type="submit" class="pa-btn pa-btn-primary">
+                            <span class="pa-en">Save Appearance Mode</span>
+                            <span class="pa-fa">ذخیره حالت ظاهری</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div style="font-size:12px; color:var(--pa-text-muted); line-height:1.9;">
+                    <span class="pa-en">Recommended for Elementor + WooCommerce sites: <strong>Hybrid</strong>. Use the PressAgent agent (pressagent_theme) to create or switch the child theme and edit files with automatic backups and PHP lint.</span>
+                    <span class="pa-fa">برای سایت‌های المنتور + ووکامرس حالت <strong>هیبرید</strong> پیشنهاد می‌شود. برای ساخت/تغییر چایلد تم و ویرایش فایل‌ها با بکاپ و lint خودکار از ایجنت (pressagent_theme) استفاده کنید.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="tab-allowlist" class="pa-tab-pane">
         <div class="pa-card">
             <div class="pa-card-header">

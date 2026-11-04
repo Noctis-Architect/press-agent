@@ -1,0 +1,232 @@
+{
+  "slug": "wp-mail-smtp",
+  "name": "WP Mail SMTP",
+  "plugin_file": "wp-mail-smtp/wp_mail_smtp.php",
+  "version_analyzed": "4.10.3",
+  "storage_notes": "Primary connection settings are a single non-autoloaded option wp_mail_smtp (Options::META_KEY), shaped as groups mail, smtp, general and one group per mailer (e.g. smtp, sendlayer, gmail). Only the primary connection exists in the free plugin. The SMTP password is stored encrypted (sodium Crypto) and decrypted by Options::get(); the raw DB value is ciphertext. A secrets key is kept in option wp_mail_smtp_mail_key unless WPMS_CRYPTO_KEY is defined. Constants prefixed WPMS_* override stored values when WPMS_ON is true. Test-email form defaults live in option wp_mail_smtp_test_email; debug events live in table {prefix}wpmailsmtp_debug_events; installed version is in options wp_mail_smtp_version and wp_mail_smtp_initial_version.",
+  "settings": [
+    {
+      "key": "wp_mail_smtp",
+      "storage": "option",
+      "shape": "array",
+      "summary": "All plugin settings. Write with Options::init()->set($array,false,false), which sanitizes, encrypts smtp.pass and skips constant-defined keys. Read with Options::init()->get_all()/get($group,$key).",
+      "fields": {
+        "mail": {
+          "type": "array",
+          "summary": "from_email, from_name, mailer, return_path, from_email_force, from_name_force.",
+          "source": "vendor/plugins/wp-mail-smtp/src/Options.php:276"
+        },
+        "smtp": {
+          "type": "array",
+          "summary": "host, port, encryption, autotls, auth, user, pass.",
+          "source": "vendor/plugins/wp-mail-smtp/src/Options.php:40"
+        },
+        "general": {
+          "type": "array",
+          "summary": "do_not_send and other miscellaneous booleans.",
+          "source": "vendor/plugins/wp-mail-smtp/src/Options.php:1527"
+        }
+      },
+      "source": "vendor/plugins/wp-mail-smtp/src/Options.php:200",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[mail][mailer]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "Active mailer slug: mail, smtp, sendlayer, gmail, outlook, amazonses, sendgrid, mailgun, postmark, etc. Invalid values fall back to mail.",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Options.php:279",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[mail][from_email]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "From address; invalid input is replaced by the site default sender.",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Options.php:277",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[mail][from_name]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "From display name (sanitize_text_field).",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Options.php:278",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[mail][from_email_force]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Force the configured From address on all wp_mail() calls.",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Options.php:281",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[mail][from_name_force]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Force the configured From name on all wp_mail() calls.",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Options.php:282",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[mail][return_path]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Set PHPMailer Sender (Return-Path); relevant to SMTP.",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Options.php:280",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[smtp][host]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "SMTP hostname; sanitize_text_field on save.",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Providers/OptionsAbstract.php:237",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[smtp][port]",
+      "storage": "option",
+      "shape": "int",
+      "summary": "SMTP port, cast to int.",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Providers/OptionsAbstract.php:291",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[smtp][encryption]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "none, ssl (implicit TLS) or tls (STARTTLS).",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Providers/OptionsAbstract.php:251",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[smtp][autotls]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Automatically use STARTTLS when advertised by the server and encryption is not ssl.",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Providers/OptionsAbstract.php:305",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[smtp][auth]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Enable SMTP authentication (user/pass used only when true).",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Providers/OptionsAbstract.php:327",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[smtp][user]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "SMTP username, sanitize_text_field.",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Providers/OptionsAbstract.php:346",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[smtp][pass]",
+      "storage": "option",
+      "shape": "string",
+      "summary": "SMTP password. Stored encrypted with sodium; plaintext is returned only by Options::get('smtp','pass'). Treat as write-only: never return plaintext or ciphertext to clients.",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Options.php:1601",
+      "safe_to_write": true
+    },
+    {
+      "key": "wp_mail_smtp[general][do_not_send]",
+      "storage": "option",
+      "shape": "bool",
+      "summary": "Kill switch that blocks all outgoing email (test emails too, per admin notice).",
+      "fields": {},
+      "source": "vendor/plugins/wp-mail-smtp/src/Admin/Pages/MiscTab.php:105",
+      "safe_to_write": true
+    }
+  ],
+  "meta": [],
+  "actions": [
+    {
+      "name": "update_settings",
+      "summary": "Merge and save a partial settings array with sanitization, encryption and constant handling; refreshes all Options observers.",
+      "implementation": "Options::init()->set($options, false, false)",
+      "params": {
+        "options": "array keyed by group then key, e.g. ['mail'=>['mailer'=>'smtp'],'smtp'=>['host'=>'...']]"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/wp-mail-smtp/src/Options.php:1430"
+    },
+    {
+      "name": "send_test_email",
+      "summary": "Send a test email through the configured primary connection; returns SUCCESS/FAILED/FAILED_DOMAIN_CHECK or null on invalid recipient.",
+      "implementation": "(new TestEmail())->with_connection($connection)->as_html($html)->with_domain_check($bool)->send($recipient)",
+      "params": {
+        "recipient": "string email",
+        "html": "bool",
+        "domain_check": "bool"
+      },
+      "safety": "write",
+      "source": "vendor/plugins/wp-mail-smtp/src/TestEmail/TestEmail.php:266"
+    },
+    {
+      "name": "list_debug_events",
+      "summary": "Read recorded debug events (errors/debug) newest first, with optional severity filter.",
+      "implementation": "new EventsCollection(['per_page'=>N,'offset'=>O,'type'=>Event::TYPE_ERROR|TYPE_DEBUG]) then get_count()/get()",
+      "params": {
+        "per_page": "int",
+        "offset": "int",
+        "type": "int 0|1"
+      },
+      "safety": "read",
+      "source": "vendor/plugins/wp-mail-smtp/src/Admin/DebugEvents/EventsCollection.php:67"
+    }
+  ],
+  "rest_routes": [],
+  "objects": [
+    {
+      "type": "smtp_connection",
+      "storage": "option",
+      "summary": "The single primary connection in the free plugin; id 'primary', settings are the wp_mail_smtp option.",
+      "crud_notes": "Read: wp_mail_smtp()->get_connections_manager()->get_primary_connection()->get_options() (src/ConnectionsManager.php:40; src/Connection.php:54). Update: Options::set(). There is no create/delete of connections in free; only the primary id exists (src/Connection.php:36).",
+      "source": "vendor/plugins/wp-mail-smtp/src/Connection.php:10"
+    },
+    {
+      "type": "debug_event",
+      "storage": "table",
+      "summary": "Rows in {prefix}wpmailsmtp_debug_events: id, content, initiator, event_type (0 debug, 1 error), created_at.",
+      "crud_notes": "Read-only listing via EventsCollection. Delete all through the admin tools action; do not insert directly. Ability wp-mail-smtp/get-debug-events exposes a read-only, MCP-public list on WP 6.9+ (src/Abilities/AbilityRegistrar.php:164).",
+      "source": "vendor/plugins/wp-mail-smtp/src/Admin/DebugEvents/Migration.php:47"
+    }
+  ],
+  "detection": {
+    "active_check": "function_exists('wp_mail_smtp') and defined('WPMS_PLUGIN_VER'); WPMS_PLUGIN_VER is the version (4.10.3).",
+    "source": "vendor/plugins/wp-mail-smtp/wp_mail_smtp.php:245"
+  },
+  "pro_notes": [
+    "Documented-only Pro features (readme.txt:103-173): email log, advanced reports/stats, email alerts, backup connections, smart conditional routing, rate limiting, optimized email sending, managed WordPress emails, multisite. None are verified in this free source; do not expose them.",
+    "Pro adds Outlook/Amazon SES/Zoho native integrations and one-click setups; the free tree contains provider shells but no Pro log/stats implementation (src/Abilities/AbilityRegistrar.php:15-17)."
+  ],
+  "gotchas": [
+    "Never return wp_mail_smtp[smtp][pass]: the DB contains sodium ciphertext, and Options::get() decrypts it (src/Options.php:1601,467-474). Expose only a pass_set boolean and mask like the UI does (src/Providers/OptionsAbstract.php:366,400).",
+    "Use Options::init()->set() rather than update_option('wp_mail_smtp',...): set() encrypts the password, applies per-type sanitizers and skips keys defined as constants (src/Options.php:1430-1476,1566-1640).",
+    "When WPMS_ON is true, WPMS_MAILER, WPMS_SMTP_HOST/PORT/SSL/AUTH/USER/PASS/AUTOTLS and WPMS_MAIL_FROM* win over DB values; writes appear to succeed but are ignored (src/Options.php:553-623,1010-1015; example constants wp_mail_smtp.php:43-64).",
+    "The option is deliberately non-autoloaded and Options caches it in memory per request; after writing, reuse the same Options instance or re-init before reading back.",
+    "wp_mail_smtp[general][do_not_send] and WPMS_DO_NOT_SEND block sending; the test email path still calls wp_mail() and will fail when blocked (src/Core.php:874; wp_mail_smtp.php:45).",
+    "Mailer-specific groups (smtp, gmail, sendgrid...) only take effect when wp_mail_smtp[mail][mailer] selects them; writing smtp.host while mailer=gmail changes nothing (src/Options.php:1566-1573).",
+    "There is no general settings REST endpoint in free; admin uses admin-post/AJAX. The only REST surface is the signed setup wizard at wp-mail-smtp/setup-wizard/v1 (src/Admin/SetupWizard/RestApi.php:70,190), unsuitable for PressAgent.",
+    "Debug events are diagnostics, not an email log; the email log is Pro-only (readme.txt:109)."
+  ]
+}

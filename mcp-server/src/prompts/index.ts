@@ -45,6 +45,39 @@ export function registerPrompts(server: Server) {
               required: false
             }
           ]
+        },
+        {
+          name: "pressagent-child-theme",
+          description: "Appearance-mode decision and safe child theme workflow (Elementor, child-theme or hybrid)",
+          arguments: [
+            {
+              name: "goal",
+              description: "What the user wants to change (e.g. 'new header style', 'global brand tokens')",
+              required: false
+            }
+          ]
+        },
+        {
+          name: "pressagent-plugin-ops",
+          description: "Safely manage SEO, security, cache, forms and commerce plugins with PressAgent",
+          arguments: [
+            {
+              name: "task",
+              description: "Plugin task (e.g. 'fix missing meta descriptions', 'enable 2FA')",
+              required: false
+            }
+          ]
+        },
+        {
+          name: "pressagent-performance",
+          description: "Audit and fix WordPress speed plus core site settings safely",
+          arguments: [
+            {
+              name: "target",
+              description: "Page URL/ID or 'site' for a full performance audit",
+              required: false
+            }
+          ]
         }
       ]
     };
@@ -141,6 +174,82 @@ AI models are visually blind without checking rendered screenshots. Follow this 
 
 4. **Iterate**:
    If any visual defects are found, adjust settings with \`pressagent_update_widget\` or \`pressagent_add_elementor_section\`, purge cache, and re-capture until flawless.`
+            }
+          }
+        ]
+      };
+    }
+
+    if (name === "pressagent-child-theme") {
+      const goal = args?.goal || "change the site appearance";
+      return {
+        description: "Child theme and appearance mode playbook",
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `TASK: ${goal}
+
+# Appearance playbook
+1. Call pressagent_theme({ action: "status" }) and summarize: active theme, child/parent, Elementor, current mode, warnings.
+2. Agree the mode with the user:
+   - elementor: Elementor owns layout; child theme only for hooks/CSS.
+   - child-theme: PHP templates + CSS own layout.
+   - hybrid (recommended with Elementor): Elementor pages/header/footer + child theme tokens/CSS/hooks.
+3. If no child theme: pressagent_theme({ action: "create_child", parent_slug, slug }) then { action: "setup", mode }.
+4. Read only the target file (read_file); write the FULL file (write_file). Never edit the parent theme.
+5. After any theme write: purge cache, capture desktop and mobile screenshots, inspect with view_file, then rollback via backup_id if anything regressed.
+Token discipline: one status call, one list_files, targeted reads only.`
+            }
+          }
+        ]
+      };
+    }
+
+    if (name === "pressagent-plugin-ops") {
+      const task = args?.task || "manage WordPress plugins";
+      return {
+        description: "Plugin configuration playbook",
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `TASK: ${task}
+
+# Plugin operations playbook
+1. Inventory: pressagent_plugins({ action: "list" }) — confirm installed version and active state.
+2. Discover capabilities BEFORE writing: pressagent_plugin_settings({ action: "catalog", plugin }) returns only supported settings/actions. Never guess option keys.
+3. Read current values, then write the smallest partial change. Every write is snapshotted; keep snapshot_id.
+4. SEO: use pressagent_seo (provider auto-detects Yoast or Rank Math) instead of raw meta keys. Update title, description, focus keyword, canonical, robots, OG/Twitter fields.
+5. Plugin lifecycle: pressagent_plugins install (WordPress.org free only), activate/deactivate, update. Premium plugins require a license and must not be sideloaded from third parties.
+6. Maintenance: pressagent_plugin_action for cache/purge, scans, redirects, forms, SMTP checks and store operations. Destructive actions require explicit user approval.
+7. After changes: purge cache, verify frontend with screenshots, and report exact changes + snapshot ids.`
+            }
+          }
+        ]
+      };
+    }
+
+    if (name === "pressagent-performance") {
+      const target = args?.target || "site";
+      return {
+        description: "Performance audit and safe fix playbook",
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `TARGET: ${target}
+
+# Performance playbook
+1. Run pressagent_performance({ action: "audit" }) and summarize issues by severity.
+2. For a specific page use pressagent_performance({ action: "page", page_id or url }); only same-origin URLs are allowed.
+3. Propose fixes with exact fix_id. Safe fixes: LiteSpeed cache/minify/lazy/browser cache, Elementor external CSS/cache/experiments, purge_cache, delete_expired_transients. delete_old_revisions requires user approval and confirm:true.
+4. After each fix: purge cache, re-run page analysis, capture desktop+mobile screenshots, and report before/after metrics.
+5. WordPress core settings use pressagent_wp_settings (get/set/rollback). siteurl/home require confirm:true. Permalink changes flush rewrite rules automatically.
+6. Never claim server-level changes (php.ini, Redis, OPcache, web server) were applied: inspect and recommend them to the host.`
             }
           }
         ]
