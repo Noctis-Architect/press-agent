@@ -127,6 +127,10 @@ export class WPClient {
     return this.request("/pressagent/v1/plugins/install", "POST", { slug, activate });
   }
 
+  async searchPlugins(query: string, limit: number = 10) {
+    return this.request(`/pressagent/v1/plugins/search?q=${encodeURIComponent(query)}&limit=${limit}`);
+  }
+
   async togglePluginByIdentifier(plugin: string, action: "activate" | "deactivate") {
     return this.request("/pressagent/v1/plugins/toggle", "POST", { plugin, action });
   }

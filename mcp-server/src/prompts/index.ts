@@ -223,7 +223,7 @@ Token discipline: one status call, one list_files, targeted reads only.`
 2. Discover capabilities BEFORE writing: pressagent_plugin_settings({ action: "catalog", plugin }) returns only supported settings/actions. Never guess option keys.
 3. Read current values, then write the smallest partial change. Every write is snapshotted; keep snapshot_id.
 4. SEO: use pressagent_seo (provider auto-detects Yoast or Rank Math) instead of raw meta keys. Update title, description, focus keyword, canonical, robots, OG/Twitter fields.
-5. Plugin lifecycle: pressagent_plugins install (WordPress.org free only), activate/deactivate, update. Premium plugins require a license and must not be sideloaded from third parties.
+5. Plugin lifecycle: pressagent_plugins search → install (slug, WordPress.org URL or plugin name; activate:true when requested) → activate/deactivate/update. If an install returns ambiguous_plugin, show the candidate slugs and ask the user instead of guessing. Premium plugins require a license and must not be sideloaded from third parties.
 6. Maintenance: pressagent_plugin_action for cache/purge, scans, redirects, forms, SMTP checks and store operations. Destructive actions require explicit user approval.
 7. After changes: purge cache, verify frontend with screenshots, and report exact changes + snapshot ids.`
             }

@@ -25,12 +25,20 @@ description: >-
 
 | ابزار | کاربرد |
 |---|---|
-| `pressagent_plugins` | نصب از WordPress.org، فعال/غیرفعال، آپدیت. نسخه Pro فقط با لایسنس. |
+| `pressagent_plugins` | جست‌وجو و نصب از WordPress.org (با اسلاگ/URL/نام)، فعال/غیرفعال، آپدیت. نسخه Pro فقط با لایسنس. |
 | `pressagent_plugin` | catalog/get/set/restore + اجرای اکشن‌های ثبت‌شده. |
 | `pressagent_seo` | متای سئوی برگه/ترم با Yoast یا Rank Math. |
 | `pressagent_forms` | CF7 کامل، WPForms فقط خواندن. |
 | `pressagent_commerce` | محصولات/سفارش‌های WooCommerce. |
 | `pressagent_theme` | child theme و حالت ظاهری. |
+
+### نصب از مخزن (مثل Plugins → Add New)
+
+1. اگر اسلاگ دقیق را نمی‌دانی: `pressagent_plugins({ action:"search", query:"نام پلاگین" })`.
+2. نصب: `pressagent_plugins({ action:"install", slug:"<slug|URL|نام>", activate:true })`.
+3. اگر پاسخ `ambiguous_plugin` بود، `candidates` را به کاربر نشان بده و اسلاگ را بپرس؛ حدس نزن.
+4. اگر `already_installed: true` بود، یعنی نصب لازم نیست؛ با `activate:true` همان‌جا فعال می‌شود.
+5. فقط مخزن رسمی WordPress.org؛ Pro/نال‌شده را sideload نکن. بعد از نصب، `list` و سپس `catalog` را بگیر.
 
 ## ۳. SEO
 

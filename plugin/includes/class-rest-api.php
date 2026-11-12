@@ -77,11 +77,29 @@ class PressAgent_REST_API {
             'permission_callback' => function( $request ) { return PressAgent_Auth::has_scope( $request, 'plugins:read' ); }
         ) );
 
+        register_rest_route( $namespace, '/plugins/search', array(
+            'methods' => WP_REST_Server::READABLE,
+            'callback' => function( $request ) {
+                $query = $request->get_param( 'q' );
+                if ( null === $query || '' === $query ) {
+                    $query = $request->get_param( 'query' );
+                }
+                $res = PressAgent_Plugin_Manager::search_plugins(
+                    $query,
+                    (int) ( $request->get_param( 'page' ) ?: 1 ),
+                    (int) ( $request->get_param( 'limit' ) ?: 10 )
+                );
+                return is_wp_error( $res ) ? $res : rest_ensure_response( $res );
+            },
+            'permission_callback' => function( $request ) { return PressAgent_Auth::has_scope( $request, 'plugins:read' ); }
+        ) );
+
         register_rest_route( $namespace, '/plugins/install', array(
             'methods' => WP_REST_Server::CREATABLE,
             'callback' => function( $request ) {
-                $params = $request->get_json_params();
-                $res = PressAgent_Plugin_Manager::install_plugin( $params['slug'] ?? '', $params['activate'] ?? false );
+                $params     = $request->get_json_params();
+                $identifier = $params['slug'] ?? ( $params['plugin'] ?? ( $params['query'] ?? '' ) );
+                $res        = PressAgent_Plugin_Manager::install_plugin( $identifier, $params['activate'] ?? false );
                 return is_wp_error( $res ) ? $res : rest_ensure_response( $res );
             },
             'permission_callback' => function( $request ) { return PressAgent_Auth::has_scope( $request, 'plugins:write' ); }

@@ -251,7 +251,7 @@ $update_info = class_exists( 'PressAgent_Updater' ) ? PressAgent_Updater::check_
 $has_update = ! empty( $update_info['has_update'] );
 
 $tokens = get_option( 'pressagent_tokens', array() );
-$snapshots = PressAgent_Action_Guard::get_snapshots( 50 );
+$snapshots = PressAgent_Action_Guard::get_snapshots( 15 );
 $total_snapshots = PressAgent_Action_Guard::count_snapshots();
 $allowlist = get_option( 'pressagent_settings_allowlist', array() );
 $custom_allowlist = isset( $allowlist['custom'] ) && is_array( $allowlist['custom'] ) ? $allowlist['custom'] : array();
@@ -531,8 +531,8 @@ $has_active_token = ! empty( $active_token );
             background: var(--pa-card);
             border: 1px solid var(--pa-border);
             border-radius: 10px;
-            padding: 22px;
-            margin-bottom: 24px;
+            padding: 20px;
+            margin-bottom: 18px;
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
         }
         .pa-card-header {
@@ -563,8 +563,8 @@ $has_active_token = ! empty( $active_token );
         .pa-stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
+            gap: 12px;
+            margin-bottom: 18px;
         }
         .pa-stat-card {
             background: var(--pa-card);
@@ -697,48 +697,6 @@ $has_active_token = ! empty( $active_token );
         .pa-chip-success { background: var(--pa-success-bg); color: #047857; border-color: var(--pa-success-border); }
         .pa-chip-warning { background: var(--pa-warning-bg); color: #b45309; border-color: var(--pa-warning-border); }
         .pa-chip-danger  { background: var(--pa-danger-bg); color: #b91c1c; border-color: var(--pa-danger-border); }
-
-        /* IDE Connectors Grid */
-        .pa-client-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin-bottom: 18px;
-        }
-        .pa-client-btn {
-            background: #ffffff;
-            border: 1px solid var(--pa-border);
-            border-radius: 8px;
-            padding: 12px 14px;
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .pressagent-root[data-lang="fa"] .pa-client-btn {
-            text-align: right;
-        }
-        .pa-client-btn:hover {
-            border-color: #94a3b8;
-            background: #f8fafc;
-        }
-        .pa-client-btn.active {
-            border-color: var(--pa-primary);
-            background: var(--pa-primary-subtle);
-            box-shadow: 0 0 0 1px var(--pa-primary);
-        }
-        .pa-client-btn-title {
-            font-size: 12.5px;
-            font-weight: 700;
-            color: var(--pa-text-main);
-        }
-        .pa-client-btn-sub {
-            font-size: 11px;
-            color: var(--pa-text-muted);
-            margin-top: 1px;
-        }
 
         /* Terminal Code Block */
         .pa-terminal {
@@ -965,6 +923,46 @@ $has_active_token = ! empty( $active_token );
             font-size: 11.5px;
             color: var(--pa-text-muted);
         }
+
+        /* Readability & navigation */
+        .pa-tabs-nav {
+            position: sticky;
+            top: 32px;
+            z-index: 10;
+            background: var(--pa-bg);
+            gap: 4px;
+        }
+        .pa-tab-link {
+            padding: 9px 13px;
+            font-size: 12.5px;
+        }
+        .pa-card-desc,
+        .pa-card-subtitle {
+            font-size: 13px;
+            line-height: 1.7;
+            max-width: 820px;
+            color: var(--pa-text-muted);
+        }
+        .pa-help {
+            font-size: 11.5px;
+            line-height: 1.7;
+        }
+        .pa-field > label {
+            font-size: 12.5px;
+            line-height: 1.5;
+        }
+        .pa-table th { font-size: 11px; }
+        .pa-table td { font-size: 12.5px; line-height: 1.6; }
+        .pa-issue-detail { font-size: 12.5px; line-height: 1.7; }
+        .pressagent-root[data-lang="fa"] .pa-card-desc,
+        .pressagent-root[data-lang="fa"] .pa-card-subtitle,
+        .pressagent-root[data-lang="fa"] .pa-help,
+        .pressagent-root[data-lang="fa"] .pa-issue-detail {
+            line-height: 1.9;
+        }
+        @media screen and (max-width: 782px) {
+            .pa-tabs-nav { top: 46px; }
+        }
     </style>
 
     <!-- Top Bar -->
@@ -1009,7 +1007,7 @@ $has_active_token = ! empty( $active_token );
         <div class="pa-alert pa-alert-warning" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; border-left: 4px solid #d97706; background: #fffbeb;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="width: 32px; height: 32px; border-radius: 6px; background: #fef3c7; border: 1px solid #fde68a; display: flex; align-items: center; justify-content: center; font-size: 16px;">
-                    ⚡
+                    
                 </div>
                 <div>
                     <div style="font-weight: 700; font-size: 13.5px; color: #92400e;">
@@ -1062,26 +1060,21 @@ $has_active_token = ! empty( $active_token );
     <!-- Tab Navigation -->
     <div class="pa-tabs-nav">
         <button type="button" class="pa-tab-link active" onclick="switchTab('overview', this)">
-            <span class="pa-en">Overview &amp; Connect</span>
-            <span class="pa-fa">نمای کلی و اتصال</span>
+            <span class="pa-en">Overview</span>
+            <span class="pa-fa">نمای کلی</span>
         </button>
         <button type="button" class="pa-tab-link" onclick="switchTab('tokens', this)">
-            <span class="pa-en">Access Tokens &amp; RBAC</span>
-            <span class="pa-fa">کلیدها و سطوح دسترسی</span>
+            <span class="pa-en">Tokens</span>
+            <span class="pa-fa">کلیدها</span>
             <span class="pa-tab-badge"><?php echo count( $tokens ); ?></span>
-        </button>
-        <button type="button" class="pa-tab-link" onclick="switchTab('snapshots', this)">
-            <span class="pa-en">Action Guard™ &amp; Rollback</span>
-            <span class="pa-fa">محافظت و بازگردانی</span>
-            <span class="pa-tab-badge"><?php echo $total_snapshots; ?></span>
         </button>
         <button type="button" class="pa-tab-link" onclick="switchTab('appearance', this)">
             <span class="pa-en">Appearance</span>
-            <span class="pa-fa">ظاهر سایت</span>
+            <span class="pa-fa">ظاهر</span>
         </button>
         <button type="button" class="pa-tab-link" onclick="switchTab('plugins', this)">
-            <span class="pa-en">Plugin Hub</span>
-            <span class="pa-fa">مرکز پلاگین‌ها</span>
+            <span class="pa-en">Plugins</span>
+            <span class="pa-fa">پلاگین‌ها</span>
             <span class="pa-tab-badge"><?php echo count( $supported_plugins ); ?></span>
         </button>
         <button type="button" class="pa-tab-link" onclick="switchTab('performance', this)">
@@ -1092,20 +1085,25 @@ $has_active_token = ! empty( $active_token );
             <?php endif; ?>
         </button>
         <button type="button" class="pa-tab-link" onclick="switchTab('site-settings', this)">
-            <span class="pa-en">Site Settings</span>
-            <span class="pa-fa">تنظیمات سایت</span>
+            <span class="pa-en">Settings</span>
+            <span class="pa-fa">تنظیمات</span>
+        </button>
+        <button type="button" class="pa-tab-link" onclick="switchTab('snapshots', this)">
+            <span class="pa-en">Rollback</span>
+            <span class="pa-fa">بازگردانی</span>
+            <span class="pa-tab-badge"><?php echo $total_snapshots; ?></span>
         </button>
         <button type="button" class="pa-tab-link" onclick="switchTab('allowlist', this)">
-            <span class="pa-en">Settings Allowlist</span>
-            <span class="pa-fa">لیست سفید تنظیمات</span>
+            <span class="pa-en">Allowlist</span>
+            <span class="pa-fa">لیست سفید</span>
         </button>
         <button type="button" class="pa-tab-link" onclick="switchTab('diagnostics', this)">
-            <span class="pa-en">Diagnostics &amp; Logs</span>
-            <span class="pa-fa">عیب‌یابی و لاگ‌ها</span>
+            <span class="pa-en">Diagnostics</span>
+            <span class="pa-fa">عیب‌یابی</span>
         </button>
         <button type="button" class="pa-tab-link" onclick="switchTab('updates', this)">
-            <span class="pa-en">Updates &amp; Sync</span>
-            <span class="pa-fa">به‌روزرسانی و گیت‌هاب</span>
+            <span class="pa-en">Updates</span>
+            <span class="pa-fa">به‌روزرسانی</span>
             <?php if ( ! empty( $has_update ) ) : ?>
                 <span class="pa-chip pa-chip-danger" style="padding: 1px 6px; font-size: 10px; line-height: 1.2;">NEW</span>
             <?php endif; ?>
@@ -1211,177 +1209,47 @@ $has_active_token = ! empty( $active_token );
                 <?php endif; ?>
             </div>
 
-            <!-- Client Selectors -->
-            <div class="pa-client-grid">
-                <div class="pa-client-btn active" id="btn-client-cursor" onclick="selectClient('cursor', this)">
-                    <div>
-                        <div class="pa-client-btn-title">Cursor IDE</div>
-                        <div class="pa-client-btn-sub">.cursor/mcp.json</div>
+            <?php $display_token = $has_active_token ? $active_token : 'YOUR_PRESSAGENT_TOKEN'; ?>
+            <div class="pa-terminal">
+                <div class="pa-terminal-header">
+                    <div class="pa-terminal-title">
+                        <span class="pa-terminal-dots"><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span></span>
+                        <span>mcp.json</span>
                     </div>
+                    <button type="button" class="pa-btn pa-btn-secondary pa-btn-sm" onclick="copySnippet('code-mcp', this)">
+                        <span class="pa-en">Copy JSON</span>
+                        <span class="pa-fa">کپی کانفیگ</span>
+                    </button>
                 </div>
-                <div class="pa-client-btn" id="btn-client-claude-code" onclick="selectClient('claude-code', this)">
-                    <div>
-                        <div class="pa-client-btn-title">Claude Code (CLI)</div>
-                        <div class="pa-client-btn-sub"><span class="pa-en">Single terminal command</span><span class="pa-fa">دستور ترمینال</span></div>
-                    </div>
-                </div>
-                <div class="pa-client-btn" id="btn-client-claude-desktop" onclick="selectClient('claude-desktop', this)">
-                    <div>
-                        <div class="pa-client-btn-title">Claude Desktop</div>
-                        <div class="pa-client-btn-sub">claude_desktop_config.json</div>
-                    </div>
-                </div>
-                <div class="pa-client-btn" id="btn-client-antigravity" onclick="selectClient('antigravity', this)">
-                    <div>
-                        <div class="pa-client-btn-title">Antigravity / Windsurf</div>
-                        <div class="pa-client-btn-sub">mcp_config.json</div>
-                    </div>
-                </div>
-                <div class="pa-client-btn" id="btn-client-cline" onclick="selectClient('cline', this)">
-                    <div>
-                        <div class="pa-client-btn-title">Cline / Roo-Code</div>
-                        <div class="pa-client-btn-sub">VS Code extension settings</div>
-                    </div>
-                </div>
-            </div>
-
-            <?php
-            $display_token = $has_active_token ? $active_token : 'YOUR_PRESSAGENT_TOKEN';
-            ?>
-
-            <!-- Snippet 1: Cursor -->
-            <div id="pane-client-cursor" class="pa-client-pane">
-                <div class="pa-terminal">
-                    <div class="pa-terminal-header">
-                        <div class="pa-terminal-title">
-                            <span class="pa-terminal-dots"><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span></span>
-                            <span>cursor_mcp.json</span>
-                        </div>
-                        <button type="button" class="pa-btn pa-btn-secondary pa-btn-sm" onclick="copySnippet('code-cursor', this)">
-                            <span class="pa-en">Copy JSON</span>
-                            <span class="pa-fa">کپی کانفیگ</span>
-                        </button>
-                    </div>
-                    <pre class="pa-terminal-body" id="code-cursor">{
+                <pre class="pa-terminal-body" id="code-mcp">{
   "mcpServers": {
     "pressagent": {
       "command": "npx",
       "args": ["-y", "pressagent"],
       "env": {
-        "PRESSAGENT_WP_URL": "<?php echo esc_js( $site_url ); ?>",
-        "PRESSAGENT_TOKEN": "<?php echo esc_js( $display_token ); ?>"
+        "PRESSAGENT_WP_URL": "<?php echo esc_html( $site_url ); ?>",
+        "PRESSAGENT_TOKEN": "<?php echo esc_html( $display_token ); ?>"
       }
     }
   }
 }</pre>
-                </div>
-                <p style="font-size: 11.5px; color: var(--pa-text-muted); margin: 8px 0 0 0;">
-                    <span class="pa-en">In Cursor: Press <code>Ctrl + Shift + J</code> (or <code>Cmd + Shift + J</code>) &rarr; Features &rarr; MCP &rarr; Add New MCP Server.</span>
-                    <span class="pa-fa">در محیط Cursor: کلیدهای <code>Ctrl + Shift + J</code> را بزنید &larr; بخش Features &larr; گزینه MCP &larr; کانفیگ بالا را پیست کنید.</span>
-                </p>
             </div>
-
-            <!-- Snippet 2: Claude Code CLI -->
-            <div id="pane-client-claude-code" class="pa-client-pane" style="display:none;">
-                <div class="pa-terminal">
-                    <div class="pa-terminal-header">
-                        <div class="pa-terminal-title">
-                            <span class="pa-terminal-dots"><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span></span>
-                            <span>terminal</span>
-                        </div>
-                        <button type="button" class="pa-btn pa-btn-secondary pa-btn-sm" onclick="copySnippet('code-claude-code', this)">
-                            <span class="pa-en">Copy Command</span>
-                            <span class="pa-fa">کپی دستور</span>
-                        </button>
+            <p class="pa-help" style="margin-top:8px;">
+                <span class="pa-en">This JSON works for Cursor, Claude Desktop, Antigravity/Windsurf and Cline. For Claude Code use the one-line command below.</span>
+                <span class="pa-fa">این JSON برای Cursor، Claude Desktop، Antigravity/Windsurf و Cline کار می‌کند. برای Claude Code از دستور یک‌خطی زیر استفاده کنید.</span>
+            </p>
+            <div class="pa-terminal" style="margin-top:10px;">
+                <div class="pa-terminal-header">
+                    <div class="pa-terminal-title">
+                        <span class="pa-terminal-dots"><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span></span>
+                        <span>Claude Code CLI</span>
                     </div>
-                    <pre class="pa-terminal-body" id="code-claude-code">claude mcp add pressagent -e PRESSAGENT_WP_URL="<?php echo esc_attr( $site_url ); ?>" -e PRESSAGENT_TOKEN="<?php echo esc_attr( $display_token ); ?>" -- npx -y pressagent</pre>
+                    <button type="button" class="pa-btn pa-btn-secondary pa-btn-sm" onclick="copySnippet('code-cli', this)">
+                        <span class="pa-en">Copy Command</span>
+                        <span class="pa-fa">کپی دستور</span>
+                    </button>
                 </div>
-            </div>
-
-            <!-- Snippet 3: Claude Desktop -->
-            <div id="pane-client-claude-desktop" class="pa-client-pane" style="display:none;">
-                <div class="pa-terminal">
-                    <div class="pa-terminal-header">
-                        <div class="pa-terminal-title">
-                            <span class="pa-terminal-dots"><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span></span>
-                            <span>claude_desktop_config.json</span>
-                        </div>
-                        <button type="button" class="pa-btn pa-btn-secondary pa-btn-sm" onclick="copySnippet('code-claude-desktop', this)">
-                            <span class="pa-en">Copy JSON</span>
-                            <span class="pa-fa">کپی کانفیگ</span>
-                        </button>
-                    </div>
-                    <pre class="pa-terminal-body" id="code-claude-desktop">{
-  "mcpServers": {
-    "pressagent": {
-      "command": "npx",
-      "args": ["-y", "pressagent"],
-      "env": {
-        "PRESSAGENT_WP_URL": "<?php echo esc_js( $site_url ); ?>",
-        "PRESSAGENT_TOKEN": "<?php echo esc_js( $display_token ); ?>"
-      }
-    }
-  }
-}</pre>
-                </div>
-            </div>
-
-            <!-- Snippet 4: Antigravity -->
-            <div id="pane-client-antigravity" class="pa-client-pane" style="display:none;">
-                <div class="pa-terminal">
-                    <div class="pa-terminal-header">
-                        <div class="pa-terminal-title">
-                            <span class="pa-terminal-dots"><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span></span>
-                            <span>mcp_config.json</span>
-                        </div>
-                        <button type="button" class="pa-btn pa-btn-secondary pa-btn-sm" onclick="copySnippet('code-antigravity', this)">
-                            <span class="pa-en">Copy JSON</span>
-                            <span class="pa-fa">کپی کانفیگ</span>
-                        </button>
-                    </div>
-                    <pre class="pa-terminal-body" id="code-antigravity">{
-  "mcpServers": {
-    "pressagent": {
-      "command": "npx",
-      "args": ["-y", "pressagent"],
-      "env": {
-        "PRESSAGENT_WP_URL": "<?php echo esc_js( $site_url ); ?>",
-        "PRESSAGENT_TOKEN": "<?php echo esc_js( $display_token ); ?>"
-      }
-    }
-  }
-}</pre>
-                </div>
-            </div>
-
-            <!-- Snippet 5: Cline -->
-            <div id="pane-client-cline" class="pa-client-pane" style="display:none;">
-                <div class="pa-terminal">
-                    <div class="pa-terminal-header">
-                        <div class="pa-terminal-title">
-                            <span class="pa-terminal-dots"><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span><span class="pa-terminal-dot"></span></span>
-                            <span>cline_mcp_settings.json</span>
-                        </div>
-                        <button type="button" class="pa-btn pa-btn-secondary pa-btn-sm" onclick="copySnippet('code-cline', this)">
-                            <span class="pa-en">Copy JSON</span>
-                            <span class="pa-fa">کپی کانفیگ</span>
-                        </button>
-                    </div>
-                    <pre class="pa-terminal-body" id="code-cline">{
-  "mcpServers": {
-    "pressagent": {
-      "command": "npx",
-      "args": ["-y", "pressagent"],
-      "env": {
-        "PRESSAGENT_WP_URL": "<?php echo esc_js( $site_url ); ?>",
-        "PRESSAGENT_TOKEN": "<?php echo esc_js( $display_token ); ?>"
-      },
-      "disabled": false,
-      "autoApprove": []
-    }
-  }
-}</pre>
-                </div>
+                <pre class="pa-terminal-body" id="code-cli">claude mcp add pressagent -e PRESSAGENT_WP_URL="<?php echo esc_html( $site_url ); ?>" -e PRESSAGENT_TOKEN="<?php echo esc_html( $display_token ); ?>" -- npx -y pressagent</pre>
             </div>
         </div>
     </div>
@@ -1392,7 +1260,6 @@ $has_active_token = ! empty( $active_token );
         <div class="pa-card" style="border-left: 4px solid <?php echo $god_mode_active ? '#ef4444' : '#64748b'; ?>; background: <?php echo $god_mode_active ? '#fff5f5' : '#f8fafc'; ?>;">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="font-size: 22px;">⚡</span>
                     <div>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <strong style="font-size: 14px; color: var(--pa-text-main);">
@@ -1506,16 +1373,6 @@ $has_active_token = ! empty( $active_token );
                                 </span>
                             </div>
                         </label>
-                        <label class="pa-scope-card" onclick="toggleCard(this)">
-                            <input type="checkbox" name="token_scopes[]" value="rest:general" class="cb-write">
-                            <div>
-                                <span class="pa-scope-name">rest:general</span>
-                                <span class="pa-scope-desc">
-                                    <span class="pa-en">Query standard core REST API endpoints</span>
-                                    <span class="pa-fa">ارسال درخواست به سایر اندپوینت‌های REST وردپرس</span>
-                                </span>
-                            </div>
-                        </label>
                     </div>
                 </div>
 
@@ -1543,16 +1400,6 @@ $has_active_token = ! empty( $active_token );
                                 <span class="pa-scope-desc">
                                     <span class="pa-en">Add containers, update native widgets, clear CSS cache</span>
                                     <span class="pa-fa">طراحی، افزودن سکشن و ویرایش ویجت‌های بومی المنتور</span>
-                                </span>
-                            </div>
-                        </label>
-                        <label class="pa-scope-card" onclick="toggleCard(this)">
-                            <input type="checkbox" name="token_scopes[]" value="appearance:css" class="cb-write">
-                            <div>
-                                <span class="pa-scope-name">appearance:css</span>
-                                <span class="pa-scope-desc">
-                                    <span class="pa-en">Manage page templates and custom stylesheet injections</span>
-                                    <span class="pa-fa">تنظیم قالب برگه (تمام‌صفحه) و اعمال استایل CSS</span>
                                 </span>
                             </div>
                         </label>
@@ -1994,28 +1841,10 @@ $has_active_token = ! empty( $active_token );
                     </div>
                 </form>
 
-                <div style="font-size:12px; color:var(--pa-text-muted); line-height:1.9;">
-                    <span class="pa-en">Recommended for Elementor + WooCommerce sites: <strong>Hybrid</strong>. Use the PressAgent agent (pressagent_theme) to create or switch the child theme and edit files with automatic backups and PHP lint.</span>
-                    <span class="pa-fa">برای سایت‌های المنتور + ووکامرس حالت <strong>هیبرید</strong> پیشنهاد می‌شود. برای ساخت/تغییر چایلد تم و ویرایش فایل‌ها با بکاپ و lint خودکار از ایجنت (pressagent_theme) استفاده کنید.</span>
-                </div>
-
                 <div class="pa-section-label"><span class="pa-en">Child Theme</span><span class="pa-fa">چایلد تم</span></div>
-                <div class="pa-metric-grid">
-                    <div class="pa-stat-card">
-                        <div class="pa-stat-label"><span class="pa-en">Active stylesheet</span><span class="pa-fa">استایل‌شیت فعال</span></div>
-                        <div class="pa-stat-val" style="font-size:15px;"><?php echo esc_html( $theme_status['active_theme']['stylesheet'] ?? $appearance_theme->get_stylesheet() ); ?></div>
-                        <div class="pa-stat-sub"><?php echo ! empty( $theme_status['active_theme']['is_child'] ) ? esc_html( 'Child of ' . ( $theme_status['active_theme']['parent_name'] ?? '' ) ) : esc_html( 'Parent theme only' ); ?></div>
-                    </div>
-                    <div class="pa-stat-card">
-                        <div class="pa-stat-label"><span class="pa-en">Functions.php</span><span class="pa-fa">فایل functions.php</span></div>
-                        <div class="pa-stat-val" style="font-size:15px;"><?php echo ! empty( $theme_status['active_theme']['has_functions'] ) ? 'Present' : 'Missing'; ?></div>
-                        <div class="pa-stat-sub"><?php echo (int) ( $theme_status['active_theme']['style_bytes'] ?? 0 ); ?> bytes style.css</div>
-                    </div>
-                    <div class="pa-stat-card">
-                        <div class="pa-stat-label"><span class="pa-en">File backups</span><span class="pa-fa">بکاپ فایل‌ها</span></div>
-                        <div class="pa-stat-val" style="font-size:15px;"><?php echo count( $theme_status['backups'] ?? array() ); ?></div>
-                        <div class="pa-stat-sub"><span class="pa-en">Restorable via pressagent_theme</span><span class="pa-fa">قابل بازگردانی با pressagent_theme</span></div>
-                    </div>
+                <div class="pa-help" style="line-height:1.9;">
+                    <span class="pa-en">Stylesheet <code><?php echo esc_html( $theme_status['active_theme']['stylesheet'] ?? $appearance_theme->get_stylesheet() ); ?></code><?php echo ! empty( $theme_status['active_theme']['is_child'] ) ? ' · child of ' . esc_html( $theme_status['active_theme']['parent_name'] ?? '' ) : ' · parent theme only'; ?> · functions.php <?php echo ! empty( $theme_status['active_theme']['has_functions'] ) ? 'present' : 'missing'; ?> · <?php echo count( $theme_status['backups'] ?? array() ); ?> file backups</span>
+                    <span class="pa-fa">استایل‌شیت <code><?php echo esc_html( $theme_status['active_theme']['stylesheet'] ?? $appearance_theme->get_stylesheet() ); ?></code><?php echo ! empty( $theme_status['active_theme']['is_child'] ) ? ' · چایلد ' . esc_html( $theme_status['active_theme']['parent_name'] ?? '' ) : ' · فقط قالب والد'; ?> · functions.php <?php echo ! empty( $theme_status['active_theme']['has_functions'] ) ? 'موجود' : 'ناموجود'; ?> · <?php echo count( $theme_status['backups'] ?? array() ); ?> بکاپ فایل</span>
                 </div>
 
                 <?php if ( ! empty( $theme_status['recommendations'] ) ) : ?>
@@ -2093,28 +1922,6 @@ $has_active_token = ! empty( $active_token );
                     <div class="pa-card-desc">
                         <span class="pa-en">For security, AI agents can only read or modify option keys that match these allowlisted patterns.</span>
                         <span class="pa-fa">برای جلوگیری از آسیب‌پذیری، ایجنت‌های AI فقط مجاز به خواندن یا نوشتن کلیدهای موجود در این لیست هستند.</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Built-in Allowlist Presets -->
-            <div style="margin-bottom: 24px;">
-                <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">
-                    <span class="pa-en">Built-In Protected Presets:</span>
-                    <span class="pa-fa">الگوهای پیش‌فرض حفاظت‌شده:</span>
-                </h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
-                    <div style="border: 1px solid var(--pa-border); border-radius: 8px; padding: 12px 16px; background: #fafafa;">
-                        <strong style="display:block; font-size: 12.5px;">WP Rocket</strong>
-                        <span style="font-size: 11px; color: var(--pa-text-muted);">wp_rocket_settings</span>
-                    </div>
-                    <div style="border: 1px solid var(--pa-border); border-radius: 8px; padding: 12px 16px; background: #fafafa;">
-                        <strong style="display:block; font-size: 12.5px;">Wordfence Security</strong>
-                        <span style="font-size: 11px; color: var(--pa-text-muted); font-family: var(--pa-font-mono);">wordfence*</span>
-                    </div>
-                    <div style="border: 1px solid var(--pa-border); border-radius: 8px; padding: 12px 16px; background: #fafafa;">
-                        <strong style="display:block; font-size: 12.5px;">LiteSpeed Cache</strong>
-                        <span style="font-size: 11px; color: var(--pa-text-muted); font-family: var(--pa-font-mono);">litespeed.conf.*</span>
                     </div>
                 </div>
             </div>
@@ -2257,65 +2064,6 @@ $has_active_token = ! empty( $active_token );
 
     <!-- ==================== TAB 6: UPDATES & GITHUB SYNC ==================== -->
     <div id="tab-updates" class="pa-tab-pane">
-        <!-- Stat Grid -->
-        <div class="pa-stats-grid">
-            <div class="pa-stat-card">
-                <div class="pa-stat-label">
-                    <span class="pa-en">Installed Version</span>
-                    <span class="pa-fa">نسخه نصب‌شده</span>
-                </div>
-                <div class="pa-stat-val">v<?php echo esc_html( ! empty( $update_info['current_version'] ) ? $update_info['current_version'] : '1.0.0' ); ?></div>
-                <div class="pa-stat-sub">
-                    <span class="pa-en">Active on this WordPress site</span>
-                    <span class="pa-fa">فعال روی این سایت وردپرسی</span>
-                </div>
-            </div>
-            <div class="pa-stat-card">
-                <div class="pa-stat-label">
-                    <span class="pa-en">Latest GitHub Version</span>
-                    <span class="pa-fa">آخرین نسخه گیت‌هاب</span>
-                </div>
-                <div class="pa-stat-val" style="display: flex; align-items: center; gap: 8px;">
-                    v<?php echo esc_html( ! empty( $update_info['remote_version'] ) ? $update_info['remote_version'] : '1.0.0' ); ?>
-                    <?php if ( ! empty( $has_update ) ) : ?>
-                        <span class="pa-chip pa-chip-danger" style="font-size: 11px;">UPDATE READY</span>
-                    <?php else : ?>
-                        <span class="pa-chip pa-chip-success" style="font-size: 11px;">UP TO DATE</span>
-                    <?php endif; ?>
-                </div>
-                <div class="pa-stat-sub">
-                    <span class="pa-en">From <code>Noctis-Architect/press-agent</code></span>
-                    <span class="pa-fa">از مخزن رسمی <code>Noctis-Architect/press-agent</code></span>
-                </div>
-            </div>
-            <div class="pa-stat-card">
-                <div class="pa-stat-label">
-                    <span class="pa-en">Tracked Branch</span>
-                    <span class="pa-fa">شاخه رهگیری‌شده</span>
-                </div>
-                <div class="pa-stat-val pa-mono" style="font-size: 17px; color: var(--pa-primary);">
-                    <?php echo esc_html( ! empty( $update_info['branch'] ) ? $update_info['branch'] : 'main' ); ?>
-                </div>
-                <div class="pa-stat-sub">
-                    <span class="pa-en">Production deployment branch</span>
-                    <span class="pa-fa">شاخه اصلی استقرار پایدار</span>
-                </div>
-            </div>
-            <div class="pa-stat-card">
-                <div class="pa-stat-label">
-                    <span class="pa-en">Last Checked</span>
-                    <span class="pa-fa">آخرین بررسی</span>
-                </div>
-                <div class="pa-stat-val pa-mono" style="font-size: 13px; font-weight: 600; line-height: 1.4;">
-                    <?php echo esc_html( ! empty( $update_info['last_checked'] ) ? $update_info['last_checked'] : 'Pending check' ); ?>
-                </div>
-                <div class="pa-stat-sub" style="color: var(--pa-success);">
-                    <span class="pa-en">Auto-check: Twice daily active</span>
-                    <span class="pa-fa">بررسی خودکار: دو بار در روز فعال</span>
-                </div>
-            </div>
-        </div>
-
         <!-- Update Action Panel -->
         <div class="pa-card">
             <div class="pa-card-header">
@@ -2336,16 +2084,16 @@ $has_active_token = ! empty( $active_token );
                     <div>
                         <div style="font-size: 14px; font-weight: 700; color: var(--pa-text-main);">
                             <?php if ( ! empty( $has_update ) ) : ?>
-                                <span class="pa-en">🚀 A newer release (v<?php echo esc_html( $update_info['remote_version'] ); ?>) is waiting to be installed.</span>
-                                <span class="pa-fa">🚀 نسخه جدیدتر (نسخه <?php echo esc_html( $update_info['remote_version'] ); ?>) آماده نصب است.</span>
+                                <span class="pa-en">A newer release (v<?php echo esc_html( $update_info['remote_version'] ); ?>) is waiting to be installed.</span>
+                                <span class="pa-fa">نسخه جدیدتر (نسخه <?php echo esc_html( $update_info['remote_version'] ); ?>) آماده نصب است.</span>
                             <?php else : ?>
-                                <span class="pa-en">✓ Your PressAgent installation is fully up to date with GitHub main.</span>
-                                <span class="pa-fa">✓ افزونه PressAgent شما با آخرین نسخه شاخه main گیت‌هاب کاملاً همگام است.</span>
+                                <span class="pa-en">Your PressAgent installation is fully up to date with GitHub main.</span>
+                                <span class="pa-fa">افزونه PressAgent شما با آخرین نسخه شاخه main گیت‌هاب کاملاً همگام است.</span>
                             <?php endif; ?>
                         </div>
-                        <div style="font-size: 12px; color: var(--pa-text-muted); margin-top: 4px;">
-                            <span class="pa-en">Target Package: <code>https://github.com/Noctis-Architect/press-agent/archive/refs/heads/main.zip</code></span>
-                            <span class="pa-fa">بسته هدف: <code>https://github.com/Noctis-Architect/press-agent/archive/refs/heads/main.zip</code></span>
+                        <div class="pa-help" style="margin-top: 4px;">
+                            <span class="pa-en">Installed v<?php echo esc_html( ! empty( $update_info['current_version'] ) ? $update_info['current_version'] : PRESSAGENT_VERSION ); ?> &middot; Latest v<?php echo esc_html( ! empty( $update_info['remote_version'] ) ? $update_info['remote_version'] : PRESSAGENT_VERSION ); ?> &middot; Branch <?php echo esc_html( ! empty( $update_info['branch'] ) ? $update_info['branch'] : 'main' ); ?></span>
+                            <span class="pa-fa">نصب‌شده نسخه <?php echo esc_html( ! empty( $update_info['current_version'] ) ? $update_info['current_version'] : PRESSAGENT_VERSION ); ?> &middot; آخرین نسخه <?php echo esc_html( ! empty( $update_info['remote_version'] ) ? $update_info['remote_version'] : PRESSAGENT_VERSION ); ?> &middot; شاخه <?php echo esc_html( ! empty( $update_info['branch'] ) ? $update_info['branch'] : 'main' ); ?></span>
                         </div>
                     </div>
 
@@ -2378,65 +2126,8 @@ $has_active_token = ! empty( $active_token );
                 </div>
             </div>
 
-            <!-- Action Guard Safety Guarantee Notice -->
-            <div style="display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;">
-                <div style="font-size: 18px; line-height: 1;">🛡️</div>
-                <div>
-                    <strong style="font-size: 13px; color: #1e40af; display: block; margin-bottom: 2px;">
-                        <span class="pa-en">Action Guard™ Automated Rollback Protection</span>
-                        <span class="pa-fa">محافظت خودکار و تضمین بازگردانی با Action Guard™</span>
-                    </strong>
-                    <span style="font-size: 12px; color: #1e3a8a; line-height: 1.5;">
-                        <span class="pa-en">Every update automatically captures an Action Guard safety snapshot prior to extracting files. If needed, you can restore or audit prior states in the Rollback tab.</span>
-                        <span class="pa-fa">قبل از استخراج و جایگزینی هرگونه فایل، سامانه Action Guard یک اسنپ‌شات امنیتی ثبت می‌کند. در صورت تمایل می‌توانید در تب «محافظت و بازگردانی» وضعیت را در هر لحظه رول‌بک کنید.</span>
-                    </span>
-                </div>
-            </div>
         </div>
 
-        <!-- Latest Commit & GitHub Metadata -->
-        <div class="pa-card">
-            <div class="pa-card-header">
-                <div>
-                    <h2 class="pa-card-title">
-                        <span class="pa-en">Latest GitHub Commit Metadata</span>
-                        <span class="pa-fa">مشخصات آخرین کامیت ثبت‌شده در گیت‌هاب</span>
-                    </h2>
-                    <div class="pa-card-desc">
-                        <span class="pa-en">Live tracking of the most recent commit on the <code>main</code> branch.</span>
-                        <span class="pa-fa">اطلاعات زنده آخرین تغییرات و کامیت اعمال‌شده روی شاخه <code>main</code>.</span>
-                    </div>
-                </div>
-                <a href="https://github.com/Noctis-Architect/press-agent/commits/main" target="_blank" class="pa-btn pa-btn-secondary pa-btn-sm">
-                    <span class="pa-en">Commit History &rarr;</span>
-                    <span class="pa-fa">تاریخچه کامیت‌ها &larr;</span>
-                </a>
-            </div>
-
-            <?php if ( ! empty( $update_info['commit_sha'] ) ) : ?>
-                <div class="pa-terminal">
-                    <div class="pa-terminal-header">
-                        <div class="pa-terminal-title">
-                            <span class="pa-terminal-dots">
-                                <span class="pa-terminal-dot"></span>
-                                <span class="pa-terminal-dot"></span>
-                                <span class="pa-terminal-dot"></span>
-                            </span>
-                            git commit: <?php echo esc_html( $update_info['commit_sha'] ); ?> &bull; <?php echo esc_html( ! empty( $update_info['commit_date'] ) ? date_i18n( 'Y-m-d H:i', strtotime( $update_info['commit_date'] ) ) : '' ); ?>
-                        </div>
-                        <a href="https://github.com/Noctis-Architect/press-agent/commit/<?php echo esc_attr( $update_info['commit_sha'] ); ?>" target="_blank" style="color: #94a3b8; font-size: 11px; text-decoration: none;" class="pa-mono">
-                            View on GitHub &nearr;
-                        </a>
-                    </div>
-                    <pre class="pa-terminal-body" style="color: #e2e8f0; font-family: var(--pa-font-mono); font-size: 12.5px;"><?php echo esc_html( ! empty( $update_info['commit_message'] ) ? $update_info['commit_message'] : 'Latest commit' ); ?></pre>
-                </div>
-            <?php else : ?>
-                <div style="padding: 20px; text-align: center; color: var(--pa-text-muted); font-size: 12.5px;">
-                    <span class="pa-en">Commit details will appear here after your first GitHub update check.</span>
-                    <span class="pa-fa">اطلاعات آخرین کامیت پس از اولین استعلام از گیت‌هاب در این بخش نمایش می‌یابد.</span>
-                </div>
-            <?php endif; ?>
-        </div>
     </div>
 </div>
 
@@ -2520,24 +2211,6 @@ function switchTab(tabId, tabEl) {
     } catch(e) {}
 })();
 
-// MCP Client Selector Engine
-function selectClient(clientId, btnEl) {
-    document.querySelectorAll('.pa-client-btn').forEach(function(el) {
-        el.classList.remove('active');
-    });
-    document.querySelectorAll('.pa-client-pane').forEach(function(el) {
-        el.style.display = 'none';
-    });
-
-    if (btnEl) {
-        btnEl.classList.add('active');
-    }
-    var pane = document.getElementById('pane-client-' + clientId);
-    if (pane) {
-        pane.style.display = 'block';
-    }
-}
-
 // Copy Snippet Helper
 function copySnippet(elementId, btnElement) {
     var el = document.getElementById(elementId);
@@ -2545,7 +2218,7 @@ function copySnippet(elementId, btnElement) {
     var text = el.innerText;
     navigator.clipboard.writeText(text).then(function() {
         var origText = btnElement.innerText;
-        btnElement.innerText = 'Copied! ✓';
+        btnElement.innerText = 'Copied!';
         btnElement.style.borderColor = 'var(--pa-success)';
         btnElement.style.color = 'var(--pa-success)';
         setTimeout(function() {
@@ -2561,7 +2234,7 @@ function copySnippet(elementId, btnElement) {
 function copyRawToken(tokenText, btnElement) {
     navigator.clipboard.writeText(tokenText).then(function() {
         var origText = btnElement.innerText;
-        btnElement.innerText = 'Copied! ✓';
+        btnElement.innerText = 'Copied!';
         setTimeout(function() {
             btnElement.innerText = origText;
         }, 2000);

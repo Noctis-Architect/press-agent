@@ -64,7 +64,7 @@
 - **Validated, not guessed:** Every option/meta/action is declared in a per-plugin registry and verified against the plugin source (`docs/plugin-capabilities/*.json`). Unknown keys are rejected with the allowed list.
 - **Supported free plugins:** Yoast SEO, Rank Math SEO, Wordfence, AIOS, Elementor, LiteSpeed Cache, Contact Form 7, WPForms Lite, WooCommerce, Redirection, WP Mail SMTP, Really Simple Security.
 - **SEO bridge:** `pressagent_seo` normalizes titles, descriptions, focus keywords, canonical, robots, Open Graph, X/Twitter, schema and primary category across Yoast and Rank Math, including term SEO (Yoast's term storage is an option, not term meta).
-- **Lifecycle:** inventory, install from the official WordPress.org directory, activate/deactivate and update. Premium plugins are never sideloaded; a valid license is required.
+- **Lifecycle:** inventory, search the official WordPress.org directory, install by slug, URL or plugin name, activate/deactivate and update — the same flow as **Plugins → Add New**. Ambiguous names return candidate slugs instead of guessing. Premium plugins are never sideloaded; a valid license is required.
 
 ### 9. Child Theme & Appearance Modes
 - **User-selected mode:** `elementor`, `child-theme`, or `hybrid` (recommended with Elementor). The mode is stored per site and returned with guidance so the agent knows which layer owns layout.
@@ -139,7 +139,7 @@
 | | `pressagent_add_elementor_section` | Add new containers/sections or replace entire layout with native widgets | `elementor:write` |
 | **Visual Inspection** | `pressagent_capture_screenshot` | Capture headless browser screenshots (Desktop/Tablet/Mobile) with SSRF guard | `pages:read` |
 | **Appearance** | `pressagent_theme` | Child theme status, create/switch, mode (`elementor`/`child-theme`/`hybrid`), safe file read/write, backups, restore | `theme:read` / `theme:write` |
-| **Plugin Lifecycle** | `pressagent_plugins` | Inventory, install from WordPress.org, activate/deactivate, update | `plugins:read` / `plugins:write` |
+| **Plugin Lifecycle** | `pressagent_plugins` | Inventory, WordPress.org search, install by slug/name, activate/deactivate, update | `plugins:read` / `plugins:write` |
 | **Plugin Config** | `pressagent_plugin` | Catalog, read, validated partial write with snapshots, restore, declared maintenance actions | `settings:read/write` + `plugins:write` |
 | **SEO** | `pressagent_seo` | Yoast / Rank Math metadata for posts and terms (title, description, robots, social, schema) | `seo:read` / `seo:write` |
 | **Forms** | `pressagent_forms` | Contact Form 7 full CRUD, WPForms Lite read-only | `forms:read` / `forms:write` |
@@ -215,19 +215,19 @@ Security is at the foundation of PressAgent:
 
 ### Pre-Packaged Downloads (Direct Release ZIPs)
 
-If you prefer ready-to-use packages without building from source or cloning the repository, download the compiled assets from the [GitHub Releases (v1.0.1)](https://github.com/Noctis-Architect/press-agent/releases/tag/v1.0.1). The v1.1.0 plugin/theme/SEO features are available from source until the next release assets are published:
+If you prefer ready-to-use packages without building from source or cloning the repository, download the compiled assets from the [latest GitHub Release (v1.2.0)](https://github.com/Noctis-Architect/press-agent/releases/tag/v1.2.0):
 
 | Package | Download Link | Description | How to Install |
 | :--- | :--- | :--- | :--- |
-| **WordPress Plugin** | [`pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-wordpress-plugin.zip) | Ready-to-install WordPress plugin zip (includes auto-updater) | In WP Admin: **Plugins → Add New → Upload Plugin** |
-| **MCP Server** | [`pressagent-mcp-server.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-mcp-server.zip) | Standalone pre-compiled TypeScript MCP Server with `dist/` | Unpack zip, run `npm install --omit=dev`, and point client to `dist/index.js` |
+| **WordPress Plugin** | [`pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.2.0/pressagent-wordpress-plugin.zip) | Ready-to-install WordPress plugin zip (includes auto-updater) | In WP Admin: **Plugins → Add New → Upload Plugin** |
+| **MCP Server** | [`pressagent-mcp-server.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.2.0/pressagent-mcp-server.zip) | Standalone pre-compiled TypeScript MCP Server with `dist/` | Unpack zip, run `npm install --omit=dev`, and point client to `dist/index.js` |
 
 ---
 
 ### Step 1: Install the WordPress Plugin
 
 #### Option A: 1-Click Upload (Recommended)
-1. Download [`pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-wordpress-plugin.zip) from the latest release.
+1. Download [`pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.2.0/pressagent-wordpress-plugin.zip) from the latest release.
 2. In WP Admin, navigate to **Plugins → Add New Plugin → Upload Plugin**, choose the zip file, and click **Install Now**.
 3. Click **Activate Plugin**.
 
@@ -351,8 +351,8 @@ Use the resulting public HTTPS URL in `PRESSAGENT_WP_URL`.
 | `theme:read` | Appearance | Inspect active/parent theme, child files and appearance mode |
 | `theme:write` | Appearance | Create/switch child theme, write files with backup and PHP lint |
 | `appearance:css` | Design | Manage custom CSS styles and page templates |
-| `plugins:read` | Plugins | List installed plugins, versions and update status |
-| `plugins:write` | Plugins | Install from WordPress.org, activate/deactivate/update, run declared plugin actions |
+| `plugins:read` | Plugins | List installed plugins and search the WordPress.org directory |
+| `plugins:write` | Plugins | Install by slug/URL/name, activate/deactivate/update, run declared plugin actions |
 | `seo:read` / `seo:write` | SEO | Read/update Yoast or Rank Math metadata on posts and terms |
 | `commerce:read` / `commerce:write` | Commerce | Read/manage WooCommerce products, orders and store settings |
 | `forms:read` / `forms:write` | Forms | Read/manage Contact Form 7 forms; read WPForms |
@@ -566,7 +566,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 | | `pressagent_add_elementor_section` | افزودن بخش/کانتینر جدید یا بازسازی کامل طراحی با ویجت‌های بومی | `elementor:write` |
 | **بازرسی بصری** | `pressagent_capture_screenshot` | ثبت اسکرین‌شات از دید کاربر با مرورگر بدون سر (دسکتاپ/تبلت/موبایل) | `pages:read` |
 | **ظاهر و چایلد** | `pressagent_theme` | وضعیت قالب، ساخت/سوییچ چایلد، حالت ظاهری، ویرایش امن فایل، بکاپ و بازگردانی | `theme:read` / `theme:write` |
-| **چرخه پلاگین** | `pressagent_plugins` | فهرست، نصب از WordPress.org، فعال/غیرفعال و آپدیت | `plugins:read` / `plugins:write` |
+| **چرخه پلاگین** | `pressagent_plugins` | فهرست، جست‌وجو در WordPress.org، نصب با اسلاگ/نام، فعال/غیرفعال و آپدیت | `plugins:read` / `plugins:write` |
 | **تنظیمات پلاگین** | `pressagent_plugin` | کاتالوگ، خواندن، نوشتن جزئی معتبر با اسنپ‌شات، بازگردانی و اکشن‌های تعریف‌شده | `settings:read/write` + `plugins:write` |
 | **سئو** | `pressagent_seo` | متای Yoast / Rank Math برای برگه و ترم (عنوان، توضیح، robots، شبکه‌های اجتماعی، schema) | `seo:read` / `seo:write` |
 | **فرم‌ها** | `pressagent_forms` | CF7 کامل، WPForms Lite فقط خواندن | `forms:read` / `forms:write` |
@@ -639,19 +639,19 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ### دانلود بسته‌های آماده (فایل‌های زیپ ریلیز)
 
-اگر نمی‌خواهید سورس پروژه را با Git کلون کنید یا سرور MCP را خودتان بیلد نمایید، بسته‌های آماده و کامپایل‌شده را مستقیماً از [صفحه ریلیزهای گیت‌هاب (v1.0.1)](https://github.com/Noctis-Architect/press-agent/releases/tag/v1.0.1) دانلود کنید. قابلیت‌های پلاگین/چایلد/سئوی نسخه ۱.۱.۰ تا انتشار ریلیز بعدی از سورس در دسترس هستند:
+اگر نمی‌خواهید سورس پروژه را با Git کلون کنید یا سرور MCP را خودتان بیلد نمایید، بسته‌های آماده و کامپایل‌شده را مستقیماً از [آخرین ریلیز گیت‌هاب (v1.2.0)](https://github.com/Noctis-Architect/press-agent/releases/tag/v1.2.0) دانلود کنید:
 
 | بسته | لینک دانلود مستقیم | توضیحات | روش راه‌اندازی |
 | :--- | :--- | :--- | :--- |
-| **افزونه وردپرس** | [`pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-wordpress-plugin.zip) | فایل زیپ استاندارد افزونه آماده آپلود (مجهز به سیستم خودکار آپدیت از گیت‌هاب) | در پیشخوان وردپرس: **افزونه‌ها ← افزودن افزونه تازه ← بارگذاری افزونه** |
-| **سرور MCP** | [`pressagent-mcp-server.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-mcp-server.zip) | بسته سرور پیش‌کامپایل‌شده تایپ‌اسکریپت همراه با پوشه `dist/` | آنزیپ کنید، دستور `npm install --omit=dev` را بزنید و در هوش مصنوعی به `dist/index.js` اشاره کنید |
+| **افزونه وردپرس** | [`pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.2.0/pressagent-wordpress-plugin.zip) | فایل زیپ استاندارد افزونه آماده آپلود (مجهز به سیستم خودکار آپدیت از گیت‌هاب) | در پیشخوان وردپرس: **افزونه‌ها ← افزودن افزونه تازه ← بارگذاری افزونه** |
+| **سرور MCP** | [`pressagent-mcp-server.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.2.0/pressagent-mcp-server.zip) | بسته سرور پیش‌کامپایل‌شده تایپ‌اسکریپت همراه با پوشه `dist/` | آنزیپ کنید، دستور `npm install --omit=dev` را بزنید و در هوش مصنوعی به `dist/index.js` اشاره کنید |
 
 ---
 
 ### گام اول: نصب افزونه روی وردپرس
 
 #### روش اول: بارگذاری مستقیم فایل زیپ (پیشنهادی و آسان)
-۱. فایل [`pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.0.1/pressagent-wordpress-plugin.zip) را دانلود کنید.
+۱. فایل [`pressagent-wordpress-plugin.zip`](https://github.com/Noctis-Architect/press-agent/releases/download/v1.2.0/pressagent-wordpress-plugin.zip) را دانلود کنید.
 ۲. در پیشخوان وردپرس به مسیر **افزونه‌ها ← افزودن افزونه تازه ← بارگذاری افزونه** رفته، فایل را انتخاب و دکمه **نصب** را بزنید.
 ۳. روی دکمه **فعال‌سازی افزونه** کلیک کنید.
 
@@ -763,8 +763,8 @@ npm run build
 | `theme:read` | ظاهر | مشاهده قالب فعال/والد، فایل‌های چایلد و حالت ظاهری |
 | `theme:write` | ظاهر | ساخت/سوییچ چایلد و ویرایش امن فایل‌ها با بکاپ و lint |
 | `appearance:css` | قالب | مدیریت قالب برگه و اعمال استایل‌های CSS اختصاصی |
-| `plugins:read` | افزونه‌ها | مشاهده نسخه، وضعیت فعال و آپدیت‌های در دسترس |
-| `plugins:write` | افزونه‌ها | نصب از WordPress.org، فعال/غیرفعال/آپدیت و اجرای اکشن‌های تعریف‌شده |
+| `plugins:read` | افزونه‌ها | مشاهده نسخه/وضعیت و جست‌وجو در مخزن WordPress.org |
+| `plugins:write` | افزونه‌ها | نصب با اسلاگ/URL/نام، فعال/غیرفعال/آپدیت و اجرای اکشن‌های تعریف‌شده |
 | `seo:read` / `seo:write` | سئو | خواندن/ویرایش متای Yoast یا Rank Math روی برگه و ترم |
 | `commerce:read` / `commerce:write` | فروشگاه | خواندن/مدیریت محصولات، سفارش‌ها و تنظیمات ووکامرس |
 | `forms:read` / `forms:write` | فرم‌ها | خواندن/مدیریت فرم‌های CF7 و خواندن WPForms |
